@@ -1,3 +1,8 @@
+mod renderer;
+
+use std::{cell::RefCell, collections::BTreeMap, rc::Rc};
+
+use renderer::{rustymilk_renderer, RustyMilkRenderer};
 use rustymilk_core::{
     parse_rustymilk_fragment, parse_rustymilk_preset_set, parse_rustymilk_sample_csv,
     rustymilk_preset_name, rustymilk_webgpu_batch_summary_json, serialize_rustymilk_fragment,
@@ -30,8 +35,10 @@ pub fn wasm_rustymilk_webgpu_batch_summary_json(
 #[wasm_bindgen(js_name = RustyMilkEngine)]
 pub struct WasmRustyMilkEngine {
     canvas: web_sys::HtmlCanvasElement,
+    renderer: RustyMilkRenderer,
     runtime: RustyMilkFrameSetRuntime,
     source: String,
+    texture_assets: Rc<RefCell<BTreeMap<String, String>>>,
     title: String,
 }
 
@@ -46,17 +53,21 @@ impl WasmRustyMilkEngine {
             .to_string();
         let title =
             validate_rustymilk_import(&source).unwrap_or_else(|_| rustymilk_preset_name(&source));
+        let texture_assets = Rc::new(RefCell::new(BTreeMap::new()));
+        let renderer = rustymilk_renderer(&canvas, texture_assets.clone())?;
         Ok(Self {
             canvas,
+            renderer,
             runtime: RustyMilkFrameSetRuntime::default(),
             source,
+            texture_assets,
             title,
         })
     }
 
     #[wasm_bindgen(js_name = rendererLabel)]
     pub fn renderer_label(&self) -> String {
-        "RustyMilk standalone WASM runtime active".to_string()
+        self.renderer.label().to_string()
     }
 
     #[wasm_bindgen(js_name = loadPresetText)]
@@ -64,7 +75,7 @@ impl WasmRustyMilkEngine {
         &mut self,
         source: &str,
         file_name: &str,
-        _texture_assets_json: &str,
+        texture_assets_json: &str,
     ) -> Result<String, JsValue> {
         let title = validate_rustymilk_import(source).map_err(|error| JsValue::from_str(&error))?;
         self.source = source.to_string();
@@ -78,6 +89,7 @@ impl WasmRustyMilkEngine {
             title
         };
         self.runtime = RustyMilkFrameSetRuntime::default();
+        self.replace_texture_assets(texture_assets_json);
         Ok(self.title.clone())
     }
 
@@ -323,7 +335,7 @@ impl WasmRustyMilkEngine {
         };
         let waveform = parse_rustymilk_sample_csv(waveform_csv);
         let spectrum = parse_rustymilk_sample_csv(spectrum_csv);
-        let _frame_set = self.runtime.render_source_with_audio_and_input(
+        let frame_set = self.runtime.render_source_with_audio_and_input(
             &self.source,
             time_seconds,
             bass,
@@ -333,6 +345,7 @@ impl WasmRustyMilkEngine {
             &spectrum,
             input,
         );
+        self.renderer.render_frame_set(&frame_set, time_seconds);
     }
 
     #[wasm_bindgen(js_name = resize)]
@@ -348,6 +361,28 @@ impl WasmRustyMilkEngine {
             &self.source,
             self.source.to_ascii_lowercase().contains("[preset01]"),
         )
+    }
+
+    fn replace_texture_assets(&self, texture_assets_json: &str) {
+        let Ok(value) = serde_json::from_str::<serde_json::Value>(texture_assets_json) else {
+            return;
+        };
+        let Some(object) = value.as_object() else {
+            return;
+        };
+        let mut assets = self.texture_assets.borrow_mut();
+        assets.clear();
+        for (name, data_url) in object {
+            let Some(data_url) = data_url.as_str() else {
+                continue;
+            };
+            if !data_url.starts_with("data:image/") {
+                continue;
+            }
+            for alias in rustymilk_core::get_rustymilk_texture_name_aliases(name) {
+                assets.insert(alias, data_url.to_string());
+            }
+        }
     }
 
     fn preset_parameter_summary_value(&self) -> serde_json::Value {

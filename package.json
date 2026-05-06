@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:wasm": "bash ./tools/build-wasm-package.sh",
     "test:compatibility": "node ./tools/report-rustymilk-compatibility.mjs",
     "test:performance": "node ./tools/measure-rustymilk-performance.mjs",
     "test:smoke": "node ./tools/smoke-rustymilk.mjs"
@@ -11,4 +12,3 @@
     "@playwright/test": "^1.52.0"
   }
 }
-

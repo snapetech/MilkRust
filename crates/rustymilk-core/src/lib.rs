@@ -127,7 +127,7 @@ pub struct RustyMilkWarpMesh {
     pub source_uvs: Vec<f64>,
 }
 
-fn clamp_unit(value: f64) -> f64 {
+pub fn clamp_unit(value: f64) -> f64 {
     value.clamp(0.0, 1.0)
 }
 
@@ -1228,9 +1228,9 @@ impl RustyMilkFrameSetRuntime {
 
 #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 pub const RUSTYMILK_PRESETS: [&str; 3] = [
-    "name=slskr native grid smoke\ndecay=0.91\nwave_r=0.12\nwave_g=0.64\nwave_b=0.88\nwave_a=0.86\nwave_scale=1.2\nzoom=1\nrot=0\nper_frame_1=wave_r=0.35+0.25*bass_att;\nper_frame_2=wave_g=0.45+0.2*mid_att;\nper_frame_3=wave_b=0.55+0.2*treb_att;\nper_frame_4=rot=0.01*sin(time*0.7);\nper_frame_5=zoom=1+0.03*sin(time*0.5);\nper_frame_6=dx=0.015*sin(time*0.6);\nper_frame_7=dy=0.015*cos(time*0.5);\nshape00_enabled=1\nshape00_sides=5\nshape00_rad=0.18\nwavecode_0_enabled=1\nwavecode_0_samples=96",
-    "name=slskr amber tunnel\ndecay=0.86\nwave_r=0.92\nwave_g=0.52\nwave_b=0.18\nwave_a=0.82\nwave_scale=1.55\nzoom=1.05\nrot=-0.018\nper_frame_1=wave_r=0.65+0.25*bass_att;\nper_frame_2=wave_g=0.32+0.2*mid_att;\nper_frame_3=rot=-0.025*sin(time*0.3);\nshape00_enabled=1\nshape00_sides=3\nshape01_enabled=1\nshape01_sides=6\nwavecode_0_enabled=1",
-    "name=slskr green pulse\ndecay=0.91\nwave_r=0.20\nwave_g=0.86\nwave_b=0.44\nwave_a=0.78\nwave_scale=1.1\nzoom=0.98\nrot=0.028\nper_frame_1=wave_g=0.55+0.35*mid_att;\nper_frame_2=wave_b=0.30+0.35*treb_att;\nper_frame_3=zoom=0.98+0.04*sin(time);\nwavecode_0_enabled=1\nwavecode_1_enabled=1",
+    "name=RustyMilk grid smoke\ndecay=0.91\nwave_r=0.12\nwave_g=0.64\nwave_b=0.88\nwave_a=0.86\nwave_scale=1.2\nzoom=1\nrot=0\nper_frame_1=wave_r=0.35+0.25*bass_att;\nper_frame_2=wave_g=0.45+0.2*mid_att;\nper_frame_3=wave_b=0.55+0.2*treb_att;\nper_frame_4=rot=0.01*sin(time*0.7);\nper_frame_5=zoom=1+0.03*sin(time*0.5);\nper_frame_6=dx=0.015*sin(time*0.6);\nper_frame_7=dy=0.015*cos(time*0.5);\nshape00_enabled=1\nshape00_sides=5\nshape00_rad=0.18\nwavecode_0_enabled=1\nwavecode_0_samples=96",
+    "name=RustyMilk amber tunnel\ndecay=0.86\nwave_r=0.92\nwave_g=0.52\nwave_b=0.18\nwave_a=0.82\nwave_scale=1.55\nzoom=1.05\nrot=-0.018\nper_frame_1=wave_r=0.65+0.25*bass_att;\nper_frame_2=wave_g=0.32+0.2*mid_att;\nper_frame_3=rot=-0.025*sin(time*0.3);\nshape00_enabled=1\nshape00_sides=3\nshape01_enabled=1\nshape01_sides=6\nwavecode_0_enabled=1",
+    "name=RustyMilk green pulse\ndecay=0.91\nwave_r=0.20\nwave_g=0.86\nwave_b=0.44\nwave_a=0.78\nwave_scale=1.1\nzoom=0.98\nrot=0.028\nper_frame_1=wave_g=0.55+0.35*mid_att;\nper_frame_2=wave_b=0.30+0.35*treb_att;\nper_frame_3=zoom=0.98+0.04*sin(time);\nwavecode_0_enabled=1\nwavecode_1_enabled=1",
 ];
 
 pub fn rustymilk_preset_name(source: &str) -> String {
@@ -2559,7 +2559,7 @@ pub struct RustyMilkWebGpuFrameSetBatches {
     pub textured_vertices: Vec<f64>,
 }
 
-fn create_repeated_rustymilk_colors(vertex_count: usize, color: [f64; 4]) -> Vec<f64> {
+pub fn create_repeated_rustymilk_colors(vertex_count: usize, color: [f64; 4]) -> Vec<f64> {
     let mut colors = Vec::with_capacity(vertex_count * 4);
     for _ in 0..vertex_count {
         colors.extend_from_slice(&color);
