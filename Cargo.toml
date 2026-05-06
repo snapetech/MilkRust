@@ -1,0 +1,20 @@
+[workspace]
+members = [
+    "crates/rustymilk-core",
+    "crates/rustymilk-wasm",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "AGPL-3.0-only"
+homepage = "https://github.com/snapetech/RustyMilk"
+repository = "https://github.com/snapetech/RustyMilk"
+rust-version = "1.76"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = "warn"
+

@@ -1,0 +1,14 @@
+{
+  "name": "rustymilk-workspace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:compatibility": "node ./tools/report-rustymilk-compatibility.mjs",
+    "test:performance": "node ./tools/measure-rustymilk-performance.mjs",
+    "test:smoke": "node ./tools/smoke-rustymilk.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0"
+  }
+}
+
