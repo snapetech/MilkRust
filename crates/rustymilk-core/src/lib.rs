@@ -2975,7 +2975,7 @@ fn create_rustymilk_audio_samples(
         .collect()
 }
 
-fn create_rustymilk_waveform_vertices(
+pub fn create_rustymilk_waveform_vertices(
     samples: &[f64],
     frame_scope: &BTreeMap<String, RustyMilkValue>,
 ) -> Vec<f64> {
