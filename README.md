@@ -1,5 +1,7 @@
 # RustyMilk
 
+[![CI](https://github.com/snapetech/RustyMilk/actions/workflows/ci.yml/badge.svg)](https://github.com/snapetech/RustyMilk/actions/workflows/ci.yml)
+
 RustyMilk is the standalone Rust/WASM visualizer engine extracted from slskR.
 
 This repository is being prepared as the home for:

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install wasm-bindgen CLI
+        run: cargo install wasm-bindgen-cli --version 0.2.120 --locked
+
+      - name: Test Rust workspace
+        run: cargo test --workspace
+
+      - name: Check WASM target
+        run: cargo check -p rustymilk-wasm --target wasm32-unknown-unknown
+
+      - name: Build browser WASM package
+        run: npm run build:wasm
+
+      - name: Run RustyMilk tool checks
+        run: |
+          npm run test:compatibility
+          npm run test:performance
+          npm run test:smoke
+
