@@ -14,6 +14,8 @@ This repository is being prepared as the home for:
 
 The current migration keeps legacy `.milk` and `.milk2` preset formats compatible while removing product naming from the engine identity.
 
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations.
+
 ## Build
 
 ```bash

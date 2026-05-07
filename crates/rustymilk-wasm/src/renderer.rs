@@ -6,7 +6,7 @@ use rustymilk_core::{
 };
 use wasm_bindgen::{prelude::*, JsCast};
 
-pub(crate) enum RustyMilkRenderer {
+pub enum RustyMilkRenderer {
     WebGl(RustyMilkWebGlRendererSet),
     Canvas {
         canvas: web_sys::HtmlCanvasElement,
@@ -15,14 +15,14 @@ pub(crate) enum RustyMilkRenderer {
 }
 
 impl RustyMilkRenderer {
-    pub(crate) fn label(&self) -> &'static str {
+    pub fn label(&self) -> &'static str {
         match self {
             Self::WebGl(_) => "Rust WebGL2 renderer active",
             Self::Canvas { .. } => "Canvas renderer fallback active",
         }
     }
 
-    pub(crate) fn render_frame_set(&self, frame_set: &RustyMilkFrameSet, time: f64) {
+    pub fn render_frame_set(&self, frame_set: &RustyMilkFrameSet, time: f64) {
         if frame_set.entries.is_empty() {
             return;
         }
@@ -44,7 +44,7 @@ impl RustyMilkRenderer {
     }
 }
 
-pub(crate) struct RustyMilkWebGlRendererSet {
+pub struct RustyMilkWebGlRendererSet {
     gl: web_sys::WebGl2RenderingContext,
     renderers: RefCell<Vec<RustyMilkWebGlRenderer>>,
     texture_assets: Rc<RefCell<BTreeMap<String, String>>>,
@@ -104,7 +104,7 @@ struct RustyMilkFeedbackTarget {
     texture: web_sys::WebGlTexture,
 }
 
-pub(crate) fn rustymilk_renderer(
+pub fn rustymilk_renderer(
     canvas: &web_sys::HtmlCanvasElement,
     texture_assets: Rc<RefCell<BTreeMap<String, String>>>,
 ) -> Result<RustyMilkRenderer, JsValue> {

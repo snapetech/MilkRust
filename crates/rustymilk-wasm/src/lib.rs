@@ -2,7 +2,7 @@ mod renderer;
 
 use std::{cell::RefCell, collections::BTreeMap, rc::Rc};
 
-use renderer::{rustymilk_renderer, RustyMilkRenderer};
+pub use renderer::{rustymilk_renderer, RustyMilkRenderer};
 use rustymilk_core::{
     parse_rustymilk_fragment, parse_rustymilk_preset_set, parse_rustymilk_sample_csv,
     rustymilk_preset_name, rustymilk_webgpu_batch_summary_json, serialize_rustymilk_fragment,
