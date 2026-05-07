@@ -5652,6 +5652,221 @@ wave_g=1
     }
 
     #[test]
+    fn rustymilk_core_matches_imported_expression_vm_helpers() {
+        fn assert_close(actual: Option<&RustyMilkValue>, expected: f64) {
+            let Some(RustyMilkValue::Number(actual)) = actual else {
+                panic!("expected numeric RustyMilk value");
+            };
+            assert!(
+                (*actual - expected).abs() < 0.00001,
+                "{actual} != {expected}"
+            );
+        }
+
+        let mut scope = BTreeMap::new();
+        scope.insert("bass_att".to_string(), RustyMilkValue::Number(2.0));
+        assert_eq!(
+            evaluate_rustymilk_expression("pow(bass_att, 2) + sqr(3)", &scope).unwrap(),
+            13.0
+        );
+
+        let mut scope = BTreeMap::new();
+        scope.insert("treb".to_string(), RustyMilkValue::Number(2.0));
+        assert_eq!(
+            evaluate_rustymilk_expression("if(above(treb, 1.5), sin(0), 7)", &scope).unwrap(),
+            0.0
+        );
+        assert_eq!(
+            evaluate_rustymilk_expression("div(10, 0) + sqrt(-1)", &BTreeMap::new()).unwrap(),
+            0.0
+        );
+
+        let mut scope = BTreeMap::new();
+        scope.insert("q33".to_string(), RustyMilkValue::Number(2.0));
+        assert_eq!(
+            evaluate_rustymilk_expression("q33 >= 2", &scope).unwrap(),
+            1.0
+        );
+
+        let mut scope = BTreeMap::new();
+        scope.insert("bass_att".to_string(), RustyMilkValue::Number(3.0));
+        scope.insert("treb_att".to_string(), RustyMilkValue::Number(1.0));
+        scope.insert("wave_r".to_string(), RustyMilkValue::Number(0.8));
+        scope.insert("zoom".to_string(), RustyMilkValue::Number(1.0));
+        let evaluated = evaluate_rustymilk_equations(
+            "q1=bass_att*0.2; zoom+=q1; q33=if(below(treb_att,2),7,9); wave_r*=0.5;",
+            &scope,
+        )
+        .unwrap();
+        assert_close(evaluated.get("q1"), 0.6);
+        assert_close(evaluated.get("zoom"), 1.6);
+        assert_eq!(evaluated.get("q33"), Some(&RustyMilkValue::Number(7.0)));
+        assert_close(evaluated.get("wave_r"), 0.4);
+    }
+
+    #[test]
+    fn rustymilk_core_matches_imported_expression_vm_audio_and_bitwise_helpers() {
+        let mut scope = BTreeMap::new();
+        scope.insert(
+            "frequency_data".to_string(),
+            RustyMilkValue::Text("0,0.501960784314,1,0.250980392157".to_string()),
+        );
+        scope.insert("sample_rate".to_string(), RustyMilkValue::Number(44_100.0));
+        assert!(
+            (evaluate_rustymilk_expression("get_fft(0.5)", &scope).unwrap() - 1.0).abs() < 0.00001
+        );
+        assert!(
+            (evaluate_rustymilk_expression("get_fft_hz(5512.5)", &scope).unwrap() - 0.501960784314)
+                .abs()
+                < 0.00001
+        );
+
+        assert!(
+            (evaluate_rustymilk_expression("sin(pi/2)+log(e)+log10(100)", &BTreeMap::new())
+                .unwrap()
+                - 4.0)
+                .abs()
+                < 0.00001
+        );
+        assert!(
+            (evaluate_rustymilk_expression("atan2(1, 0)", &BTreeMap::new()).unwrap()
+                - std::f64::consts::FRAC_PI_2)
+                .abs()
+                < 0.00001
+        );
+        assert!(
+            (evaluate_rustymilk_expression("asin(2)+acos(-2)", &BTreeMap::new()).unwrap()
+                - std::f64::consts::PI * 1.5)
+                .abs()
+                < 0.00001
+        );
+        assert_eq!(
+            evaluate_rustymilk_expression("band(7, 3)+bor(4, 1)+bxor(7, 3)", &BTreeMap::new())
+                .unwrap(),
+            12.0
+        );
+        assert_eq!(
+            evaluate_rustymilk_expression("(7 & 3) + (4 | 1) + (7 ^ 3)", &BTreeMap::new()).unwrap(),
+            12.0
+        );
+        assert_eq!(
+            evaluate_rustymilk_expression("(1 << 3) + (8 >> 1)", &BTreeMap::new()).unwrap(),
+            12.0
+        );
+        assert_eq!(
+            evaluate_rustymilk_expression("~0 + !0 + !2", &BTreeMap::new()).unwrap(),
+            0.0
+        );
+    }
+
+    #[test]
+    fn rustymilk_core_matches_imported_shader_translation_subset() {
+        assert_eq!(
+            translate_rustymilk_shader_expression(
+                "ret = tex2D(sampler_main, uv).rgb * vec3(0.5, 1.0, 0.25);"
+            ),
+            "texture(previousFrame, uv).rgb * vec3(0.5, 1.0, 0.25)"
+        );
+
+        let shader = create_translated_rustymilk_fragment_shader(
+            "ret = saturate(vec3(uv.x, uv.y, sin(time)));",
+        );
+        assert!(shader.contains("uniform sampler2D previousFrame;"));
+        assert!(shader.contains("uniform float fftBins[64];"));
+        assert!(shader.contains("uniform float waveformBins[64];"));
+        assert!(shader.contains("uniform vec2 resolution;"));
+        assert!(shader.contains("uniform vec2 pixelSize;"));
+        assert!(shader.contains("uniform float aspect;"));
+        assert!(shader.contains("uniform vec4 texsize;"));
+        assert!(shader.contains("float rad = length(centeredUv);"));
+        assert!(shader.contains("float ang = atan(centeredUv.y, centeredUv.x);"));
+        assert!(shader.contains("float get_fft(float position)"));
+        assert!(shader.contains("float get_fft_hz(float hz)"));
+        assert!(shader.contains("float get_waveform(float position)"));
+        assert!(shader.contains("uniform float bass_att;"));
+        assert!(shader.contains("uniform float q64;"));
+        assert!(shader.contains("vec3 ret = vec3(clamp01(vec3(uv.x, uv.y, sin(time))));"));
+        assert!(analyze_rustymilk_shader_support("ret = vec3(q64, mid_att, bass);").supported);
+
+        let shader = create_translated_rustymilk_fragment_shader(
+            "ret = vec3(get_fft(0.25), get_fft_hz(1000), get_waveform(0.5));",
+        );
+        assert!(shader.contains(
+            "vec3 ret = vec3(vec3(get_fft(0.25), get_fft_hz(1000), get_waveform(0.5)));"
+        ));
+    }
+
+    #[test]
+    fn rustymilk_core_matches_imported_shader_texture_body_and_webgpu_subset() {
+        let shader = create_translated_rustymilk_fragment_shader(
+            r#"
+shader_body {
+  float3 tint = saturate(vec3(x, y, aspect));
+  ret = tint * tex2D(sampler_main, uv).rgb;
+}
+"#,
+        );
+        assert!(shader.contains("vec3 tint = clamp01(vec3(x, y, aspect));"));
+        assert!(shader.contains("vec3 ret = vec3(tint * texture(previousFrame, uv).rgb);"));
+        assert_eq!(
+            translate_rustymilk_shader_expression("shader_body { ret = vec3(q1); }"),
+            "vec3(q1)"
+        );
+
+        let shader = create_translated_rustymilk_fragment_shader(
+            r#"
+float3 noise = tex2D(sampler_noise, uv).rgb;
+float3 overlay = tex2D(album_art, uv).rgb;
+ret = noise * 0.5 + overlay * 0.5 + tex2D(sampler_main, uv).rgb * 0.1;
+"#,
+        );
+        assert_eq!(
+            get_rustymilk_shader_texture_samplers(
+                "ret = tex2D(sampler_noise, uv).rgb + tex2D(album_art, uv).rgb;"
+            ),
+            vec!["sampler_noise".to_string(), "album_art".to_string()]
+        );
+        assert!(shader.contains("uniform sampler2D shaderTexture0;"));
+        assert!(shader.contains("uniform sampler2D shaderTexture1;"));
+        assert!(shader.contains("vec3 noise = texture(shaderTexture0, uv).rgb;"));
+        assert!(shader.contains("vec3 overlay = texture(shaderTexture1, uv).rgb;"));
+
+        let shader = create_translated_rustymilk_wgsl_shader(
+            r#"
+float3 tint = saturate(vec3(q1, bass_att, uv.x));
+tint *= tex2D(sampler_main, uv).rgb;
+ret = tint + vec3(time * 0.01, get_fft(0.25), get_waveform(0.5));
+"#,
+        );
+        assert!(shader.contains("@fragment"));
+        assert!(shader.contains("q64: f32"));
+        assert!(shader.contains("fft63: f32"));
+        assert!(shader.contains("waveform63: f32"));
+        assert!(shader.contains("let q1 = uniforms.q1;"));
+        assert!(shader.contains("fn get_fft(position: f32) -> f32"));
+        assert!(shader.contains("fn get_fft_hz(hz: f32) -> f32"));
+        assert!(shader.contains("fn get_waveform(position: f32) -> f32"));
+        assert!(shader.contains("var tint = clamp01v3(vec3f(q1, bass_att, uv.x));"));
+        assert!(shader.contains("tint *= textureSample(previousFrame, previousSampler, uv).rgb;"));
+        assert!(shader.contains(
+            "let ret = vec3f(tint + vec3f(time * 0.01, get_fft(0.25), get_waveform(0.5)));"
+        ));
+
+        assert_eq!(
+            translate_rustymilk_shader_expression("for (;;) { ret = vec3(1.0); }"),
+            ""
+        );
+        assert_eq!(
+            translate_rustymilk_shader_expression("float3 tint; ret = tint;"),
+            ""
+        );
+        assert!(
+            analyze_rustymilk_webgpu_shader_support("ret = q1 > 0.5 ? vec3(1.0) : vec3(0.0);")
+                .supported
+        );
+    }
+
+    #[test]
     fn rustymilk_core_preserves_imported_milkdrop_fixture_summaries() {
         let summaries = imported_milkdrop_fixtures()
             .into_iter()

@@ -15,6 +15,9 @@ Source reference:
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/presetFixtures.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/presetFixtures.test.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/presetCompatibilityMatrix.js
+../slskdn/src/web/src/components/Player/visualizers/milkdrop/expressionVm.test.js
+../slskdn/src/web/src/components/Player/visualizers/milkdrop/shaderTranslator.test.js
+../slskR/web/src/components/Player/visualizers/rustyMilkEngine.test.js
 ```
 
 RustyMilk coverage added:
@@ -26,19 +29,27 @@ RustyMilk coverage added:
 - Dense primitive fixture with 40 shapes and 20 waves.
 - Unsupported shader control-flow fixture with clean `comp_shader` compatibility reporting.
 - Compatibility matrix summary assertions for support counts, preset counts, max primitive counts, q-register coverage, and unsupported shader sections.
+- Expression VM parity for arithmetic, q-register assignments, compound assignment, comparisons, condition helpers, audio helpers, constants, bitwise helpers, shifts, unary operators, and logical operators.
+- Shader translator parity for ret assignments, shader bodies, q/audio uniforms, FFT/waveform helpers, named texture samplers, GLSL output, WGSL output, and rejected unsafe shader bodies.
+- Web SDK wrapper tests for transition helpers, beat detection, audio analyzer data flow, mouse state, resize, preset load/edit/export methods, debug summaries, and disposal across the Rust WASM boundary.
+
+Notable behavior difference:
+
+- The old JavaScript WebGPU translator rejected a ternary ret expression. RustyMilk currently accepts that safe case, so the Rust test preserves the newer Rust behavior instead of reintroducing the older limitation.
 
 Test location:
 
 ```text
 crates/rustymilk-core/src/lib.rs
+packages/rustymilk-web/src/rustyMilkEngine.test.js
 ```
 
 ## Still To Mine From `../slskdn`
 
 These should be imported as behavior, fixtures, or requirements, not as app-specific source drops.
 
-- `expressionVm.js` and tests: translate edge cases into Rust expression VM tests.
-- `shaderTranslator.js` and tests: translate GLSL/WGSL safe-subset expectations into core and renderer tests.
+- `expressionVm.js` and tests: continue translating any remaining edge cases into Rust expression VM tests.
+- `shaderTranslator.js` and tests: continue translating any remaining GLSL/WGSL safe-subset expectations into core and renderer tests.
 - `milkdropRenderer.js` and tests: split useful WebGL2 behavior into future renderer backend tests.
 - `webgpuRenderer.js` and tests: use as design/reference material for `rustymilk-renderer-wgpu`.
 - `nativeMilkdropEngine.js` and tests: preserve SDK/player workflows for preset library, favorites, search, playlists, fragment import/export, automation, debug snapshots, FPS caps, quality presets, and texture assets.
@@ -63,4 +74,3 @@ Use `../slskR` mostly as a parity source.
 - Preset fixtures must be license-reviewed before becoming public sample packs.
 - Renderer-specific behavior should wait for renderer backend crates unless it is already renderer-neutral.
 - Host UI workflows should become SDK/Player/Studio requirements, not copied React components.
-

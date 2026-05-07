@@ -6,6 +6,7 @@
     "build:wasm": "bash ./tools/build-wasm-package.sh",
     "test:compatibility": "node ./tools/report-rustymilk-compatibility.mjs",
     "test:performance": "node ./tools/measure-rustymilk-performance.mjs",
+    "test:web": "node --test packages/rustymilk-web/src/*.test.js",
     "test:smoke": "node ./tools/smoke-rustymilk.mjs"
   },
   "devDependencies": {
