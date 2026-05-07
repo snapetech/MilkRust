@@ -5385,6 +5385,211 @@ fn split_rustymilk_assignment(statement: &str) -> Option<(String, &'static str, 
 mod tests {
     use super::*;
 
+    struct ImportedMilkdropFixture {
+        id: &'static str,
+        source: String,
+        supported: bool,
+        expected_error: &'static str,
+    }
+
+    fn dense_primitive_fixture_source() -> String {
+        let mut lines = vec![
+            "name=Fixture Dense Primitive Pack".to_string(),
+            "decay=0.84".to_string(),
+            "wave_r=0.4".to_string(),
+            "wave_g=0.8".to_string(),
+            "wave_b=0.95".to_string(),
+        ];
+        for index in 0..40 {
+            lines.push(format!("shape{index:02}_enabled=1"));
+            lines.push(format!("shape{index:02}_sides={}", 3 + (index % 6)));
+            lines.push(format!(
+                "shape{index:02}_rad={:.3}",
+                0.035 + f64::from(index % 5) * 0.006
+            ));
+            lines.push(format!(
+                "shape{index:02}_x={:.3}",
+                0.08 + f64::from(index % 10) * 0.09
+            ));
+            lines.push(format!(
+                "shape{index:02}_y={:.3}",
+                0.12 + f64::from(index / 10) * 0.2
+            ));
+            lines.push(format!("shape{index:02}_a=0.18"));
+            lines.push(format!(
+                "shape{index:02}_per_frame1=ang=time*{:.3};",
+                0.05 + f64::from(index) * 0.001
+            ));
+        }
+        for index in 0..20 {
+            lines.push(format!("wavecode_{index}_enabled=1"));
+            lines.push(format!("wavecode_{index}_samples=32"));
+            lines.push(format!(
+                "wavecode_{index}_r={:.3}",
+                0.25 + f64::from(index % 4) * 0.14
+            ));
+            lines.push(format!(
+                "wavecode_{index}_g={:.3}",
+                0.45 + f64::from(index % 5) * 0.08
+            ));
+            lines.push(format!(
+                "wavecode_{index}_b={:.3}",
+                0.75 - f64::from(index % 3) * 0.12
+            ));
+            lines.push(format!("wavecode_{index}_a=0.34"));
+            lines.push(format!("wavecode_{index}_per_point1=x=i;"));
+            lines.push(format!(
+                "wavecode_{index}_per_point2=y={:.3}+sample*0.08;",
+                0.05 + f64::from(index) * 0.045
+            ));
+        }
+        lines.join("\n")
+    }
+
+    fn imported_milkdrop_fixtures() -> Vec<ImportedMilkdropFixture> {
+        vec![
+            ImportedMilkdropFixture {
+                id: "classic-primitives",
+                supported: true,
+                expected_error: "",
+                source: r#"
+name=Fixture Classic Primitives
+decay=0.82
+wave_r=0.25
+wave_g=0.7
+wave_b=0.95
+wave_scale=1.4
+meshx=3
+meshy=2
+per_frame_1=rot=0.015*sin(time);
+per_pixel_1=dx=0.02*sin((x+time)*6.283);
+per_pixel_2=dy=0.02*cos((y+time)*6.283);
+mv_x=4
+mv_y=3
+mv_l=0.2
+mv_a=0.45
+shape00_enabled=1
+shape00_textured=1
+shape00_sides=5
+shape00_rad=0.22
+shape00_x=0.5
+shape00_y=0.5
+shape00_r=0.9
+shape00_g=0.85
+shape00_b=0.15
+shape00_a=0.45
+sprite00_enabled=1
+sprite00_image=fixture-logo.png
+sprite00_x=0.22
+sprite00_y=0.78
+sprite00_w=0.08
+sprite00_h=0.08
+sprite00_a=0.35
+wavecode_0_enabled=1
+wavecode_0_samples=32
+wavecode_0_spectrum=1
+wavecode_0_dots=1
+wavecode_0_r=0.8
+wavecode_0_g=1
+wavecode_0_b=0.3
+wavecode_0_a=0.9
+wavecode_0_per_point1=x=i;
+wavecode_0_per_point2=y=0.1+sample*0.65;
+"#
+                .to_string(),
+            },
+            ImportedMilkdropFixture {
+                id: "shader-subset",
+                supported: true,
+                expected_error: "",
+                source: r#"
+name=Fixture Shader Subset
+decay=0.78
+wave_r=0.6
+wave_g=0.25
+wave_b=0.9
+warp_shader=shader_body {
+warp_shader_1=  float3 tint = vec3(0.8, 0.95, aspect);
+warp_shader_2=  float3 noise = tex2D(sampler_noise, uv).rgb;
+warp_shader_3=  ret = tex2D(sampler_main, uv).rgb * tint * noise;
+warp_shader_4=}
+comp_shader=shader_body {
+comp_shader_1=  ret = saturate(vec3(x, y, 0.45 + 0.35 * sin(time)));
+comp_shader_2=}
+shape00_enabled=1
+shape00_sides=6
+shape00_rad=0.14
+shape00_a=0.22
+"#
+                .to_string(),
+            },
+            ImportedMilkdropFixture {
+                id: "milk2-double",
+                supported: true,
+                expected_error: "",
+                source: r#"
+[preset00]
+name=Fixture Double Left
+zoom=1
+per_frame_1=q33=sin(time);
+[preset01]
+name=Fixture Double Right
+blend_alpha=0.65
+zoom=0.9
+per_frame_1=q34=cos(time);
+"#
+                .to_string(),
+            },
+            ImportedMilkdropFixture {
+                id: "milkdrop3-q-registers",
+                supported: true,
+                expected_error: "",
+                source: r#"
+[preset00]
+name=Fixture Q Register Coverage A
+q64=0.64
+per_frame_1=q1=bass_att+q64;
+per_frame_2=q32=sin(time)+q1;
+warp_shader=ret = tex2D(sampler_main, uv).rgb * vec3(q1, q32, q64);
+wavecode_0_enabled=1
+wavecode_0_samples=16
+wavecode_0_per_frame1=q48=q32+0.1;
+wavecode_0_per_point1=y=sample+q48;
+[preset01]
+name=Fixture Q Register Coverage B
+blend_alpha=0.35
+composite_mode=screen
+per_frame_1=q63=treb_att+q2;
+comp_shader=ret = vec3(q2, q63, q64);
+shape00_enabled=1
+shape00_sides=4
+shape00_per_frame1=q64=max(q64,0.75);
+sprite00_enabled=1
+sprite00_image=fixture-logo.png
+sprite00_per_frame1=q16=q63*0.5;
+"#
+                .to_string(),
+            },
+            ImportedMilkdropFixture {
+                id: "milkdrop3-dense-primitives",
+                supported: true,
+                expected_error: "",
+                source: dense_primitive_fixture_source(),
+            },
+            ImportedMilkdropFixture {
+                id: "unsupported-control-flow-shader",
+                supported: false,
+                expected_error: "shader translation pending: comp_shader",
+                source: r#"
+name=Fixture Unsupported Shader
+wave_r=1
+comp_shader=for (;;) { ret = vec3(1.0); }
+"#
+                .to_string(),
+            },
+        ]
+    }
+
     #[test]
     fn rustymilk_core_parses_milk2_frame_sets() {
         let frame_set = rustymilk_frame_set_from_source(
@@ -5444,5 +5649,122 @@ wave_g=1
         assert_eq!(scope.get("megabuf_2"), Some(&RustyMilkValue::Number(0.75)));
         assert_eq!(scope.get("gmegabuf_4"), Some(&RustyMilkValue::Number(1.5)));
         assert_eq!(scope.get("q2"), Some(&RustyMilkValue::Number(2.25)));
+    }
+
+    #[test]
+    fn rustymilk_core_preserves_imported_milkdrop_fixture_summaries() {
+        let summaries = imported_milkdrop_fixtures()
+            .into_iter()
+            .map(|fixture| {
+                let parsed =
+                    parse_rustymilk_preset_set(&fixture.source, fixture.id == "milk2-double");
+                let preset_summaries = parsed
+                    .presets
+                    .iter()
+                    .map(|preset| {
+                        (
+                            preset.format.clone(),
+                            preset.title.clone(),
+                            preset.base_values.keys().cloned().collect::<Vec<_>>(),
+                            !preset.equations.frame.trim().is_empty(),
+                            !preset.equations.per_pixel.trim().is_empty(),
+                            !preset.warp_shader.trim().is_empty(),
+                            !preset.comp_shader.trim().is_empty(),
+                            preset
+                                .shapes
+                                .iter()
+                                .filter(|entry| rustymilk_entry_has_content(entry))
+                                .count(),
+                            preset
+                                .sprites
+                                .iter()
+                                .filter(|entry| rustymilk_entry_has_content(entry))
+                                .count(),
+                            preset
+                                .waves
+                                .iter()
+                                .filter(|entry| rustymilk_entry_has_content(entry))
+                                .count(),
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                (fixture.id, parsed.format, preset_summaries)
+            })
+            .collect::<Vec<_>>();
+
+        assert_eq!(summaries[0].0, "classic-primitives");
+        assert_eq!(summaries[0].1, "milk");
+        assert_eq!(summaries[0].2[0].1, "Fixture Classic Primitives");
+        assert_eq!(summaries[0].2[0].7, 1);
+        assert_eq!(summaries[0].2[0].8, 1);
+        assert_eq!(summaries[0].2[0].9, 1);
+
+        assert_eq!(summaries[2].0, "milk2-double");
+        assert_eq!(summaries[2].1, "milk2");
+        assert_eq!(summaries[2].2.len(), 2);
+        assert_eq!(summaries[2].2[0].1, "Fixture Double Left");
+        assert_eq!(summaries[2].2[1].1, "Fixture Double Right");
+
+        assert_eq!(summaries[3].0, "milkdrop3-q-registers");
+        assert_eq!(summaries[3].1, "milk2");
+        assert_eq!(summaries[3].2.len(), 2);
+        assert_eq!(summaries[3].2[0].5, true);
+        assert_eq!(summaries[3].2[1].6, true);
+        assert_eq!(summaries[3].2[1].8, 1);
+
+        assert_eq!(summaries[4].0, "milkdrop3-dense-primitives");
+        assert_eq!(summaries[4].2[0].7, 40);
+        assert_eq!(summaries[4].2[0].9, 20);
+
+        assert_eq!(summaries[5].0, "unsupported-control-flow-shader");
+        assert_eq!(summaries[5].2[0].6, true);
+    }
+
+    #[test]
+    fn rustymilk_core_matches_imported_milkdrop_fixture_compatibility() {
+        let entries = imported_milkdrop_fixtures()
+            .into_iter()
+            .map(|fixture| {
+                let entry = build_rustymilk_compatibility_entry(
+                    fixture.id,
+                    "",
+                    &fixture.source,
+                    fixture.id == "milk2-double",
+                );
+                assert_eq!(entry.supported, fixture.supported, "{}", fixture.id);
+                if fixture.expected_error.is_empty() {
+                    assert!(entry
+                        .preset_reports
+                        .iter()
+                        .all(|report| report.error.is_empty()));
+                } else {
+                    assert!(
+                        entry
+                            .preset_reports
+                            .iter()
+                            .any(|report| report.error.contains(fixture.expected_error)),
+                        "{} should report {}",
+                        fixture.id,
+                        fixture.expected_error
+                    );
+                }
+                entry
+            })
+            .collect::<Vec<_>>();
+        let summary = summarize_rustymilk_compatibility_matrix(&entries);
+
+        assert_eq!(summary.total_count, 6);
+        assert_eq!(summary.preset_count, 8);
+        assert_eq!(summary.supported_count, 5);
+        assert_eq!(summary.unsupported_count, 1);
+        assert_eq!(summary.max_shape_count, 40);
+        assert_eq!(summary.max_sprite_count, 1);
+        assert_eq!(summary.max_wave_count, 20);
+        assert_eq!(summary.max_q_register_index, 64);
+        assert!(summary.q_registers.contains(&"q64".to_string()));
+        assert_eq!(
+            summary.unsupported_shader_sections,
+            vec!["comp_shader".to_string()]
+        );
     }
 }
