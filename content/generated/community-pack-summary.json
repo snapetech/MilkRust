@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-07T01:12:48.173Z",
+  "generatedAt": "2026-05-07T01:16:16.510Z",
   "packCount": 5,
   "totalPresets": 14576,
   "totalTextures": 107,
@@ -31,16 +31,11 @@
         "fileCount": 4180,
         "presetCount": 4180,
         "parsedPresetCount": 4180,
-        "supportedCount": 4177,
-        "unsupportedCount": 3,
+        "supportedCount": 4180,
+        "unsupportedCount": 0,
         "webGpuSupportedCount": 4180,
         "webGpuUnsupportedCount": 0,
-        "unsupportedFunctions": [
-          "exec2",
-          "exec3",
-          "loop",
-          "while"
-        ],
+        "unsupportedFunctions": [],
         "unsupportedShaderSections": [],
         "webGpuUnsupportedShaderSections": []
       }
@@ -66,17 +61,11 @@
         "fileCount": 9780,
         "presetCount": 9780,
         "parsedPresetCount": 9780,
-        "supportedCount": 9373,
-        "unsupportedCount": 407,
+        "supportedCount": 9780,
+        "unsupportedCount": 0,
         "webGpuSupportedCount": 9780,
         "webGpuUnsupportedCount": 0,
-        "unsupportedFunctions": [
-          "assign",
-          "exec2",
-          "exec3",
-          "loop",
-          "while"
-        ],
+        "unsupportedFunctions": [],
         "unsupportedShaderSections": [],
         "webGpuUnsupportedShaderSections": []
       }

@@ -4746,7 +4746,7 @@ fn tokenize_rustymilk_expression(expression: &str) -> Result<Vec<RustyMilkToken>
         if let Some(two) = two.as_deref().filter(|value| {
             matches!(
                 *value,
-                "&&" | "||" | "<<" | ">>" | "==" | "!=" | "<=" | ">="
+                "&&" | "||" | "<<" | ">>" | "==" | "!=" | "<=" | ">=" | "+=" | "-=" | "*=" | "/="
             )
         }) {
             tokens.push(RustyMilkToken::Op(two.to_string()));
@@ -4762,6 +4762,7 @@ fn tokenize_rustymilk_expression(expression: &str) -> Result<Vec<RustyMilkToken>
                 | '/'
                 | '%'
                 | ','
+                | ';'
                 | '?'
                 | ':'
                 | '<'
@@ -4769,6 +4770,7 @@ fn tokenize_rustymilk_expression(expression: &str) -> Result<Vec<RustyMilkToken>
                 | '&'
                 | '|'
                 | '^'
+                | '='
                 | '!'
                 | '~'
         ) {
@@ -4847,17 +4849,19 @@ fn rustymilk_pseudo_random_unit(scope: &BTreeMap<String, RustyMilkValue>, counte
     (value as f64) / (u64::MAX as f64)
 }
 
-struct RustyMilkExpressionParser<'a> {
+const RUSTYMILK_MAX_LOOP_ITERATIONS: usize = 200_000;
+
+struct RustyMilkExpressionParser {
     rand_counter: usize,
-    scope: &'a BTreeMap<String, RustyMilkValue>,
+    scope: BTreeMap<String, RustyMilkValue>,
     tokens: Vec<RustyMilkToken>,
     index: usize,
 }
 
-impl<'a> RustyMilkExpressionParser<'a> {
+impl RustyMilkExpressionParser {
     fn new(
         tokens: Vec<RustyMilkToken>,
-        scope: &'a BTreeMap<String, RustyMilkValue>,
+        scope: BTreeMap<String, RustyMilkValue>,
         rand_counter: usize,
     ) -> Self {
         Self {
@@ -4873,6 +4877,218 @@ impl<'a> RustyMilkExpressionParser<'a> {
             Some(RustyMilkToken::Op(value)) => Some(value),
             _ => None,
         }
+    }
+
+    fn remaining_call_args(&mut self, name: &str) -> Result<Vec<Vec<RustyMilkToken>>, String> {
+        let mut args = Vec::new();
+        let mut current = Vec::new();
+        let mut depth = 0usize;
+        while let Some(token) = self.consume() {
+            match &token {
+                RustyMilkToken::Op(value) if value == "(" => {
+                    depth += 1;
+                    current.push(token);
+                }
+                RustyMilkToken::Op(value) if value == ")" => {
+                    if depth == 0 {
+                        if !current.is_empty() {
+                            args.push(current);
+                        }
+                        return Ok(args);
+                    }
+                    depth -= 1;
+                    current.push(token);
+                }
+                RustyMilkToken::Op(value) if (value == "," || value == ";") && depth == 0 => {
+                    args.push(current);
+                    current = Vec::new();
+                }
+                _ => current.push(token),
+            }
+        }
+        Err(format!("Unclosed function call: {name}"))
+    }
+
+    fn evaluate_arg_tokens(&mut self, tokens: &[RustyMilkToken]) -> Result<f64, String> {
+        if let Some((target_tokens, operator, value_tokens)) = self.assignment_arg_parts(tokens) {
+            let Some(key) = self.lvalue_key(target_tokens)? else {
+                return Err(format!("{operator} requires a variable or buffer target."));
+            };
+            let current = rustymilk_number(&self.scope, &key);
+            let next = self.evaluate_arg_tokens(value_tokens)?;
+            let value = apply_rustymilk_assignment_operator(current, operator, next);
+            self.scope.insert(key, RustyMilkValue::Number(value));
+            return Ok(value);
+        }
+        let mut parser =
+            RustyMilkExpressionParser::new(tokens.to_vec(), self.scope.clone(), self.rand_counter);
+        let value = parser.parse()?;
+        self.scope = parser.scope;
+        self.rand_counter = parser.rand_counter;
+        Ok(value)
+    }
+
+    fn assignment_arg_parts<'b>(
+        &self,
+        tokens: &'b [RustyMilkToken],
+    ) -> Option<(&'b [RustyMilkToken], &'b str, &'b [RustyMilkToken])> {
+        let mut depth = 0usize;
+        for (index, token) in tokens.iter().enumerate() {
+            match token {
+                RustyMilkToken::Op(value) if value == "(" => depth += 1,
+                RustyMilkToken::Op(value) if value == ")" => depth = depth.saturating_sub(1),
+                RustyMilkToken::Op(value)
+                    if depth == 0 && matches!(value.as_str(), "=" | "+=" | "-=" | "*=" | "/=") =>
+                {
+                    return Some((&tokens[..index], value, &tokens[index + 1..]));
+                }
+                _ => {}
+            }
+        }
+        None
+    }
+
+    fn assign_arg_tokens(
+        &mut self,
+        target_tokens: &[RustyMilkToken],
+        value: f64,
+    ) -> Result<f64, String> {
+        let Some(key) = self.lvalue_key(target_tokens)? else {
+            return Err("assign() requires a variable or buffer target.".to_string());
+        };
+        self.scope.insert(key, RustyMilkValue::Number(value));
+        Ok(value)
+    }
+
+    fn lvalue_key(&mut self, tokens: &[RustyMilkToken]) -> Result<Option<String>, String> {
+        match tokens {
+            [RustyMilkToken::Ident(name)] => Ok(Some(name.to_ascii_lowercase())),
+            [RustyMilkToken::Ident(name), RustyMilkToken::Op(open), rest @ .., RustyMilkToken::Op(close)]
+                if open == "("
+                    && close == ")"
+                    && (name.eq_ignore_ascii_case("megabuf")
+                        || name.eq_ignore_ascii_case("gmegabuf")) =>
+            {
+                let index = self.evaluate_arg_tokens(rest)?;
+                Ok(Some(rustymilk_buffer_key(name, index)))
+            }
+            _ => Ok(None),
+        }
+    }
+
+    fn call_special_function(
+        &mut self,
+        name: &str,
+        args: &[Vec<RustyMilkToken>],
+    ) -> Result<Option<f64>, String> {
+        match name {
+            "assign" => {
+                if args.len() < 2 {
+                    return Ok(Some(0.0));
+                }
+                let value = self.evaluate_arg_tokens(&args[1])?;
+                self.assign_arg_tokens(&args[0], value).map(Some)
+            }
+            "exec2" | "exec3" => {
+                let mut first = 0.0;
+                for (index, arg) in args.iter().enumerate() {
+                    let value = self.evaluate_arg_tokens(arg)?;
+                    if index == 0 {
+                        first = value;
+                    }
+                }
+                Ok(Some(first))
+            }
+            "loop" => {
+                if args.is_empty() {
+                    return Ok(Some(0.0));
+                }
+                let count = self
+                    .evaluate_arg_tokens(&args[0])?
+                    .trunc()
+                    .clamp(0.0, RUSTYMILK_MAX_LOOP_ITERATIONS as f64)
+                    as usize;
+                let mut last = 0.0;
+                for _ in 0..count {
+                    for arg in &args[1..] {
+                        last = self.evaluate_arg_tokens(arg)?;
+                    }
+                }
+                Ok(Some(last))
+            }
+            "while" => {
+                if args.is_empty() {
+                    return Ok(Some(0.0));
+                }
+                let mut last = 0.0;
+                for _ in 0..RUSTYMILK_MAX_LOOP_ITERATIONS {
+                    let condition = self.evaluate_rustymilk_while_condition(&args[0])?;
+                    if condition == 0.0 {
+                        break;
+                    }
+                    last = condition;
+                    for arg in &args[1..] {
+                        last = self.evaluate_arg_tokens(arg)?;
+                    }
+                }
+                Ok(Some(last))
+            }
+            "memcpy" => {
+                if args.len() < 3 {
+                    return Ok(Some(0.0));
+                }
+                let dest = self.evaluate_arg_tokens(&args[0])?.trunc().max(0.0) as usize;
+                let source = self.evaluate_arg_tokens(&args[1])?.trunc().max(0.0) as usize;
+                let count = self
+                    .evaluate_arg_tokens(&args[2])?
+                    .trunc()
+                    .clamp(0.0, RUSTYMILK_MAX_LOOP_ITERATIONS as f64)
+                    as usize;
+                let values = (0..count)
+                    .map(|offset| {
+                        rustymilk_number(
+                            &self.scope,
+                            &rustymilk_buffer_key("megabuf", (source + offset) as f64),
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                for (offset, value) in values.into_iter().enumerate() {
+                    self.scope.insert(
+                        rustymilk_buffer_key("megabuf", (dest + offset) as f64),
+                        RustyMilkValue::Number(value),
+                    );
+                }
+                Ok(Some(count as f64))
+            }
+            _ => Ok(None),
+        }
+    }
+
+    fn evaluate_rustymilk_while_condition(
+        &mut self,
+        tokens: &[RustyMilkToken],
+    ) -> Result<f64, String> {
+        if let [RustyMilkToken::Ident(name), RustyMilkToken::Op(open), rest @ .., RustyMilkToken::Op(close)] =
+            tokens
+        {
+            if open == "("
+                && close == ")"
+                && (name.eq_ignore_ascii_case("exec2") || name.eq_ignore_ascii_case("exec3"))
+            {
+                let args = split_rustymilk_call_tokens(rest);
+                if args.is_empty() {
+                    return Ok(0.0);
+                }
+                let condition = self.evaluate_arg_tokens(&args[0])?;
+                if condition != 0.0 {
+                    for arg in &args[1..] {
+                        self.evaluate_arg_tokens(arg)?;
+                    }
+                }
+                return Ok(condition);
+            }
+        }
+        self.evaluate_arg_tokens(tokens)
     }
 
     fn match_op(&mut self, expected: &str) -> bool {
@@ -4893,6 +5109,23 @@ impl<'a> RustyMilkExpressionParser<'a> {
     }
 
     fn parse(&mut self) -> Result<f64, String> {
+        if self.index == 0 {
+            if let Some((assignment_index, operator)) =
+                find_rustymilk_top_level_assignment_token(&self.tokens)
+            {
+                let target_tokens = self.tokens[..assignment_index].to_vec();
+                let expression_tokens = self.tokens[assignment_index + 1..].to_vec();
+                let current = self
+                    .lvalue_key(&target_tokens)?
+                    .map(|key| rustymilk_number(&self.scope, &key))
+                    .unwrap_or(0.0);
+                let next = self.evaluate_arg_tokens(&expression_tokens)?;
+                let value = apply_rustymilk_assignment_operator(current, operator, next);
+                self.assign_arg_tokens(&target_tokens, value)?;
+                self.index = self.tokens.len();
+                return Ok(value);
+            }
+        }
         let value = self.parse_conditional()?;
         if self.index < self.tokens.len() {
             return Err("Unexpected trailing RustyMilk token".to_string());
@@ -4912,24 +5145,20 @@ impl<'a> RustyMilkExpressionParser<'a> {
             }
             Some(RustyMilkToken::Ident(name)) => {
                 if self.match_op("(") {
-                    let mut args = Vec::new();
-                    if self.peek_op() != Some(")") {
-                        loop {
-                            args.push(self.parse_conditional()?);
-                            if !self.match_op(",") {
-                                break;
-                            }
-                        }
+                    let args = self.remaining_call_args(&name)?;
+                    if let Some(value) = self.call_special_function(&name, &args)? {
+                        return Ok(value);
                     }
-                    if !self.match_op(")") {
-                        return Err(format!("Unclosed function call: {name}"));
-                    }
-                    self.call_function(&name, &args)
+                    let values = args
+                        .iter()
+                        .map(|arg| self.evaluate_arg_tokens(arg))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    self.call_function(&name, &values)
                 } else {
                     Ok(match name.as_str() {
                         "e" => std::f64::consts::E,
                         "pi" => std::f64::consts::PI,
-                        _ => rustymilk_number(self.scope, &name),
+                        _ => rustymilk_number(&self.scope, &name),
                     })
                 }
             }
@@ -4965,17 +5194,17 @@ impl<'a> RustyMilkExpressionParser<'a> {
             "equal" => ((arg(0, 0.0) - arg(1, 0.0)).abs() < 0.00001) as i32 as f64,
             "exp" => arg(0, 0.0).exp(),
             "floor" => arg(0, 0.0).floor(),
-            "gmegabuf" => rustymilk_buffer_number(self.scope, name, arg(0, 0.0)),
+            "gmegabuf" => rustymilk_buffer_number(&self.scope, name, arg(0, 0.0)),
             "get_fft" => {
-                let values = rustymilk_frequency_data(self.scope);
+                let values = rustymilk_frequency_data(&self.scope);
                 rustymilk_indexed_sample(&values, arg(0, 0.0))
             }
             "get_fft_hz" => {
-                let sample_rate = rustymilk_number(self.scope, "sample_rate")
-                    .max(rustymilk_number(self.scope, "samplerate"))
+                let sample_rate = rustymilk_number(&self.scope, "sample_rate")
+                    .max(rustymilk_number(&self.scope, "samplerate"))
                     .max(44100.0);
                 let nyquist = sample_rate / 2.0;
-                let values = rustymilk_frequency_data(self.scope);
+                let values = rustymilk_frequency_data(&self.scope);
                 rustymilk_indexed_sample(
                     &values,
                     if nyquist > 0.0 {
@@ -4986,7 +5215,7 @@ impl<'a> RustyMilkExpressionParser<'a> {
                 )
             }
             "get_waveform" => {
-                let values = rustymilk_waveform_data(self.scope);
+                let values = rustymilk_waveform_data(&self.scope);
                 rustymilk_indexed_sample(&values, arg(0, 0.0))
             }
             "if" => {
@@ -5012,7 +5241,7 @@ impl<'a> RustyMilkExpressionParser<'a> {
                 }
             }
             "max" => arg(0, 0.0).max(arg(1, 0.0)),
-            "megabuf" => rustymilk_buffer_number(self.scope, name, arg(0, 0.0)),
+            "megabuf" => rustymilk_buffer_number(&self.scope, name, arg(0, 0.0)),
             "min" => arg(0, 0.0).min(arg(1, 0.0)),
             "mod" => {
                 let right = arg(1, 0.0);
@@ -5030,7 +5259,7 @@ impl<'a> RustyMilkExpressionParser<'a> {
                 } else {
                     let counter = self.rand_counter;
                     self.rand_counter += 1;
-                    (rustymilk_pseudo_random_unit(self.scope, counter) * upper)
+                    (rustymilk_pseudo_random_unit(&self.scope, counter) * upper)
                         .floor()
                         .min(upper - 1.0)
                 }
@@ -5256,6 +5485,55 @@ fn rustymilk_waveform_data(scope: &BTreeMap<String, RustyMilkValue>) -> Vec<f64>
         .unwrap_or_default()
 }
 
+fn find_rustymilk_top_level_assignment_token(
+    tokens: &[RustyMilkToken],
+) -> Option<(usize, &'static str)> {
+    let mut depth = 0usize;
+    for (index, token) in tokens.iter().enumerate() {
+        match token {
+            RustyMilkToken::Op(value) if value == "(" => depth += 1,
+            RustyMilkToken::Op(value) if value == ")" => depth = depth.saturating_sub(1),
+            RustyMilkToken::Op(value) if depth == 0 => match value.as_str() {
+                "+=" => return Some((index, "+=")),
+                "-=" => return Some((index, "-=")),
+                "*=" => return Some((index, "*=")),
+                "/=" => return Some((index, "/=")),
+                "=" => return Some((index, "=")),
+                _ => {}
+            },
+            _ => {}
+        }
+    }
+    None
+}
+
+fn split_rustymilk_call_tokens(tokens: &[RustyMilkToken]) -> Vec<Vec<RustyMilkToken>> {
+    let mut args = Vec::new();
+    let mut current = Vec::new();
+    let mut depth = 0usize;
+    for token in tokens {
+        match token {
+            RustyMilkToken::Op(value) if value == "(" => {
+                depth += 1;
+                current.push(token.clone());
+            }
+            RustyMilkToken::Op(value) if value == ")" => {
+                depth = depth.saturating_sub(1);
+                current.push(token.clone());
+            }
+            RustyMilkToken::Op(value) if (value == "," || value == ";") && depth == 0 => {
+                args.push(current);
+                current = Vec::new();
+            }
+            _ => current.push(token.clone()),
+        }
+    }
+    if !current.is_empty() {
+        args.push(current);
+    }
+    args
+}
+
 pub fn evaluate_rustymilk_expression(
     expression: &str,
     variables: &BTreeMap<String, RustyMilkValue>,
@@ -5269,14 +5547,55 @@ fn evaluate_rustymilk_expression_with_rand_counter(
     variables: &BTreeMap<String, RustyMilkValue>,
     rand_counter: usize,
 ) -> Result<(f64, usize), String> {
+    evaluate_rustymilk_expression_with_scope(expression, variables, rand_counter)
+        .map(|(value, _, rand_counter)| (value, rand_counter))
+}
+
+fn evaluate_rustymilk_expression_with_scope(
+    expression: &str,
+    variables: &BTreeMap<String, RustyMilkValue>,
+    rand_counter: usize,
+) -> Result<(f64, BTreeMap<String, RustyMilkValue>, usize), String> {
     let scope = variables
         .iter()
         .map(|(key, value)| (key.to_ascii_lowercase(), value.clone()))
         .collect::<BTreeMap<_, _>>();
     let tokens = tokenize_rustymilk_expression(expression)?;
-    let mut parser = RustyMilkExpressionParser::new(tokens, &scope, rand_counter);
+    let mut parser = RustyMilkExpressionParser::new(tokens, scope, rand_counter);
     let value = parser.parse()?;
-    Ok((value, parser.rand_counter))
+    Ok((value, parser.scope, parser.rand_counter))
+}
+
+fn split_rustymilk_equation_statements(equations: &str) -> Vec<String> {
+    let sanitized = strip_rustymilk_equation_comments(equations);
+    let mut statements = Vec::new();
+    let mut current = String::new();
+    let mut depth = 0usize;
+    for ch in sanitized.chars() {
+        match ch {
+            '(' => {
+                depth += 1;
+                current.push(ch);
+            }
+            ')' => {
+                depth = depth.saturating_sub(1);
+                current.push(ch);
+            }
+            ';' | '\n' if depth == 0 => {
+                let statement = current.trim();
+                if !statement.is_empty() {
+                    statements.push(statement.to_string());
+                }
+                current.clear();
+            }
+            _ => current.push(ch),
+        }
+    }
+    let statement = current.trim();
+    if !statement.is_empty() {
+        statements.push(statement.to_string());
+    }
+    statements
 }
 
 pub fn evaluate_rustymilk_equations(
@@ -5288,13 +5607,9 @@ pub fn evaluate_rustymilk_equations(
         .map(|(key, value)| (key.to_ascii_lowercase(), value.clone()))
         .collect::<BTreeMap<_, _>>();
     let mut rand_counter = rustymilk_number(&scope, "__rand_counter").max(0.0) as usize;
-    for statement in equations
-        .split(';')
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-    {
+    for statement in split_rustymilk_equation_statements(equations) {
         if let Some((buffer_name, index_expression, operator, expression)) =
-            split_rustymilk_buffer_assignment(statement)
+            split_rustymilk_buffer_assignment(&statement)
         {
             let (buffer_index, next_rand_counter) =
                 evaluate_rustymilk_expression_with_rand_counter(
@@ -5312,9 +5627,10 @@ pub fn evaluate_rustymilk_equations(
             scope.insert(key, RustyMilkValue::Number(value));
             continue;
         }
-        let Some((name, operator, expression)) = split_rustymilk_assignment(statement) else {
-            let (_, next_rand_counter) =
-                evaluate_rustymilk_expression_with_rand_counter(statement, &scope, rand_counter)?;
+        let Some((name, operator, expression)) = split_rustymilk_assignment(&statement) else {
+            let (_, next_scope, next_rand_counter) =
+                evaluate_rustymilk_expression_with_scope(&statement, &scope, rand_counter)?;
+            scope = next_scope;
             rand_counter = next_rand_counter;
             continue;
         };
@@ -5707,12 +6023,31 @@ per_frame_2=while(exec2(q1=1, q1<2), q1=q1+1);
 
         assert_eq!(
             report.unsupported_functions,
-            vec![
-                "exec2".to_string(),
-                "unsupported_call".to_string(),
-                "while".to_string()
-            ]
+            vec!["unsupported_call".to_string()]
         );
+    }
+
+    #[test]
+    fn rustymilk_core_expression_vm_runs_eel_control_helpers() {
+        let scope = evaluate_rustymilk_equations(
+            r#"
+n=0;
+sum=0;
+loop(5, sum+=n; n+=1);
+while(n<8, sum+=n; n+=1);
+exec3(assign(q1, sum), assign(megabuf(2), q1), assign(gmegabuf(3), megabuf(2)+1));
+memcpy(4,2,1);
+"#,
+            &BTreeMap::new(),
+        )
+        .unwrap();
+
+        assert_eq!(scope.get("n"), Some(&RustyMilkValue::Number(8.0)));
+        assert_eq!(scope.get("sum"), Some(&RustyMilkValue::Number(28.0)));
+        assert_eq!(scope.get("q1"), Some(&RustyMilkValue::Number(28.0)));
+        assert_eq!(scope.get("megabuf_2"), Some(&RustyMilkValue::Number(28.0)));
+        assert_eq!(scope.get("gmegabuf_3"), Some(&RustyMilkValue::Number(29.0)));
+        assert_eq!(scope.get("megabuf_4"), Some(&RustyMilkValue::Number(28.0)));
     }
 
     #[test]
