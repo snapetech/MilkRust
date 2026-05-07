@@ -10,5 +10,5 @@ Regenerate with:
 ```bash
 npm run content:report-community
 npm run content:report-community:compat
+npm run content:report-community:compat:full
 ```
-

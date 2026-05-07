@@ -9,14 +9,14 @@ Community-unlicensed packs are imported into `content/community-unlicensed` for 
 - Packs: 5
 - Presets: 14576
 - Textures: 107
-- Compatibility sample size: 25
+- Compatibility mode: full
 
 ## Packs
 
 | Pack | Presets | Textures | Compatibility | Blockers |
 | --- | ---: | ---: | --- | --- |
-| projectm-classic | 4189 | 33 | 25/25 sampled supported | none |
-| projectm-cream-of-the-crop | 9795 | 0 | 23/23 sampled supported | none |
-| projectm-en-d | 40 | 8 | 19/25 sampled supported | `adiemus`, `domino`, `exec2`, `loop`, `memcpy`, `pi`, `religion`, `w`, `while` |
-| projectm-milkdrop-original | 552 | 0 | 23/24 sampled supported | `bb`, `gg`, `h`, `l`, `rr`, `s` |
+| projectm-classic | 4189 | 33 | 4177/4180 files supported (4180 parsed presets) | `exec2`, `exec3`, `loop`, `while` |
+| projectm-cream-of-the-crop | 9795 | 0 | 9373/9780 files supported (9780 parsed presets) | `assign`, `exec2`, `exec3`, `loop`, `while` |
+| projectm-en-d | 40 | 8 | 40/40 files supported (40 parsed presets) | none |
+| projectm-milkdrop-original | 552 | 0 | 539/539 files supported (539 parsed presets) | none |
 | projectm-milkdrop-texture-pack | 0 | 66 | not sampled | none |

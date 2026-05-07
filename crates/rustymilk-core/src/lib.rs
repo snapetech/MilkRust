@@ -3607,6 +3607,9 @@ pub fn is_rustymilk_function_supported(name: &str) -> bool {
             | "cos"
             | "div"
             | "equal"
+            | "assign"
+            | "exec2"
+            | "exec3"
             | "exp"
             | "floor"
             | "gmegabuf"
@@ -3617,7 +3620,9 @@ pub fn is_rustymilk_function_supported(name: &str) -> bool {
             | "int"
             | "log"
             | "log10"
+            | "loop"
             | "max"
+            | "memcpy"
             | "megabuf"
             | "min"
             | "mod"
@@ -3629,11 +3634,13 @@ pub fn is_rustymilk_function_supported(name: &str) -> bool {
             | "sqr"
             | "sqrt"
             | "tan"
+            | "while"
     )
 }
 
 fn collect_rustymilk_functions(text: &str, unsupported: &mut Vec<String>) {
-    let chars = text.chars().collect::<Vec<_>>();
+    let sanitized = strip_rustymilk_equation_comments(text);
+    let chars = sanitized.chars().collect::<Vec<_>>();
     let mut index = 0usize;
     while index < chars.len() {
         if !(chars[index].is_ascii_alphabetic() || chars[index] == '_') {
@@ -3663,6 +3670,13 @@ fn collect_rustymilk_functions(text: &str, unsupported: &mut Vec<String>) {
             unsupported.push(name);
         }
     }
+}
+
+fn strip_rustymilk_equation_comments(text: &str) -> String {
+    text.lines()
+        .map(|line| line.split_once("//").map(|(code, _)| code).unwrap_or(line))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn collect_rustymilk_equation_functions(
@@ -5660,6 +5674,45 @@ wave_g=1
             .expect_err("unsupported functions should be rejected");
 
         assert!(error.contains("unsupported_call"));
+    }
+
+    #[test]
+    fn rustymilk_core_compatibility_ignores_equation_comments() {
+        let parsed = parse_rustymilk_preset_set(
+            r#"
+name=Commented
+per_frame_1=// transform code (not a function)
+per_frame_2=q1=sin(time); // unsupported_call(1)
+per_pixel_1=x=x+cos(rad);
+"#,
+            false,
+        );
+        let report = analyze_rustymilk_preset_compatibility(parsed.presets.first().unwrap());
+
+        assert!(report.unsupported_functions.is_empty());
+        assert!(rustymilk_compatibility_error(&report).is_empty());
+    }
+
+    #[test]
+    fn rustymilk_core_compatibility_reports_real_unsupported_calls() {
+        let parsed = parse_rustymilk_preset_set(
+            r#"
+name=Unsupported Control
+per_frame_1=q1=unsupported_call(1);
+per_frame_2=while(exec2(q1=1, q1<2), q1=q1+1);
+"#,
+            false,
+        );
+        let report = analyze_rustymilk_preset_compatibility(parsed.presets.first().unwrap());
+
+        assert_eq!(
+            report.unsupported_functions,
+            vec![
+                "exec2".to_string(),
+                "unsupported_call".to_string(),
+                "while".to_string()
+            ]
+        );
     }
 
     #[test]

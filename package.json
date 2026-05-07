@@ -9,6 +9,7 @@
     "content:pull-community": "node ./tools/pull-rustymilk-community-content.mjs",
     "content:report-community": "node ./tools/report-rustymilk-community-packs.mjs --write",
     "content:report-community:compat": "node ./tools/report-rustymilk-community-packs.mjs --write --compat --limit=25",
+    "content:report-community:compat:full": "node ./tools/report-rustymilk-community-packs.mjs --write --compat",
     "content:validate": "node ./tools/validate-rustymilk-content-catalog.mjs",
     "pack:validate": "cargo run -p rustymilk-cli -- pack-validate examples/sample-pack",
     "dev:player": "node ./tools/serve-rustymilk-app.mjs player",

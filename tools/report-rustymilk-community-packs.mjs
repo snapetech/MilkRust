@@ -62,8 +62,38 @@ const extensionCounts = async (root, counts = {}) => {
   return counts;
 };
 
+const runCompatReport = async (sourceDir) => {
+  const report = await runJson('cargo', [
+    'run',
+    '-q',
+    '-p',
+    'rustymilk-cli',
+    '--',
+    'compat',
+    sourceDir,
+  ]);
+  return {
+    fileCount: report.totalCount,
+    presetCount: report.presetCount,
+    parsedPresetCount: report.presetCount,
+    supportedCount: report.supportedCount,
+    unsupportedCount: report.unsupportedCount,
+    webGpuSupportedCount: report.webGpuSupportedCount,
+    webGpuUnsupportedCount: report.webGpuUnsupportedCount,
+    unsupportedFunctions: report.unsupportedFunctions,
+    unsupportedShaderSections: report.unsupportedShaderSections,
+    webGpuUnsupportedShaderSections: report.webGpuUnsupportedShaderSections,
+  };
+};
+
 const writeCompatSubset = async (packDir, manifest, maxFiles) => {
-  if (!maxFiles || !manifest.presets.length) return null;
+  if (!manifest.presets.length) return null;
+  if (!maxFiles) {
+    return {
+      mode: 'full',
+      ...(await runCompatReport(packDir)),
+    };
+  }
   const subsetDir = await fs.mkdtemp(path.join('/tmp', 'rustymilk-community-compat-'));
   try {
     const selected = manifest.presets.slice(0, maxFiles);
@@ -72,25 +102,10 @@ const writeCompatSubset = async (packDir, manifest, maxFiles) => {
       const target = path.join(subsetDir, `${preset.id}${path.extname(preset.file) || '.milk'}`);
       await fs.copyFile(source, target);
     }
-    const report = await runJson('cargo', [
-      'run',
-      '-q',
-      '-p',
-      'rustymilk-cli',
-      '--',
-      'compat',
-      subsetDir,
-    ]);
     return {
+      mode: 'sample',
       limit: maxFiles,
-      presetCount: report.presetCount,
-      supportedCount: report.supportedCount,
-      unsupportedCount: report.unsupportedCount,
-      webGpuSupportedCount: report.webGpuSupportedCount,
-      webGpuUnsupportedCount: report.webGpuUnsupportedCount,
-      unsupportedFunctions: report.unsupportedFunctions,
-      unsupportedShaderSections: report.unsupportedShaderSections,
-      webGpuUnsupportedShaderSections: report.webGpuUnsupportedShaderSections,
+      ...(await runCompatReport(subsetDir)),
     };
   } finally {
     await fs.rm(subsetDir, { recursive: true, force: true });
@@ -126,7 +141,8 @@ const main = async () => {
     packCount: packs.length,
     totalPresets: packs.reduce((total, pack) => total + pack.presetCount, 0),
     totalTextures: packs.reduce((total, pack) => total + pack.textureCount, 0),
-    compatibilityLimit: compat ? limit : 0,
+    compatibilityMode: compat ? (limit ? 'sample' : 'full') : 'none',
+    compatibilityLimit: compat && limit ? limit : 0,
     packs,
   };
 
@@ -145,7 +161,7 @@ const renderList = (values = []) => values.length
 function renderMarkdown(summary) {
   const rows = summary.packs.map((pack) => {
     const compatibility = pack.compatibility
-      ? `${pack.compatibility.supportedCount}/${pack.compatibility.presetCount} sampled supported`
+      ? `${pack.compatibility.supportedCount}/${pack.compatibility.fileCount || pack.compatibility.presetCount} files ${pack.compatibility.mode === 'full' ? 'supported' : 'sampled supported'} (${pack.compatibility.parsedPresetCount || pack.compatibility.presetCount} parsed presets)`
       : 'not sampled';
     const blockers = pack.compatibility
       ? renderList([
@@ -168,7 +184,7 @@ Community-unlicensed packs are imported into \`content/community-unlicensed\` fo
 - Packs: ${summary.packCount}
 - Presets: ${summary.totalPresets}
 - Textures: ${summary.totalTextures}
-- Compatibility sample size: ${summary.compatibilityLimit || 'not sampled'}
+- Compatibility mode: ${summary.compatibilityMode === 'sample' ? `sample (${summary.compatibilityLimit})` : summary.compatibilityMode}
 
 ## Packs
 
