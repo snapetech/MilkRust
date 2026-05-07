@@ -8,6 +8,7 @@ use rustymilk_core::{
     rustymilk_frame_set_from_source_with_audio, rustymilk_preset_name,
     summarize_rustymilk_compatibility_matrix, validate_rustymilk_import,
 };
+use rustymilk_pack::{load_rustymilk_pack_manifest, validate_rustymilk_pack_dir};
 use rustymilk_renderer_core::RustyMilkRenderer;
 use rustymilk_renderer_headless::{create_headless_batches, RustyMilkHeadlessRenderer};
 
@@ -105,6 +106,8 @@ pub fn run_rustymilk_cli(args: &[String]) -> RustyMilkCliResult {
             Err(result) => result,
         },
         "compat" => compat_command(args.get(1)),
+        "pack-inspect" => pack_inspect_command(args.get(1)),
+        "pack-validate" => pack_validate_command(args.get(1)),
         "render-stats" => match read_one_path(args.get(1)) {
             Ok((path, source)) => {
                 let frame_set = rustymilk_frame_set_from_source_with_audio(
@@ -212,6 +215,75 @@ fn compat_command(path: Option<&String>) -> RustyMilkCliResult {
     ))
 }
 
+fn pack_inspect_command(path: Option<&String>) -> RustyMilkCliResult {
+    let Some(path) = path else {
+        return RustyMilkCliResult::err(2, usage());
+    };
+    match load_rustymilk_pack_manifest(path) {
+        Ok((manifest_path, manifest)) => RustyMilkCliResult::ok(format!(
+            "{}\n",
+            serde_json::json!({
+                "manifestPath": manifest_path.display().to_string(),
+                "schemaVersion": manifest.schema_version,
+                "id": manifest.id,
+                "name": manifest.name,
+                "version": manifest.version,
+                "author": manifest.author,
+                "description": manifest.description,
+                "license": manifest.license,
+                "requiredRustyMilkVersion": manifest.required_rustymilk_version,
+                "sourceUrls": manifest.source_urls,
+                "presetCount": manifest.presets.len(),
+                "textureCount": manifest.textures.len(),
+                "fragmentCount": manifest.fragments.len(),
+                "pluginCount": manifest.plugins.len(),
+                "playlist": manifest.playlist,
+                "presets": manifest.presets.iter().map(|preset| serde_json::json!({
+                    "id": preset.id,
+                    "title": preset.title,
+                    "file": preset.file,
+                    "tags": preset.tags,
+                    "thumbnail": preset.thumbnail,
+                })).collect::<Vec<_>>(),
+                "textures": manifest.textures.iter().map(|texture| serde_json::json!({
+                    "id": texture.id,
+                    "file": texture.file,
+                    "aliases": texture.aliases,
+                })).collect::<Vec<_>>(),
+                "fragments": manifest.fragments.iter().map(|fragment| serde_json::json!({
+                    "id": fragment.id,
+                    "kind": fragment.kind,
+                    "file": fragment.file,
+                    "tags": fragment.tags,
+                })).collect::<Vec<_>>(),
+                "plugins": manifest.plugins.iter().map(|plugin| serde_json::json!({
+                    "id": plugin.id,
+                    "kind": plugin.kind,
+                    "entry": plugin.entry,
+                })).collect::<Vec<_>>(),
+            })
+        )),
+        Err(error) => RustyMilkCliResult::err(1, format!("{error}\n")),
+    }
+}
+
+fn pack_validate_command(path: Option<&String>) -> RustyMilkCliResult {
+    let Some(path) = path else {
+        return RustyMilkCliResult::err(2, usage());
+    };
+    let report = validate_rustymilk_pack_dir(path);
+    let output = format!("{}\n", report.to_json());
+    if report.valid {
+        RustyMilkCliResult::ok(output)
+    } else {
+        RustyMilkCliResult {
+            code: 1,
+            stderr: output,
+            stdout: String::new(),
+        }
+    }
+}
+
 fn collect_preset_files(path: &Path) -> Result<Vec<PathBuf>, std::io::Error> {
     if path.is_file() {
         return Ok(if is_preset_file(path) {
@@ -258,7 +330,7 @@ fn read_one_path(path: Option<&String>) -> Result<(PathBuf, String), RustyMilkCl
 }
 
 fn usage() -> String {
-    "usage: rustymilk <validate|inspect|compat|render-stats> <file-or-directory>\n".to_string()
+    "usage: rustymilk <validate|inspect|compat|render-stats|pack-inspect|pack-validate> <file-or-directory>\n".to_string()
 }
 
 #[cfg(test)]
@@ -353,6 +425,40 @@ mod tests {
         let value: serde_json::Value = serde_json::from_str(&result.stdout).unwrap();
         assert_eq!(value["totalCount"], 1);
         assert_eq!(value["entries"].as_array().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn pack_commands_inspect_and_validate_manifest_directories() {
+        let dir = temp_path("pack-dir");
+        fs::create_dir_all(dir.join("presets")).unwrap();
+        fs::write(
+            dir.join("manifest.json"),
+            r#"{
+              "schemaVersion": 1,
+              "id": "cli-pack",
+              "name": "CLI Pack",
+              "version": "0.1.0",
+              "presets": [
+                { "id": "smoke", "title": "Smoke", "file": "presets/smoke.milk" }
+              ]
+            }"#,
+        )
+        .unwrap();
+        fs::write(dir.join("presets/smoke.milk"), smoke_source()).unwrap();
+
+        let inspect = run_rustymilk_cli(&["pack-inspect".to_string(), dir.display().to_string()]);
+        let validate = run_rustymilk_cli(&["pack-validate".to_string(), dir.display().to_string()]);
+        let _ = fs::remove_dir_all(&dir);
+
+        assert_eq!(inspect.code, 0);
+        let inspect_value: serde_json::Value = serde_json::from_str(&inspect.stdout).unwrap();
+        assert_eq!(inspect_value["id"], "cli-pack");
+        assert_eq!(inspect_value["presetCount"], 1);
+
+        assert_eq!(validate.code, 0);
+        let validate_value: serde_json::Value = serde_json::from_str(&validate.stdout).unwrap();
+        assert_eq!(validate_value["valid"], true);
+        assert_eq!(validate_value["presets"][0]["title"], "Smoke");
     }
 
     #[test]

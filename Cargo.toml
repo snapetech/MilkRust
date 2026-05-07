@@ -2,6 +2,7 @@
 members = [
     "crates/rustymilk-cli",
     "crates/rustymilk-core",
+    "crates/rustymilk-pack",
     "crates/rustymilk-renderer-core",
     "crates/rustymilk-renderer-headless",
     "crates/rustymilk-wasm",

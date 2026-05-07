@@ -103,6 +103,7 @@ name = "rustymilk-cli"
 version = "0.1.0"
 dependencies = [
  "rustymilk-core",
+ "rustymilk-pack",
  "rustymilk-renderer-core",
  "rustymilk-renderer-headless",
  "serde_json",
@@ -112,6 +113,14 @@ dependencies = [
 name = "rustymilk-core"
 version = "0.1.0"
 dependencies = [
+ "serde_json",
+]
+
+[[package]]
+name = "rustymilk-pack"
+version = "0.1.0"
+dependencies = [
+ "rustymilk-core",
  "serde_json",
 ]
 
