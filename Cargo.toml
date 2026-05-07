@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "crates/rustymilk-cli",
     "crates/rustymilk-core",
     "crates/rustymilk-renderer-core",
     "crates/rustymilk-renderer-headless",
