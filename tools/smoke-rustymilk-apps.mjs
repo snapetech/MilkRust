@@ -36,6 +36,20 @@ try {
   await player.waitForFunction(() => window.__rustyMilkPlayerStats?.channelTotal > 0, null, {
     timeout: 10_000,
   });
+  await player.waitForFunction(() => (
+    Array.from(document.querySelectorAll('#pack-list option'))
+      .some((option) => option.textContent === 'Original MilkDrop Preset Pack')
+  ), null, {
+    timeout: 10_000,
+  });
+  await player.selectOption('#pack-list', { label: 'Original MilkDrop Preset Pack' });
+  await player.waitForFunction(() => document.querySelectorAll('#preset-list option').length > 100, null, {
+    timeout: 10_000,
+  });
+  await player.selectOption('#preset-list', { index: 1 });
+  await player.waitForFunction(() => window.__rustyMilkPlayerStats?.channelTotal > 0, null, {
+    timeout: 10_000,
+  });
   const playerStats = await player.evaluate(() => window.__rustyMilkPlayerStats);
   if (playerStats.channelTotal <= 0 || playerStats.litPixels < playerStats.pixelCount * 0.01) {
     if (browserMessages.length > 0) console.log(browserMessages.join('\n'));

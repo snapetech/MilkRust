@@ -202,8 +202,22 @@ const packManifestUrl = (packUrl) => {
 };
 
 export const loadRustyMilkPack = async (packUrl, { fetchImpl = globalThis.fetch } = {}) => {
+  const validation = await loadRustyMilkPackManifest(packUrl, { fetchImpl });
+  const presets = await Promise.all(validation.manifest.presets.map(async (preset) => ({
+    ...preset,
+    name: preset.title || preset.id || preset.file,
+    source: await loadRustyMilkPackPresetSource(preset, { fetchImpl }),
+  })));
+  return {
+    ...validation,
+    manifest: validation.manifest,
+    presets,
+  };
+};
+
+export const loadRustyMilkPackManifest = async (packUrl, { fetchImpl = globalThis.fetch } = {}) => {
   if (typeof fetchImpl !== 'function') {
-    throw new Error('loadRustyMilkPack requires a fetch implementation');
+    throw new Error('loadRustyMilkPackManifest requires a fetch implementation');
   }
   const manifestUrl = packManifestUrl(packUrl);
   const manifestResponse = await fetchImpl(manifestUrl);
@@ -214,23 +228,21 @@ export const loadRustyMilkPack = async (packUrl, { fetchImpl = globalThis.fetch 
   if (!validation.valid) {
     throw new Error(`invalid RustyMilk pack: ${validation.errors.join('; ')}`);
   }
-  const presets = await Promise.all(validation.manifest.presets.map(async (preset) => {
-    const response = await fetchImpl(preset.url);
-    if (!response.ok) {
-      throw new Error(`failed to load preset ${preset.file}`);
-    }
-    const source = await response.text();
-    return {
-      ...preset,
-      name: preset.title || preset.id || preset.file,
-      source,
-    };
-  }));
-  return {
-    ...validation,
-    manifest: validation.manifest,
-    presets,
-  };
+  return validation;
+};
+
+export const loadRustyMilkPackPresetSource = async (
+  preset,
+  { fetchImpl = globalThis.fetch } = {},
+) => {
+  if (typeof fetchImpl !== 'function') {
+    throw new Error('loadRustyMilkPackPresetSource requires a fetch implementation');
+  }
+  const response = await fetchImpl(preset?.url || preset?.file || '');
+  if (!response.ok) {
+    throw new Error(`failed to load preset ${preset?.file || preset?.id || '<unknown>'}`);
+  }
+  return response.text();
 };
 
 let rustModulePromise;

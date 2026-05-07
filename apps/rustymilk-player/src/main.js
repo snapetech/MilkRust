@@ -1,8 +1,13 @@
-import { createRustyMilkEngine } from '/packages/rustymilk-web/src/rustyMilkEngine.js';
+import {
+  createRustyMilkEngine,
+  loadRustyMilkPackManifest,
+  loadRustyMilkPackPresetSource,
+} from '/packages/rustymilk-web/src/rustyMilkEngine.js';
 
 const canvas = document.querySelector('#visualizer');
 const status = document.querySelector('#status');
 const debug = document.querySelector('#debug');
+const packList = document.querySelector('#pack-list');
 const presetList = document.querySelector('#preset-list');
 const automation = document.querySelector('#automation');
 const interval = document.querySelector('#interval');
@@ -29,16 +34,43 @@ let animationFrame = 0;
 let activeIndex = 0;
 let presets = [...builtInPresets];
 let textureAssets = {};
+let activeLoadToken = 0;
+
+const builtinPack = {
+  id: 'builtin',
+  name: 'Built-in',
+  presets: builtInPresets,
+};
+
+let packLibrary = [
+  builtinPack,
+  {
+    id: 'rustymilk-sample-pack',
+    name: 'RustyMilk Sample Pack',
+    path: '/examples/sample-pack/',
+  },
+];
 
 const setStatus = (value) => {
   status.textContent = value;
+};
+
+const presetLabel = (preset) => preset.name || preset.title || preset.id || preset.file || 'Preset';
+
+const refreshPackList = () => {
+  packList.replaceChildren(...packLibrary.map((pack) => {
+    const option = document.createElement('option');
+    option.value = pack.id;
+    option.textContent = pack.name;
+    return option;
+  }));
 };
 
 const refreshPresetList = () => {
   presetList.replaceChildren(...presets.map((preset, index) => {
     const option = document.createElement('option');
     option.value = String(index);
-    option.textContent = preset.name;
+    option.textContent = presetLabel(preset);
     return option;
   }));
   presetList.value = String(activeIndex);
@@ -69,10 +101,17 @@ const readCanvasStats = () => {
   return { channelTotal, litPixels, pixelCount: canvas.width * canvas.height };
 };
 
-const loadActivePreset = () => {
+const loadActivePreset = async () => {
   if (!engine) return;
+  const loadToken = ++activeLoadToken;
   const preset = presets[activeIndex];
-  const title = engine.loadPresetText(preset.source, preset.name, { textureAssets });
+  if (!preset) return;
+  if (!preset.source && preset.url) {
+    setStatus(`Loading ${presetLabel(preset)}`);
+    preset.source = await loadRustyMilkPackPresetSource(preset);
+  }
+  if (loadToken !== activeLoadToken) return;
+  const title = engine.loadPresetText(preset.source, presetLabel(preset), { textureAssets });
   setStatus(title);
   debug.textContent = JSON.stringify(engine.getPresetDebugSnapshot(), null, 2);
   refreshPresetList();
@@ -111,9 +150,53 @@ const startWithNode = async (context, node) => {
     mode: automation.value,
     timedIntervalSeconds: Number(interval.value) || 30,
   });
-  loadActivePreset();
+  await loadActivePreset();
   render();
   window.__rustyMilkPlayerReady = true;
+};
+
+const loadPack = async (packId) => {
+  const pack = packLibrary.find((entry) => entry.id === packId) || builtinPack;
+  setStatus(`Loading ${pack.name}`);
+  if (pack.presets) {
+    presets = pack.presets;
+  } else {
+    const loaded = await loadRustyMilkPackManifest(pack.path || pack.url);
+    presets = loaded.manifest.presets.map((preset) => ({
+      ...preset,
+      name: preset.title || preset.id || preset.file,
+      packId: loaded.manifest.id,
+    }));
+    pack.presets = presets;
+  }
+  activeIndex = 0;
+  refreshPresetList();
+  await loadActivePreset();
+  if (!engine) {
+    setStatus(`${pack.name}: ${presets.length} presets`);
+  }
+};
+
+const loadCommunityPackChoices = async () => {
+  try {
+    const response = await fetch('/content/generated/community-pack-summary.json');
+    if (!response.ok) return;
+    const summary = await response.json();
+    const packs = Array.isArray(summary.packs) ? summary.packs : [];
+    packLibrary = [
+      ...packLibrary,
+      ...packs
+        .filter((pack) => pack.presetCount > 0)
+        .map((pack) => ({
+          id: pack.id,
+          name: pack.name || pack.id,
+          path: `/${pack.path}/`,
+        })),
+    ];
+    refreshPackList();
+  } catch {
+    // The generated community index is optional in lean builds.
+  }
 };
 
 document.querySelector('#start-demo').addEventListener('click', async () => {
@@ -137,6 +220,10 @@ document.querySelector('#start-mic').addEventListener('click', async () => {
 presetList.addEventListener('change', () => {
   activeIndex = Number(presetList.value) || 0;
   loadActivePreset();
+});
+
+packList.addEventListener('change', () => {
+  loadPack(packList.value);
 });
 
 document.querySelector('#previous').addEventListener('click', () => {
@@ -173,6 +260,7 @@ document.querySelector('#preset-files').addEventListener('change', async (event)
     });
   }
   activeIndex = Math.max(0, presets.length - files.length);
+  packList.value = 'builtin';
   refreshPresetList();
   loadActivePreset();
 });
@@ -201,4 +289,6 @@ canvas.addEventListener('pointermove', (event) => {
 canvas.addEventListener('pointerdown', () => engine?.setMouseState({ mouse_down: 1 }));
 canvas.addEventListener('pointerup', () => engine?.setMouseState({ mouse_down: 0 }));
 window.addEventListener('resize', resize);
+refreshPackList();
 refreshPresetList();
+loadCommunityPackChoices();

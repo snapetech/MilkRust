@@ -7,6 +7,8 @@ import {
   getRustyMilkTransitionAlphas,
   getRustyMilkTransitionProgress,
   loadRustyMilkPack,
+  loadRustyMilkPackManifest,
+  loadRustyMilkPackPresetSource,
   normalizeRustyMilkPackManifest,
   validateRustyMilkPackManifest,
 } from './rustyMilkEngine.js';
@@ -153,6 +155,7 @@ describe('createRustyMilkEngine', () => {
   });
 
   it('loads pack manifests and preset sources through fetch', async () => {
+    const calls = [];
     const responses = new Map([
       ['http://localhost/packs/demo/manifest.json', {
         ok: true,
@@ -168,13 +171,28 @@ describe('createRustyMilkEngine', () => {
         text: async () => 'name=First\nzoom=1\n',
       }],
     ]);
-    const pack = await loadRustyMilkPack('http://localhost/packs/demo/', {
-      fetchImpl: async (url) => responses.get(url),
+    const fetchImpl = async (url) => {
+      calls.push(url);
+      return responses.get(url);
+    };
+    const manifest = await loadRustyMilkPackManifest('http://localhost/packs/demo/', {
+      fetchImpl,
     });
+    const source = await loadRustyMilkPackPresetSource(manifest.manifest.presets[0], {
+      fetchImpl,
+    });
+    const pack = await loadRustyMilkPack('http://localhost/packs/demo/', { fetchImpl });
 
+    assert.equal(manifest.valid, true);
+    assert.equal(manifest.manifest.presets[0].name, undefined);
+    assert.match(source, /zoom=1/);
     assert.equal(pack.valid, true);
     assert.equal(pack.presets[0].name, 'First');
     assert.match(pack.presets[0].source, /zoom=1/);
+    assert.deepEqual(calls.slice(0, 2), [
+      'http://localhost/packs/demo/manifest.json',
+      'http://localhost/packs/demo/presets/first.milk',
+    ]);
   });
 
   it('feeds waveform, spectrum, and mouse state into the Rust renderer', async () => {
