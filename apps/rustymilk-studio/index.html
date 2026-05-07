@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RustyMilk Studio</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <main class="studio-shell">
+      <header>
+        <h1>RustyMilk Studio</h1>
+        <div class="button-row">
+          <label class="file-button">
+            Open
+            <input id="preset-file" type="file" accept=".milk,.milk2,text/plain">
+          </label>
+          <button id="inspect" type="button">Inspect</button>
+          <button id="load-preview" type="button">Preview</button>
+          <button id="randomize" type="button">Randomize</button>
+        </div>
+      </header>
+      <section class="workspace">
+        <textarea id="source" spellcheck="false"></textarea>
+        <aside>
+          <canvas id="preview" aria-label="RustyMilk studio preview"></canvas>
+          <div class="panel">
+            <h2>Parameters</h2>
+            <div class="parameter-row">
+              <select id="parameter">
+                <option value="decay">Decay</option>
+                <option value="zoom">Zoom</option>
+                <option value="rot">Rotation</option>
+                <option value="wave_r">Wave R</option>
+                <option value="wave_g">Wave G</option>
+                <option value="wave_b">Wave B</option>
+                <option value="wave_a">Wave A</option>
+              </select>
+              <input id="parameter-value" type="number" step="0.01" value="1">
+              <button id="apply-parameter" type="button">Apply</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Fragments</h2>
+            <div class="button-row">
+              <label class="file-button">
+                Import
+                <input id="fragment-file" type="file" accept=".shape,.wave,text/plain">
+              </label>
+              <button id="export-shape" type="button">Export Shape</button>
+              <button id="export-wave" type="button">Export Wave</button>
+            </div>
+          </div>
+          <pre id="report"></pre>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

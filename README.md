@@ -7,8 +7,12 @@ RustyMilk is the standalone Rust/WASM visualizer engine extracted from slskR.
 This repository is being prepared as the home for:
 
 - `rustymilk-core`: preset parsing, expression evaluation, runtime frame generation, compatibility reports, geometry, and WebGPU batch builders.
+- `rustymilk-renderer-core`: renderer backend contracts and capability types.
+- `rustymilk-renderer-headless`: headless renderer stats backend for tests, reports, and batch tooling.
 - `rustymilk-wasm`: browser-facing WASM bindings and renderers.
 - `packages/rustymilk-web`: JavaScript client wrapper for applications that consume the WASM package.
+- `apps/rustymilk-player`: standalone browser player prototype.
+- `apps/rustymilk-studio`: browser authoring/debugging prototype.
 - `tools`: smoke, compatibility, and performance checks.
 - `examples`: small browser clients used for SDK verification.
 
@@ -25,3 +29,13 @@ npm run build:wasm
 ```
 
 `npm run build:wasm` requires the `wasm-bindgen` CLI and writes browser package files to `pkg/`.
+
+## Apps
+
+```bash
+npm run build:wasm
+npm run dev:player
+npm run dev:studio
+```
+
+The app commands serve the local repo at `http://127.0.0.1:4173/`.

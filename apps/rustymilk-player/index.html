@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RustyMilk Player</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <main class="player-shell">
+      <canvas id="visualizer" aria-label="RustyMilk visualizer"></canvas>
+      <section class="control-panel" aria-label="RustyMilk player controls">
+        <div class="title-row">
+          <div>
+            <h1>RustyMilk Player</h1>
+            <p id="status">Idle</p>
+          </div>
+          <div class="button-row">
+            <button id="start-demo" type="button">Start Demo</button>
+            <button id="start-mic" type="button">Use Mic</button>
+          </div>
+        </div>
+        <div class="control-grid">
+          <label>
+            Preset
+            <select id="preset-list"></select>
+          </label>
+          <label>
+            Automation
+            <select id="automation">
+              <option value="off">Off</option>
+              <option value="timed">Timed</option>
+              <option value="beat">Beat</option>
+            </select>
+          </label>
+          <label>
+            Interval
+            <input id="interval" type="number" min="3" max="300" value="30">
+          </label>
+          <label>
+            Beats
+            <input id="beats" type="number" min="1" max="64" value="8">
+          </label>
+        </div>
+        <div class="button-row">
+          <button id="previous" type="button">Previous</button>
+          <button id="next" type="button">Next</button>
+          <button id="random" type="button">Random</button>
+          <label class="file-button">
+            Import
+            <input id="preset-files" type="file" accept=".milk,.milk2,text/plain" multiple>
+          </label>
+          <label class="file-button">
+            Textures
+            <input id="texture-files" type="file" accept="image/*" multiple>
+          </label>
+        </div>
+        <pre id="debug"></pre>
+      </section>
+    </main>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

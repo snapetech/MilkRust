@@ -22,8 +22,12 @@ RustyMilk should eventually ship as these related products:
 The repository currently contains:
 
 - `crates/rustymilk-core`: parser/runtime-facing Rust code, frame structs, preset handling, compatibility helpers, geometry, and render batch summaries.
+- `crates/rustymilk-renderer-core`: renderer contracts, capabilities, and render statistics.
+- `crates/rustymilk-renderer-headless`: headless renderer stats backend for tests and tooling.
 - `crates/rustymilk-wasm`: `wasm-bindgen` exports, browser-facing `RustyMilkEngine`, and WebGL2/canvas rendering.
 - `packages/rustymilk-web`: JavaScript convenience wrapper for Web Audio, automation, preset loading, and WASM consumption.
+- `apps/rustymilk-player`: standalone browser player prototype.
+- `apps/rustymilk-studio`: browser authoring/debugging prototype.
 - `tools`: smoke, compatibility, and performance checks.
 - `examples`: browser smoke client.
 

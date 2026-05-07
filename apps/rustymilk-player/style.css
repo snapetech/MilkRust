@@ -1,0 +1,111 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #111;
+  color: #f4f4f4;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.player-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+#visualizer {
+  width: 100%;
+  height: 100%;
+  min-height: 52vh;
+  display: block;
+  background: #000;
+}
+
+.control-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: #1d1f22;
+  border-top: 1px solid #33383f;
+}
+
+.title-row,
+.button-row,
+.control-grid {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.title-row {
+  justify-content: space-between;
+  align-items: center;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+p,
+pre {
+  color: #b9c0c8;
+}
+
+button,
+.file-button,
+select,
+input {
+  min-height: 36px;
+  border: 1px solid #454b54;
+  border-radius: 6px;
+  background: #2a2e34;
+  color: #f4f4f4;
+  padding: 7px 10px;
+}
+
+button:hover,
+.file-button:hover {
+  background: #353b43;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+  color: #c9d0d8;
+  font-size: 12px;
+}
+
+.file-button {
+  cursor: pointer;
+}
+
+.file-button input {
+  display: none;
+}
+
+pre {
+  margin: 0;
+  max-height: 120px;
+  overflow: auto;
+  padding: 10px;
+  background: #141619;
+  border: 1px solid #33383f;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
