@@ -3,7 +3,14 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(new URL('..', import.meta.url).pathname);
 const catalogPath = path.join(repoRoot, 'content/catalog.json');
-const allowedCopyPolicies = new Set(['include', 'optional-download', 'link', 'review', 'reject']);
+const allowedCopyPolicies = new Set([
+  'include',
+  'optional-download',
+  'link',
+  'review',
+  'reject',
+  'community-unlicensed',
+]);
 const vendorableLicenses = new Set([
   '0BSD',
   'Apache-2.0',
@@ -57,7 +64,7 @@ for (const [index, entry] of (catalog.entries || []).entries()) {
   if (entry.copyPolicy === 'include' && !vendorableLicenses.has(entry.license)) {
     errors.push(`${label}: included content must use an explicitly vendorable license`);
   }
-  if (entry.copyPolicy === 'include' && entry.source?.path) {
+  if ((entry.copyPolicy === 'include' || entry.copyPolicy === 'community-unlicensed') && entry.source?.path) {
     const sourcePath = path.resolve(repoRoot, entry.source.path);
     try {
       await fs.access(sourcePath);
@@ -65,8 +72,14 @@ for (const [index, entry] of (catalog.entries || []).entries()) {
       errors.push(`${label}: local source path does not exist: ${entry.source.path}`);
     }
   }
-  if (entry.license === 'NOASSERTION' && entry.copyPolicy !== 'link' && entry.copyPolicy !== 'review') {
-    errors.push(`${label}: NOASSERTION content must be link-only or review`);
+  if (
+    entry.license === 'NOASSERTION'
+    && !['link', 'review', 'community-unlicensed'].includes(entry.copyPolicy)
+  ) {
+    errors.push(`${label}: NOASSERTION content must be link-only, review, or community-unlicensed`);
+  }
+  if (entry.copyPolicy === 'community-unlicensed' && entry.defaultBuild !== false) {
+    errors.push(`${label}: community-unlicensed content must set defaultBuild to false`);
   }
 }
 

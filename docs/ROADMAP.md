@@ -34,6 +34,8 @@ The repository currently contains:
 - `examples`: browser smoke client.
 - `content/catalog.json`: third-party content catalog with copy/link/review policy.
 - `content/third-party/butterchurn-presets-2.4.7`: MIT-licensed converted Butterchurn preset package vendored for compatibility/import work.
+- `content/community-unlicensed`: public projectM/MilkDrop community preset and texture packs imported for aggressive compatibility testing and opt-in builds.
+- `content/generated`: generated summaries for community pack counts and sampled compatibility.
 
 The immediate migration target is for slskR to depend on RustyMilk instead of carrying the engine inline.
 

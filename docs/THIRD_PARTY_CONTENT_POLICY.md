@@ -21,6 +21,7 @@ RustyMilk content imports should cover:
 - **optional-download**: tooling may fetch it on user request, but it is not shipped by default.
 - **link**: repo/builds may link to the upstream source, but must not copy the content.
 - **review**: license/provenance is not yet clear enough to decide.
+- **community-unlicensed**: public historical/community content imported into `content/community-unlicensed` for compatibility work, separated from vetted redistributable packs and excluded from default builds.
 - **reject**: do not copy, fetch, package, or link as a RustyMilk source.
 
 ## License Gate
@@ -46,12 +47,15 @@ No-license historical MilkDrop presets are common. Those should be link-only by 
 
 - `content/catalog.json` is the source catalog.
 - `content/third-party/<pack-id>/` is only for audited and vendorable content.
+- `content/community-unlicensed/<pack-id>/` is for aggressive community imports with unclear/no explicit license.
 - `content/generated/` is for generated inventories, compatibility matrices, and pack indexes.
 - `docs/THIRD_PARTY_CONTENT_AUDIT.generated.md` is regenerated from catalog/local scans.
 
 ## Build Model
 
 Default builds should include RustyMilk-owned content and vetted redistributable packs only.
+
+Community-unlicensed content should be opt-in for packaging and release builds. It can be present in the repository for compatibility testing and user-accessible libraries, but it must stay clearly marked and removable.
 
 Optional content can be supported through:
 
@@ -60,4 +64,4 @@ Optional content can be supported through:
 - Pack manifests that point to upstream download pages.
 - Compatibility reports generated from user-provided local copies.
 
-This keeps RustyMilk compatible with old MilkDrop packs without silently redistributing content that lacks explicit license permission.
+This keeps RustyMilk compatible with old MilkDrop packs while separating vetted redistributable content from aggressive community imports that may need removal later.

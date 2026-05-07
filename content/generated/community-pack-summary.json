@@ -1,0 +1,163 @@
+{
+  "generatedAt": "2026-05-07T01:06:03.265Z",
+  "packCount": 5,
+  "totalPresets": 14576,
+  "totalTextures": 107,
+  "compatibilityLimit": 25,
+  "packs": [
+    {
+      "id": "projectm-classic",
+      "name": "Classic projectM Preset Pack",
+      "path": "content/community-unlicensed/projectm-classic",
+      "license": "NOASSERTION",
+      "sourceUrls": [
+        "https://github.com/projectM-visualizer/presets-projectm-classic"
+      ],
+      "presetCount": 4189,
+      "textureCount": 33,
+      "playlistCount": 4189,
+      "byExtension": {
+        ".jpg": 21,
+        ".json": 1,
+        ".md": 2,
+        ".milk": 4189,
+        ".prjm": 4,
+        ".textclipping": 1,
+        ".tga": 12
+      },
+      "compatibility": {
+        "limit": 25,
+        "presetCount": 25,
+        "supportedCount": 25,
+        "unsupportedCount": 0,
+        "webGpuSupportedCount": 25,
+        "webGpuUnsupportedCount": 0,
+        "unsupportedFunctions": [],
+        "unsupportedShaderSections": [],
+        "webGpuUnsupportedShaderSections": []
+      }
+    },
+    {
+      "id": "projectm-cream-of-the-crop",
+      "name": "Milkdrop Cream of the Crop Presets",
+      "path": "content/community-unlicensed/projectm-cream-of-the-crop",
+      "license": "NOASSERTION",
+      "sourceUrls": [
+        "https://github.com/projectM-visualizer/presets-cream-of-the-crop"
+      ],
+      "presetCount": 9795,
+      "textureCount": 0,
+      "playlistCount": 9795,
+      "byExtension": {
+        ".json": 1,
+        ".md": 3,
+        ".milk": 9795
+      },
+      "compatibility": {
+        "limit": 25,
+        "presetCount": 23,
+        "supportedCount": 23,
+        "unsupportedCount": 0,
+        "webGpuSupportedCount": 23,
+        "webGpuUnsupportedCount": 0,
+        "unsupportedFunctions": [],
+        "unsupportedShaderSections": [],
+        "webGpuUnsupportedShaderSections": []
+      }
+    },
+    {
+      "id": "projectm-en-d",
+      "name": "En D Presets",
+      "path": "content/community-unlicensed/projectm-en-d",
+      "license": "NOASSERTION",
+      "sourceUrls": [
+        "https://github.com/projectM-visualizer/presets-en-d"
+      ],
+      "presetCount": 40,
+      "textureCount": 8,
+      "playlistCount": 40,
+      "byExtension": {
+        ".jpg": 7,
+        ".json": 1,
+        ".md": 3,
+        ".milk": 40,
+        ".png": 1,
+        ".txt": 2
+      },
+      "compatibility": {
+        "limit": 25,
+        "presetCount": 25,
+        "supportedCount": 19,
+        "unsupportedCount": 6,
+        "webGpuSupportedCount": 25,
+        "webGpuUnsupportedCount": 0,
+        "unsupportedFunctions": [
+          "adiemus",
+          "domino",
+          "exec2",
+          "loop",
+          "memcpy",
+          "pi",
+          "religion",
+          "w",
+          "while"
+        ],
+        "unsupportedShaderSections": [],
+        "webGpuUnsupportedShaderSections": []
+      }
+    },
+    {
+      "id": "projectm-milkdrop-original",
+      "name": "Original MilkDrop Preset Pack",
+      "path": "content/community-unlicensed/projectm-milkdrop-original",
+      "license": "NOASSERTION",
+      "sourceUrls": [
+        "https://github.com/projectM-visualizer/presets-milkdrop-original"
+      ],
+      "presetCount": 552,
+      "textureCount": 0,
+      "playlistCount": 552,
+      "byExtension": {
+        ".json": 1,
+        ".md": 2,
+        ".milk": 552
+      },
+      "compatibility": {
+        "limit": 25,
+        "presetCount": 24,
+        "supportedCount": 23,
+        "unsupportedCount": 1,
+        "webGpuSupportedCount": 24,
+        "webGpuUnsupportedCount": 0,
+        "unsupportedFunctions": [
+          "bb",
+          "gg",
+          "h",
+          "l",
+          "rr",
+          "s"
+        ],
+        "unsupportedShaderSections": [],
+        "webGpuUnsupportedShaderSections": []
+      }
+    },
+    {
+      "id": "projectm-milkdrop-texture-pack",
+      "name": "MilkDrop Texture Pack",
+      "path": "content/community-unlicensed/projectm-milkdrop-texture-pack",
+      "license": "NOASSERTION",
+      "sourceUrls": [
+        "https://github.com/projectM-visualizer/presets-milkdrop-texture-pack"
+      ],
+      "presetCount": 0,
+      "textureCount": 66,
+      "playlistCount": 0,
+      "byExtension": {
+        ".jpg": 66,
+        ".json": 1,
+        ".md": 2
+      },
+      "compatibility": null
+    }
+  ]
+}

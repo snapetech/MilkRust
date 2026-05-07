@@ -1,0 +1,551 @@
+{
+  "schemaVersion": 1,
+  "id": "projectm-milkdrop-texture-pack",
+  "name": "MilkDrop Texture Pack",
+  "version": "community-2026-05-07",
+  "author": "MilkDrop/projectM community",
+  "description": "Community-imported public MilkDrop/projectM content. License status is NOASSERTION; see RUSTYMILK-COMMUNITY-NOTICE.md.",
+  "license": "NOASSERTION",
+  "requiredRustyMilkVersion": "0.1.0",
+  "sourceUrls": [
+    "https://github.com/projectM-visualizer/presets-milkdrop-texture-pack"
+  ],
+  "presets": [],
+  "textures": [
+    {
+      "id": "textures-bw3",
+      "file": "textures/bw3.jpg",
+      "aliases": [
+        "bw3.jpg",
+        "bw3"
+      ]
+    },
+    {
+      "id": "textures-cartunemask1",
+      "file": "textures/cartunemask1.jpg",
+      "aliases": [
+        "cartunemask1.jpg",
+        "cartunemask1"
+      ]
+    },
+    {
+      "id": "textures-cells",
+      "file": "textures/cells.jpg",
+      "aliases": [
+        "cells.jpg",
+        "cells"
+      ]
+    },
+    {
+      "id": "textures-clouds",
+      "file": "textures/clouds.jpg",
+      "aliases": [
+        "clouds.jpg",
+        "clouds"
+      ]
+    },
+    {
+      "id": "textures-clouds2",
+      "file": "textures/clouds2.jpg",
+      "aliases": [
+        "clouds2.jpg",
+        "clouds2"
+      ]
+    },
+    {
+      "id": "textures-colors",
+      "file": "textures/colors.jpg",
+      "aliases": [
+        "colors.jpg",
+        "colors"
+      ]
+    },
+    {
+      "id": "textures-colors7",
+      "file": "textures/colors7.jpg",
+      "aliases": [
+        "colors7.jpg",
+        "colors7"
+      ]
+    },
+    {
+      "id": "textures-devboxb",
+      "file": "textures/devboxb.jpg",
+      "aliases": [
+        "devboxb.jpg",
+        "devboxb"
+      ]
+    },
+    {
+      "id": "textures-eyeball",
+      "file": "textures/eyeball.jpg",
+      "aliases": [
+        "eyeball.jpg",
+        "eyeball"
+      ]
+    },
+    {
+      "id": "textures-facade01",
+      "file": "textures/facade01.jpg",
+      "aliases": [
+        "facade01.jpg",
+        "facade01"
+      ]
+    },
+    {
+      "id": "textures-fire-alpha",
+      "file": "textures/fire_alpha.jpg",
+      "aliases": [
+        "fire_alpha.jpg",
+        "fire_alpha"
+      ]
+    },
+    {
+      "id": "textures-fire-alpha3",
+      "file": "textures/fire_alpha3.jpg",
+      "aliases": [
+        "fire_alpha3.jpg",
+        "fire_alpha3"
+      ]
+    },
+    {
+      "id": "textures-fire-alpha4",
+      "file": "textures/fire_alpha4.jpg",
+      "aliases": [
+        "fire_alpha4.jpg",
+        "fire_alpha4"
+      ]
+    },
+    {
+      "id": "textures-fire-alpha5",
+      "file": "textures/fire_alpha5.jpg",
+      "aliases": [
+        "fire_alpha5.jpg",
+        "fire_alpha5"
+      ]
+    },
+    {
+      "id": "textures-fire-alpha8",
+      "file": "textures/fire_alpha8.jpg",
+      "aliases": [
+        "fire_alpha8.jpg",
+        "fire_alpha8"
+      ]
+    },
+    {
+      "id": "textures-fire-base",
+      "file": "textures/fire_base.jpg",
+      "aliases": [
+        "fire_base.jpg",
+        "fire_base"
+      ]
+    },
+    {
+      "id": "textures-fire-dis4",
+      "file": "textures/fire_dis4.jpg",
+      "aliases": [
+        "fire_dis4.jpg",
+        "fire_dis4"
+      ]
+    },
+    {
+      "id": "textures-fire-dis5",
+      "file": "textures/fire_dis5.jpg",
+      "aliases": [
+        "fire_dis5.jpg",
+        "fire_dis5"
+      ]
+    },
+    {
+      "id": "textures-grad",
+      "file": "textures/grad.jpg",
+      "aliases": [
+        "grad.jpg",
+        "grad"
+      ]
+    },
+    {
+      "id": "textures-grad16",
+      "file": "textures/grad16.jpg",
+      "aliases": [
+        "grad16.jpg",
+        "grad16"
+      ]
+    },
+    {
+      "id": "textures-grad2",
+      "file": "textures/grad2.jpg",
+      "aliases": [
+        "grad2.jpg",
+        "grad2"
+      ]
+    },
+    {
+      "id": "textures-heart",
+      "file": "textures/heart.jpg",
+      "aliases": [
+        "heart.jpg",
+        "heart"
+      ]
+    },
+    {
+      "id": "textures-image415",
+      "file": "textures/Image415.jpg",
+      "aliases": [
+        "Image415.jpg",
+        "Image415"
+      ]
+    },
+    {
+      "id": "textures-kaite",
+      "file": "textures/kaite.jpg",
+      "aliases": [
+        "kaite.jpg",
+        "kaite"
+      ]
+    },
+    {
+      "id": "textures-lichen",
+      "file": "textures/lichen.jpg",
+      "aliases": [
+        "lichen.jpg",
+        "lichen"
+      ]
+    },
+    {
+      "id": "textures-manyfish",
+      "file": "textures/manyfish.jpg",
+      "aliases": [
+        "manyfish.jpg",
+        "manyfish"
+      ]
+    },
+    {
+      "id": "textures-moss1",
+      "file": "textures/moss1.jpg",
+      "aliases": [
+        "moss1.jpg",
+        "moss1"
+      ]
+    },
+    {
+      "id": "textures-octagonalroach",
+      "file": "textures/OctagonalRoach.jpg",
+      "aliases": [
+        "OctagonalRoach.jpg",
+        "OctagonalRoach"
+      ]
+    },
+    {
+      "id": "textures-oibeans1",
+      "file": "textures/OIbeans1.jpg",
+      "aliases": [
+        "OIbeans1.jpg",
+        "OIbeans1"
+      ]
+    },
+    {
+      "id": "textures-oicafewall",
+      "file": "textures/OIcafewall.jpg",
+      "aliases": [
+        "OIcafewall.jpg",
+        "OIcafewall"
+      ]
+    },
+    {
+      "id": "textures-oichess1",
+      "file": "textures/OIchess1..jpg",
+      "aliases": [
+        "OIchess1..jpg",
+        "OIchess1."
+      ]
+    },
+    {
+      "id": "textures-oicurved1",
+      "file": "textures/OIcurved1.jpg",
+      "aliases": [
+        "OIcurved1.jpg",
+        "OIcurved1"
+      ]
+    },
+    {
+      "id": "textures-oicurved2",
+      "file": "textures/OIcurved2.jpg",
+      "aliases": [
+        "OIcurved2.jpg",
+        "OIcurved2"
+      ]
+    },
+    {
+      "id": "textures-oicurved3",
+      "file": "textures/OIcurved3.jpg",
+      "aliases": [
+        "OIcurved3.jpg",
+        "OIcurved3"
+      ]
+    },
+    {
+      "id": "textures-oicurved4",
+      "file": "textures/OIcurved4.jpg",
+      "aliases": [
+        "OIcurved4.jpg",
+        "OIcurved4"
+      ]
+    },
+    {
+      "id": "textures-oikametanjo",
+      "file": "textures/OIkametanjo.jpg",
+      "aliases": [
+        "OIkametanjo.jpg",
+        "OIkametanjo"
+      ]
+    },
+    {
+      "id": "textures-oiparallel1",
+      "file": "textures/OIparallel1.jpg",
+      "aliases": [
+        "OIparallel1.jpg",
+        "OIparallel1"
+      ]
+    },
+    {
+      "id": "textures-oipoggendo",
+      "file": "textures/OIpoggendo.jpg",
+      "aliases": [
+        "OIpoggendo.jpg",
+        "OIpoggendo"
+      ]
+    },
+    {
+      "id": "textures-onefish",
+      "file": "textures/onefish.jpg",
+      "aliases": [
+        "onefish.jpg",
+        "onefish"
+      ]
+    },
+    {
+      "id": "textures-pano-earth-clouds",
+      "file": "textures/pano_earth_clouds.jpg",
+      "aliases": [
+        "pano_earth_clouds.jpg",
+        "pano_earth_clouds"
+      ]
+    },
+    {
+      "id": "textures-pano-earth-night",
+      "file": "textures/pano_earth_night.jpg",
+      "aliases": [
+        "pano_earth_night.jpg",
+        "pano_earth_night"
+      ]
+    },
+    {
+      "id": "textures-pano-earth-spec",
+      "file": "textures/pano_earth_spec.jpg",
+      "aliases": [
+        "pano_earth_spec.jpg",
+        "pano_earth_spec"
+      ]
+    },
+    {
+      "id": "textures-pano-earth",
+      "file": "textures/pano_earth.jpg",
+      "aliases": [
+        "pano_earth.jpg",
+        "pano_earth"
+      ]
+    },
+    {
+      "id": "textures-pano-starsmap",
+      "file": "textures/pano_starsmap.jpg",
+      "aliases": [
+        "pano_starsmap.jpg",
+        "pano_starsmap"
+      ]
+    },
+    {
+      "id": "textures-paper",
+      "file": "textures/paper.jpg",
+      "aliases": [
+        "paper.jpg",
+        "paper"
+      ]
+    },
+    {
+      "id": "textures-pecubes1",
+      "file": "textures/PEcubes1.jpg",
+      "aliases": [
+        "PEcubes1.jpg",
+        "PEcubes1"
+      ]
+    },
+    {
+      "id": "textures-pecubesbw",
+      "file": "textures/PEcubesBW.jpg",
+      "aliases": [
+        "PEcubesBW.jpg",
+        "PEcubesBW"
+      ]
+    },
+    {
+      "id": "textures-pelosang1",
+      "file": "textures/PElosang1.jpg",
+      "aliases": [
+        "PElosang1.jpg",
+        "PElosang1"
+      ]
+    },
+    {
+      "id": "textures-pepyramid1",
+      "file": "textures/PEpyramid1.jpg",
+      "aliases": [
+        "PEpyramid1.jpg",
+        "PEpyramid1"
+      ]
+    },
+    {
+      "id": "textures-pesticks1",
+      "file": "textures/PEsticks1.jpg",
+      "aliases": [
+        "PEsticks1.jpg",
+        "PEsticks1"
+      ]
+    },
+    {
+      "id": "textures-pesticks2",
+      "file": "textures/PEsticks2.jpg",
+      "aliases": [
+        "PEsticks2.jpg",
+        "PEsticks2"
+      ]
+    },
+    {
+      "id": "textures-prayerwheel",
+      "file": "textures/prayerwheel.jpg",
+      "aliases": [
+        "prayerwheel.jpg",
+        "prayerwheel"
+      ]
+    },
+    {
+      "id": "textures-ruin",
+      "file": "textures/ruin.jpg",
+      "aliases": [
+        "ruin.jpg",
+        "ruin"
+      ]
+    },
+    {
+      "id": "textures-seaweed-original",
+      "file": "textures/seaweed_ORIGINAL.jpg",
+      "aliases": [
+        "seaweed_ORIGINAL.jpg",
+        "seaweed_ORIGINAL"
+      ]
+    },
+    {
+      "id": "textures-seaweed",
+      "file": "textures/seaweed.jpg",
+      "aliases": [
+        "seaweed.jpg",
+        "seaweed"
+      ]
+    },
+    {
+      "id": "textures-sin-lookup",
+      "file": "textures/sin_lookup.jpg",
+      "aliases": [
+        "sin_lookup.jpg",
+        "sin_lookup"
+      ]
+    },
+    {
+      "id": "textures-sinl",
+      "file": "textures/sinl.jpg",
+      "aliases": [
+        "sinl.jpg",
+        "sinl"
+      ]
+    },
+    {
+      "id": "textures-sky",
+      "file": "textures/sky.jpg",
+      "aliases": [
+        "sky.jpg",
+        "sky"
+      ]
+    },
+    {
+      "id": "textures-smalltiled-colors3",
+      "file": "textures/smalltiled_colors3.jpg",
+      "aliases": [
+        "smalltiled_colors3.jpg",
+        "smalltiled_colors3"
+      ]
+    },
+    {
+      "id": "textures-smalltiled-electric-nebula",
+      "file": "textures/smalltiled_electric_nebula.jpg",
+      "aliases": [
+        "smalltiled_electric_nebula.jpg",
+        "smalltiled_electric_nebula"
+      ]
+    },
+    {
+      "id": "textures-smalltiled-ensign-meat",
+      "file": "textures/smalltiled_ensign_meat.jpg",
+      "aliases": [
+        "smalltiled_ensign_meat.jpg",
+        "smalltiled_ensign_meat"
+      ]
+    },
+    {
+      "id": "textures-smalltiled-lizard-scales",
+      "file": "textures/smalltiled_lizard_scales.jpg",
+      "aliases": [
+        "smalltiled_lizard_scales.jpg",
+        "smalltiled_lizard_scales"
+      ]
+    },
+    {
+      "id": "textures-sunrise",
+      "file": "textures/sunrise.jpg",
+      "aliases": [
+        "sunrise.jpg",
+        "sunrise"
+      ]
+    },
+    {
+      "id": "textures-videoalpha",
+      "file": "textures/videoalpha.jpg",
+      "aliases": [
+        "videoalpha.jpg",
+        "videoalpha"
+      ]
+    },
+    {
+      "id": "textures-vitriol",
+      "file": "textures/VITRIOL.jpg",
+      "aliases": [
+        "VITRIOL.jpg",
+        "VITRIOL"
+      ]
+    },
+    {
+      "id": "textures-wrenches",
+      "file": "textures/wrenches.jpg",
+      "aliases": [
+        "wrenches.jpg",
+        "wrenches"
+      ]
+    }
+  ],
+  "fragments": [],
+  "plugins": [],
+  "playlist": [],
+  "automationDefaults": {
+    "transitionSeconds": 8,
+    "randomizeOnBeat": false
+  }
+}

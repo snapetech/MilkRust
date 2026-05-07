@@ -8,4 +8,5 @@ Current directories:
 
 - `catalog.json`: source catalog for built-in, vendored, optional, and link-only packs.
 - `third-party/`: copied third-party content after license review.
+- `community-unlicensed/`: public community content with unclear/no explicit license, kept separate from vetted redistributable content.
 - `generated/`: reserved for generated indexes and compatibility reports.

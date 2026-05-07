@@ -57,7 +57,9 @@ cargo run -p rustymilk-cli -- pack-validate examples/sample-pack
 
 ```bash
 npm run content:audit
+npm run content:report-community
+npm run content:report-community:compat
 npm run content:validate
 ```
 
-Third-party packs live in [`content/catalog.json`](content/catalog.json). Vendored content requires explicit redistribution permission; unclear historical MilkDrop packs are tracked as link-only until their license is reviewed. The repo currently vendors the MIT-licensed [`butterchurn-presets@2.4.7`](content/third-party/butterchurn-presets-2.4.7) converted preset package.
+Third-party packs live in [`content/catalog.json`](content/catalog.json). Vetted redistributable content goes in `content/third-party`; aggressive public community imports with unclear/no explicit licenses go in [`content/community-unlicensed`](content/community-unlicensed) and are excluded from default builds unless a distribution opts in. The repo currently vendors the MIT-licensed [`butterchurn-presets@2.4.7`](content/third-party/butterchurn-presets-2.4.7) converted preset package plus public projectM community preset/texture packs.

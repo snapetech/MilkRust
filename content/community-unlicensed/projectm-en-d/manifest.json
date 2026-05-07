@@ -1,0 +1,569 @@
+{
+  "schemaVersion": 1,
+  "id": "projectm-en-d",
+  "name": "En D Presets",
+  "version": "community-2026-05-07",
+  "author": "MilkDrop/projectM community",
+  "description": "Community-imported public MilkDrop/projectM content. License status is NOASSERTION; see RUSTYMILK-COMMUNITY-NOTICE.md.",
+  "license": "NOASSERTION",
+  "requiredRustyMilkVersion": "0.1.0",
+  "sourceUrls": [
+    "https://github.com/projectM-visualizer/presets-en-d"
+  ],
+  "presets": [
+    {
+      "id": "fumbling-foo-fumbling-foo-en-d-martin-the-lifeforce-of-the-music-v4a",
+      "title": "Fumbling_Foo + En D, Martin - The Lifeforce of the music v4a",
+      "file": "Fumbling Foo/Fumbling_Foo + En D, Martin - The Lifeforce of the music v4a.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "fumbling-foo-fumbling-foo-en-d-martin-the-lifeforce-of-the-music-v5",
+      "title": "Fumbling_Foo__En_D_Martin_-_The_Lifeforce_of_the_music_v5",
+      "file": "Fumbling Foo/Fumbling_Foo__En_D_Martin_-_The_Lifeforce_of_the_music_v5.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "fumbling-foo-fumbling-foo-en-d-martin-the-lifeforce-of-the-music-v6b",
+      "title": "Fumbling_Foo__En_D_Martin_-_The_Lifeforce_of_the_music_v6b",
+      "file": "Fumbling Foo/Fumbling_Foo__En_D_Martin_-_The_Lifeforce_of_the_music_v6b.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-1-new-millenium-presets-en-d-2001-beta",
+      "title": "En D -  2001 (Beta)",
+      "file": "MD Episode 1 - New Millenium/Presets/En D -  2001 (Beta).milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-1-new-millenium-presets-en-d-2001",
+      "title": "En D -  2001",
+      "file": "MD Episode 1 - New Millenium/Presets/En D -  2001.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-1-new-millenium-presets-en-d-2002-beta",
+      "title": "En D -  2002 (Beta)",
+      "file": "MD Episode 1 - New Millenium/Presets/En D -  2002 (Beta).milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-1-new-millenium-presets-en-d-2002",
+      "title": "En D -  2002",
+      "file": "MD Episode 1 - New Millenium/Presets/En D -  2002.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-1-new-millenium-presets-en-d-2003",
+      "title": "En D -  2003",
+      "file": "MD Episode 1 - New Millenium/Presets/En D -  2003.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-1-new-millenium-presets-en-d-2004",
+      "title": "En D -  2004",
+      "file": "MD Episode 1 - New Millenium/Presets/En D -  2004.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-1-new-millenium-presets-en-d-2005",
+      "title": "En D -  2005",
+      "file": "MD Episode 1 - New Millenium/Presets/En D -  2005.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-1-new-millenium-presets-en-d-2006",
+      "title": "En D -  2006",
+      "file": "MD Episode 1 - New Millenium/Presets/En D -  2006.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-1-new-millenium-presets-en-d-martin-perfect-simple-spectrum",
+      "title": "En D + Martin - Perfect Simple Spectrum ",
+      "file": "MD Episode 1 - New Millenium/Presets/En D + Martin - Perfect Simple Spectrum .milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp-2",
+      "title": "En D -  Acid warp 2",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D -  Acid warp 2.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp-3",
+      "title": "En D -  Acid warp 3",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D -  Acid warp 3.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp-4",
+      "title": "En D -  Acid Warp 4",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D -  Acid Warp 4.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp-vs-starforge",
+      "title": "En D -  Acid warp vs Starforge",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D -  Acid warp vs Starforge.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp",
+      "title": "En D -  Acid warp",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D -  Acid warp.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-burning-ground",
+      "title": "En D -  Burning ground",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D -  Burning ground.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-club-lights",
+      "title": "En D -  Club lights",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D -  Club lights.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-took-too-much-acid-somewhere-in-a-en-d-aftermath",
+      "title": "En D -  Took Too Much Acid (Somewhere in a En D Aftermath",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D -  Took Too Much Acid (Somewhere in a En D Aftermath.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-down-at-lower-harbor",
+      "title": "En D - Down at Lower harbor",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D - Down at Lower harbor.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-i-won-on-temptation-island-because-he-was-king",
+      "title": "En D - I Won on Temptation Island because he was king",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D - I Won on Temptation Island because he was king.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-light-essences",
+      "title": "En D - Light Essences",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D - Light Essences.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-technocracy-is-bullshit",
+      "title": "En D - Technocracy is bullshit",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D - Technocracy is bullshit.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-took-too-much-acid-it-became-a-coldcut-video",
+      "title": "En D - Took Too much Acid ( It became a coldcut video)",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D - Took Too much Acid ( It became a coldcut video).milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-took-too-much-acid-and-i-vomited-out-rainbow",
+      "title": "En D - Took Too much Acid (and I Vomited out rainbow",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D - Took Too much Acid (and I Vomited out rainbow.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-took-too-much-acid-and-this-happend",
+      "title": "En D - Took Too much Acid (and this happend)",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D - Took Too much Acid (and this happend).milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-presets-en-d-wild-why-at-the-artist-development-center",
+      "title": "En D - Wild Why At the Artist Development center",
+      "file": "MD Episode 2 - out of Da club into da head/Presets/En D - Wild Why At the Artist Development center.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-en-d-bitchcraft",
+      "title": "En D - Bitchcraft",
+      "file": "Remixes And Remakes/Presets/En D - Bitchcraft.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-en-d-censored-mosaic-pixels",
+      "title": "En D - Censored mosaic pixels",
+      "file": "Remixes And Remakes/Presets/En D - Censored mosaic pixels.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-en-d-street-art",
+      "title": "En D - Street Art",
+      "file": "Remixes And Remakes/Presets/En D - Street Art.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-en-d-sunset-color-tower-hakan-presets-are-outdated",
+      "title": "En D - Sunset color tower (Hakan presets are outdated) ",
+      "file": "Remixes And Remakes/Presets/En D - Sunset color tower (Hakan presets are outdated) .milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-martin-hardcore-mix-1-mash-3-en-d-autistic-aeromancy",
+      "title": "martin - Hardcore mix 1 [mash 3] - En D - Autistic  aeromancy",
+      "file": "Remixes And Remakes/Presets/martin - Hardcore mix 1 [mash 3] - En D - Autistic  aeromancy.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically",
+      "title": "martin - night in the forest - En D - if hakan says that i can scam code i  basically ",
+      "file": "Remixes And Remakes/Presets/martin - night in the forest - En D - if hakan says that i can scam code i  basically .milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-could-go-madame-chao-on-your-ass",
+      "title": "martin - night in the forest - En D - if hakan says that i can scam code i  basically could go Madame Chao on your ass!!!",
+      "file": "Remixes And Remakes/Presets/martin - night in the forest - En D - if hakan says that i can scam code i  basically could go Madame Chao on your ass!!!.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-give-head-to-a-checkerboard",
+      "title": "martin - night in the forest - En D - if hakan says that i can scam code i  basically Give head to a checkerboard",
+      "file": "Remixes And Remakes/Presets/martin - night in the forest - En D - if hakan says that i can scam code i  basically Give head to a checkerboard.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-i-d-rather-have-tik-tok-girls-go-swim-in-lake-superio",
+      "title": "martin - night in the forest - En D - if hakan says that i can scam code i  basically i'd rather have tik tok girls go swim in lake superior during a storn",
+      "file": "Remixes And Remakes/Presets/martin - night in the forest - En D - if hakan says that i can scam code i  basically i'd rather have tik tok girls go swim in lake superior during a storn.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-potc-ida-mim-ska-de-mumspissit",
+      "title": "martin - night in the forest - En D - if hakan says that i can scam code i  basically potc ida mim ska de mumspissit",
+      "file": "Remixes And Remakes/Presets/martin - night in the forest - En D - if hakan says that i can scam code i  basically potc ida mim ska de mumspissit.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-send-you-to-a-push-a-unknown-place-filled-with-color",
+      "title": "martin - night in the forest - En D - if hakan says that i can scam code i  basically send you to a push a unknown place filled with color",
+      "file": "Remixes And Remakes/Presets/martin - night in the forest - En D - if hakan says that i can scam code i  basically send you to a push a unknown place filled with color.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    },
+    {
+      "id": "remixes-and-remakes-presets-orb-acid-cycle-en-d-s-sweet-taste-of-diffusion-and-black-magik",
+      "title": "ORB - Acid Cycle [ En D's Sweet taste of  diffusion and black magik",
+      "file": "Remixes And Remakes/Presets/ORB - Acid Cycle [ En D's Sweet taste of  diffusion and black magik.milk",
+      "sourceFormat": "milk",
+      "tags": [
+        "community",
+        "projectm"
+      ],
+      "thumbnail": ""
+    }
+  ],
+  "textures": [
+    {
+      "id": "md-episode-1-new-millenium-new-millenium-logo",
+      "file": "MD Episode 1 - New Millenium/New millenium Logo.Jpg",
+      "aliases": [
+        "New millenium Logo.Jpg",
+        "New millenium Logo.Jpg"
+      ]
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-out-of-da-club-into-da-head",
+      "file": "MD Episode 2 - out of Da club into da head/Out of Da Club into Da Head.png",
+      "aliases": [
+        "Out of Da Club into Da Head.png",
+        "Out of Da Club into Da Head"
+      ]
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-textures-adc",
+      "file": "MD Episode 2 - out of Da club into da head/Textures/ADC.JPG",
+      "aliases": [
+        "ADC.JPG",
+        "ADC.JPG"
+      ]
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-textures-altfriends",
+      "file": "MD Episode 2 - out of Da club into da head/Textures/Altfriends.jpg",
+      "aliases": [
+        "Altfriends.jpg",
+        "Altfriends"
+      ]
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-textures-houscat",
+      "file": "MD Episode 2 - out of Da club into da head/Textures/houscat.jpg",
+      "aliases": [
+        "houscat.jpg",
+        "houscat"
+      ]
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-textures-smokingdeath",
+      "file": "MD Episode 2 - out of Da club into da head/Textures/smokingdeath.jpg",
+      "aliases": [
+        "smokingdeath.jpg",
+        "smokingdeath"
+      ]
+    },
+    {
+      "id": "md-episode-2-out-of-da-club-into-da-head-textures-somewhere",
+      "file": "MD Episode 2 - out of Da club into da head/Textures/Somewhere.JPG",
+      "aliases": [
+        "Somewhere.JPG",
+        "Somewhere.JPG"
+      ]
+    },
+    {
+      "id": "remixes-and-remakes-cover",
+      "file": "Remixes And Remakes/COVER.jpg",
+      "aliases": [
+        "COVER.jpg",
+        "COVER"
+      ]
+    }
+  ],
+  "fragments": [],
+  "plugins": [],
+  "playlist": [
+    "fumbling-foo-fumbling-foo-en-d-martin-the-lifeforce-of-the-music-v4a",
+    "fumbling-foo-fumbling-foo-en-d-martin-the-lifeforce-of-the-music-v5",
+    "fumbling-foo-fumbling-foo-en-d-martin-the-lifeforce-of-the-music-v6b",
+    "md-episode-1-new-millenium-presets-en-d-2001-beta",
+    "md-episode-1-new-millenium-presets-en-d-2001",
+    "md-episode-1-new-millenium-presets-en-d-2002-beta",
+    "md-episode-1-new-millenium-presets-en-d-2002",
+    "md-episode-1-new-millenium-presets-en-d-2003",
+    "md-episode-1-new-millenium-presets-en-d-2004",
+    "md-episode-1-new-millenium-presets-en-d-2005",
+    "md-episode-1-new-millenium-presets-en-d-2006",
+    "md-episode-1-new-millenium-presets-en-d-martin-perfect-simple-spectrum",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp-2",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp-3",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp-4",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp-vs-starforge",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-acid-warp",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-burning-ground",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-club-lights",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-took-too-much-acid-somewhere-in-a-en-d-aftermath",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-down-at-lower-harbor",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-i-won-on-temptation-island-because-he-was-king",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-light-essences",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-technocracy-is-bullshit",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-took-too-much-acid-it-became-a-coldcut-video",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-took-too-much-acid-and-i-vomited-out-rainbow",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-took-too-much-acid-and-this-happend",
+    "md-episode-2-out-of-da-club-into-da-head-presets-en-d-wild-why-at-the-artist-development-center",
+    "remixes-and-remakes-presets-en-d-bitchcraft",
+    "remixes-and-remakes-presets-en-d-censored-mosaic-pixels",
+    "remixes-and-remakes-presets-en-d-street-art",
+    "remixes-and-remakes-presets-en-d-sunset-color-tower-hakan-presets-are-outdated",
+    "remixes-and-remakes-presets-martin-hardcore-mix-1-mash-3-en-d-autistic-aeromancy",
+    "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically",
+    "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-could-go-madame-chao-on-your-ass",
+    "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-give-head-to-a-checkerboard",
+    "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-i-d-rather-have-tik-tok-girls-go-swim-in-lake-superio",
+    "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-potc-ida-mim-ska-de-mumspissit",
+    "remixes-and-remakes-presets-martin-night-in-the-forest-en-d-if-hakan-says-that-i-can-scam-code-i-basically-send-you-to-a-push-a-unknown-place-filled-with-color",
+    "remixes-and-remakes-presets-orb-acid-cycle-en-d-s-sweet-taste-of-diffusion-and-black-magik"
+  ],
+  "automationDefaults": {
+    "transitionSeconds": 8,
+    "randomizeOnBeat": false
+  }
+}
