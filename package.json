@@ -12,11 +12,13 @@
     "packages/rustymilk-web/src",
     "pkg",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "LICENSE-SCOPE.md"
   ],
   "scripts": {
     "build:wasm": "bash ./tools/build-wasm-package.sh",
     "cli": "cargo run -p rustymilk-cli --",
+    "compliance:audit": "node ./tools/audit-rustymilk-compliance.mjs",
     "content:audit": "node ./tools/audit-rustymilk-content-sources.mjs --write . ../slskdn ../slskR",
     "content:pull-community": "node ./tools/pull-rustymilk-community-content.mjs",
     "content:report-community": "node ./tools/report-rustymilk-community-packs.mjs --write",

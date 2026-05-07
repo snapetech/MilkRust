@@ -15,6 +15,8 @@ It is retained as reference material for RustyMilk compatibility work:
 
 This archive is not the production RustyMilk engine. Durable behavior should be migrated into RustyMilk-owned Rust crates, web SDK tests, renderer backend tests, player/studio requirements, and CLI/tooling.
 
+Compliance status: reference-only archive. It is not included in npm package files, Cargo crates, default app bundles, or release content. Treat this directory as preserved provenance from the local `slskdn` source tree; review upstream/source ownership before redistributing it outside the RustyMilk source repository.
+
 Source snapshot paths:
 
 ```text
@@ -33,4 +35,3 @@ Original local source:
 ../slskdn/src/web/scripts/
 ../slskdn/docs/design/webgl-milkdrop3-port.md
 ```
-

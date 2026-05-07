@@ -20,7 +20,16 @@ const sendFile = (response, filePath) => {
   createReadStream(filePath).pipe(response);
 };
 
-export const createRustyMilkAppServer = ({ app = 'player', root = repoRoot } = {}) => {
+const isCommunityUnlicensedPath = (pathname = '') =>
+  pathname.startsWith('/content/community-unlicensed/')
+  || pathname === '/content/generated/community-pack-summary.json'
+  || pathname === '/content/generated/COMMUNITY_PACK_SUMMARY.md';
+
+export const createRustyMilkAppServer = ({
+  app = 'player',
+  includeCommunityContent = false,
+  root = repoRoot,
+} = {}) => {
   const appName = app === 'studio' ? 'rustymilk-studio' : 'rustymilk-player';
   const appPath = `/apps/${appName}/`;
   const server = createServer((request, response) => {
@@ -32,6 +41,11 @@ export const createRustyMilkAppServer = ({ app = 'player', root = repoRoot } = {
     }
 
     const pathname = decodeURIComponent(url.pathname);
+    if (!includeCommunityContent && isCommunityUnlicensedPath(pathname)) {
+      response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end('Community-unlicensed content is disabled for this server.');
+      return;
+    }
     const relativePath = pathname === appPath
       ? join('apps', appName, 'index.html')
       : pathname.replace(/^\/+/, '');
@@ -51,8 +65,15 @@ export const createRustyMilkAppServer = ({ app = 'player', root = repoRoot } = {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const app = process.argv[2] === 'studio' ? 'studio' : 'player';
   const port = Number(process.env.PORT || 4173);
-  const { appName, appPath, server } = createRustyMilkAppServer({ app });
+  const includeCommunityContent = process.env.RUSTYMILK_INCLUDE_COMMUNITY_CONTENT === '1';
+  const { appName, appPath, server } = createRustyMilkAppServer({
+    app,
+    includeCommunityContent,
+  });
   server.listen(port, '127.0.0.1', () => {
     console.log(`RustyMilk ${appName.replace('rustymilk-', '')} running at http://127.0.0.1:${port}${appPath}`);
+    if (includeCommunityContent) {
+      console.log('Community-unlicensed content serving is enabled for this local server.');
+    }
   });
 }

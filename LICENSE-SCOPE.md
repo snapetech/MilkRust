@@ -33,4 +33,6 @@ Default source and package releases may include RustyMilk code, RustyMilk-owned 
 
 Release builds must not silently bundle `content/community-unlicensed`. Distributions that opt into that content should preserve the per-pack `RUSTYMILK-COMMUNITY-NOTICE.md` files, catalog metadata, source links, and takedown/removal language.
 
+The local app server follows the same default posture: community-unlicensed content is not served unless `RUSTYMILK_INCLUDE_COMMUNITY_CONTENT=1` is set or the server is constructed with `includeCommunityContent: true`.
+
 Downstream pack authors should set explicit licenses in their pack `manifest.json`. If a pack has mixed licensing, each asset should carry its own notice under the pack's `licenses/` directory.

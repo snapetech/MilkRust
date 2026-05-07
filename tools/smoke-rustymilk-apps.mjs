@@ -3,8 +3,8 @@ import { chromium } from '@playwright/test';
 
 import { createRustyMilkAppServer } from './serve-rustymilk-app.mjs';
 
-const listen = async (app) => {
-  const { appPath, server } = createRustyMilkAppServer({ app });
+const listen = async (app, options = {}) => {
+  const { appPath, server } = createRustyMilkAppServer({ app, ...options });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address();
   return {
@@ -19,7 +19,7 @@ const servers = [];
 const browserMessages = [];
 
 try {
-  servers.push(await listen('player'));
+  servers.push(await listen('player', { includeCommunityContent: true }));
   servers.push(await listen('studio'));
 
   const player = await browser.newPage();

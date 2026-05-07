@@ -48,6 +48,12 @@ npm run dev:studio
 
 The app commands serve the local repo at `http://127.0.0.1:4173/`.
 
+Community-unlicensed packs are not served by the local app server unless explicitly enabled:
+
+```bash
+RUSTYMILK_INCLUDE_COMMUNITY_CONTENT=1 npm run dev:player
+```
+
 ## CLI
 
 ```bash
