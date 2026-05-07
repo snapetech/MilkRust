@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build:wasm": "bash ./tools/build-wasm-package.sh",
+    "cli": "cargo run -p rustymilk-cli --",
     "dev:player": "node ./tools/serve-rustymilk-app.mjs player",
     "dev:studio": "node ./tools/serve-rustymilk-app.mjs studio",
     "test:compatibility": "node ./tools/report-rustymilk-compatibility.mjs",

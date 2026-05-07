@@ -9,6 +9,7 @@ This repository is being prepared as the home for:
 - `rustymilk-core`: preset parsing, expression evaluation, runtime frame generation, compatibility reports, geometry, and WebGPU batch builders.
 - `rustymilk-renderer-core`: renderer backend contracts and capability types.
 - `rustymilk-renderer-headless`: headless renderer stats backend for tests, reports, and batch tooling.
+- `rustymilk-cli`: command-line validation, inspection, compatibility, and render-stat tooling.
 - `rustymilk-wasm`: browser-facing WASM bindings and renderers.
 - `packages/rustymilk-web`: JavaScript client wrapper for applications that consume the WASM package.
 - `apps/rustymilk-player`: standalone browser player prototype.
@@ -39,3 +40,12 @@ npm run dev:studio
 ```
 
 The app commands serve the local repo at `http://127.0.0.1:4173/`.
+
+## CLI
+
+```bash
+cargo run -p rustymilk-cli -- validate preset.milk
+cargo run -p rustymilk-cli -- inspect preset.milk
+cargo run -p rustymilk-cli -- compat ./presets
+cargo run -p rustymilk-cli -- render-stats preset.milk
+```

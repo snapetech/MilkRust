@@ -5,6 +5,7 @@ RustyMilk is split into layers so hosts can use only what they need.
 - Core: pure Rust parser, expression VM, preset documents, compatibility analysis, frame runtime, primitive geometry, and packed renderer batches.
 - Renderer core: shared renderer traits, capability reports, and render statistics contracts.
 - Headless renderer: renderer-neutral test/report backend that consumes frame sets or packed WebGPU-style batches.
+- CLI: validation, inspection, compatibility, and headless render-stat tooling built on core plus renderer contracts.
 - WASM: `wasm-bindgen` exports, WebGL2/canvas renderers, browser texture plumbing, and the public `RustyMilkEngine` class.
 - Web client: JavaScript convenience wrapper that connects Web Audio analyzers, preset libraries, automation, and host UI callbacks.
 - Player app: standalone browser player prototype using the web SDK.
