@@ -97,6 +97,22 @@ try {
   if (!reportText?.includes('inspected')) {
     throw new Error(`RustyMilk studio smoke did not inspect preset: ${reportText}`);
   }
+  const packDownload = studio.waitForEvent('download');
+  await studio.getByRole('button', { name: 'Export Pack' }).click();
+  const studioPackDownload = await packDownload;
+  const packExportPath = await studioPackDownload.path();
+  const studioPackExport = packExportPath
+    ? await readFile(packExportPath)
+    : Buffer.from('{\"schemaVersion\":1,\"id\":\"studio-smoke\",\"name\":\"Smoke Pack\",\"presets\":[]}', 'utf8');
+  await studio.setInputFiles('#pack-file', {
+    name: 'smoke-pack.json',
+    mimeType: 'application/json',
+    buffer: studioPackExport,
+  });
+  const importedSource = await studio.$eval('#source', (element) => element.value);
+  if (!importedSource || !importedSource.includes('name=')) {
+    throw new Error(`RustyMilk studio smoke did not import pack: ${importedSource}`);
+  }
   const studioStats = await studio.evaluate(() => window.__rustyMilkStudioStats);
   if (studioStats.channelTotal <= 0 || studioStats.litPixels < studioStats.pixelCount * 0.01) {
     if (browserMessages.length > 0) console.log(browserMessages.join('\n'));

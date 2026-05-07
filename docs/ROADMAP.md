@@ -36,7 +36,8 @@ Status legend: ✅ implemented, 🚧 partial, ⚪ not started.
   - `player-ui` prototype now supports live playback controls (pause/resume, prev/next preset, reset, loop/no-loop).
 - Phase 8 RustyMilk Studio: 🚧
   - Browser Studio prototype supports inspect/edit/fragment workflows.
-  - Preset libraries, favorites, and pack publish/import workflows are pending.
+  - Browser Studio now supports preset pack import/export (single-pack export with embedded sources).
+  - Preset libraries and favorites workflows are still pending.
 - Phase 9 Language SDKs and Native Interop: ⚪
   - CLI is Rust-native; additional language SDKs/host wrappers are pending.
 - Source Import & Content Expansion: 🚧

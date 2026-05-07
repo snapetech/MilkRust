@@ -5,9 +5,148 @@ const source = document.querySelector('#source');
 const report = document.querySelector('#report');
 const parameter = document.querySelector('#parameter');
 const parameterValue = document.querySelector('#parameter-value');
+const exportPackButton = document.querySelector('#export-pack');
+const packImportInput = document.querySelector('#pack-file');
 
 let engine;
 let animationFrame = 0;
+const PACK_EXPORT_VERSION = 1;
+const STUDIO_EXPORT_PREFIX = 'rustymilk-studio-preset';
+
+const sanitizePackToken = (value = '') => String(value || '')
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/(^-|-$)/g, '');
+const safeFileName = (value = '', fallback = 'preset') => {
+  const safe = sanitizePackToken(value) || sanitizePackToken(fallback);
+  return `${safe || 'preset'}.json`;
+};
+
+const safePresetTitle = (value) => {
+  const trimmed = String(value || '').trim();
+  if (trimmed) return trimmed;
+  try {
+    const inspected = JSON.parse(engine?.inspectPresetText(value || defaultSource, 'studio.milk'));
+    return String(inspected?.title || '').trim() || 'RustyMilk Studio Preset';
+  } catch {
+    return 'RustyMilk Studio Preset';
+  }
+};
+
+const buildPackFromCurrentSource = () => {
+  const presetSource = String(source.value || defaultSource);
+  const fileName = 'studio-export.milk';
+  const presetId = `preset-${Date.now().toString(36)}-${Math.floor(Math.random() * 10000).toString(36)}`;
+  const title = safePresetTitle(presetSource);
+  return {
+    schemaVersion: PACK_EXPORT_VERSION,
+    id: `studio-${Math.random().toString(36).slice(2, 10)}`,
+    name: title,
+    version: '1.0.0',
+    author: 'RustyMilk',
+    description: 'Exported from RustyMilk Studio',
+    license: 'CC0',
+    requiredRustyMilkVersion: '0.1.0',
+    sourceUrls: [],
+    presets: [{
+      id: presetId,
+      title,
+      file: fileName,
+      sourceFormat: 'milk',
+    }],
+    textures: [],
+    fragments: [],
+    plugins: [],
+    playlist: [],
+    automationDefaults: {
+      beatSensitivity: 1.35,
+      beatsPerPreset: 8,
+      minBeatIntervalSeconds: 0.25,
+      transitionSeconds: 1.5,
+      mode: 'off',
+      timedIntervalSeconds: 30,
+    },
+    embeddedSources: {
+      [fileName]: presetSource,
+    },
+  };
+};
+
+const parsePresetSourcesFromPack = (payload = {}) => {
+  const presets = Array.isArray(payload?.presets) ? payload.presets : [];
+  const embedded = payload?.embeddedSources || {};
+  const parsed = presets
+    .map((preset, index) => {
+      const file = String(preset?.file || '').trim();
+      const sourceText = typeof file === 'string' && file.length > 0 ? embedded?.[file] : '';
+      if (!sourceText) return null;
+      return {
+        index,
+        id: String(preset?.id || `preset-${index}`),
+        title: String(preset?.title || preset?.name || `Preset ${index + 1}`),
+        file,
+        source: sourceText,
+      };
+    })
+    .filter(Boolean);
+  if (parsed.length) return parsed;
+  if (typeof payload?.source === 'string' && payload?.source.length > 0) {
+    return [{
+      index: 0,
+      id: 'imported',
+      title: String(payload?.title || payload?.name || 'Imported Preset'),
+      file: 'imported.milk',
+      source: payload.source,
+    }];
+  }
+  if (Array.isArray(payload?.presetSources)) {
+    return payload.presetSources
+      .map((preset, index) => {
+        if (typeof preset?.source !== 'string') return null;
+        return {
+          index,
+          id: String(preset?.id || `imported-${index}`),
+          title: String(preset?.title || preset?.name || `Preset ${index + 1}`),
+          file: String(preset?.file || `imported-${index}.milk`),
+          source: String(preset.source),
+        };
+      })
+      .filter(Boolean);
+  }
+  if (Array.isArray(payload)) {
+    return payload
+      .map((preset, index) => {
+        if (typeof preset?.source !== 'string') return null;
+        return {
+          index,
+          id: String(preset?.id || `imported-${index}`),
+          title: String(preset?.title || preset?.name || `Preset ${index + 1}`),
+          file: String(preset?.file || `imported-${index}.milk`),
+          source: String(preset.source),
+        };
+      })
+      .filter(Boolean);
+  }
+  return [];
+};
+
+const loadStudioPack = (text = '') => {
+  const presets = parsePresetSourcesFromPack(parseImportPayload(text));
+  if (!presets.length) {
+    show('Unable to load pack: no embedded preset sources found');
+    return;
+  }
+  source.value = presets[0].source;
+  loadPreview();
+  show({
+    imported: {
+      presetCount: presets.length,
+      selected: presets[0].title,
+      file: presets[0].file,
+    },
+  });
+};
 
 const defaultSource = `name=RustyMilk Studio Draft
 decay=0.9
@@ -81,6 +220,35 @@ const loadPreview = () => {
   }
 };
 
+const parseImportPayload = (text = '') => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
+const exportText = (payload, fallbackName) => {
+  if (!payload?.source) return;
+  const objectUrl = URL.createObjectURL(new Blob([payload.source], { type: 'text/plain' }));
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  link.download = payload.fileName || fallbackName;
+  link.click();
+  URL.revokeObjectURL(objectUrl);
+};
+
+const startDownload = (payload, filename = STUDIO_EXPORT_PREFIX) => {
+  const objectUrl = URL.createObjectURL(
+    new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' }),
+  );
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(objectUrl);
+};
+
 const render = (time = 0) => {
   resize();
   const bass = Math.sin(time * 0.004) * 0.5 + 0.5;
@@ -109,15 +277,6 @@ const render = (time = 0) => {
   animationFrame = requestAnimationFrame(render);
 };
 
-const exportText = (payload, fallbackName) => {
-  if (!payload?.source) return;
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(new Blob([payload.source], { type: 'text/plain' }));
-  link.download = payload.fileName || fallbackName;
-  link.click();
-  URL.revokeObjectURL(link.href);
-};
-
 await init({ module_or_path: '/pkg/rustymilk_wasm_bg.wasm' });
 engine = new RustyMilkEngine(canvas);
 source.value = defaultSource;
@@ -130,6 +289,19 @@ document.querySelector('#preset-file').addEventListener('change', async (event) 
   if (!file) return;
   source.value = await file.text();
   loadPreview();
+});
+
+packImportInput?.addEventListener('change', async (event) => {
+  const [file] = event.target.files || [];
+  if (!file) return;
+  const payload = await file.text();
+  loadStudioPack(payload);
+  event.target.value = '';
+});
+
+exportPackButton?.addEventListener('click', () => {
+  const payload = buildPackFromCurrentSource();
+  startDownload(payload, safeFileName(payload.name, STUDIO_EXPORT_PREFIX));
 });
 
 document.querySelector('#inspect').addEventListener('click', inspect);
