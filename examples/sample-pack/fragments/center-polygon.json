@@ -1,0 +1,11 @@
+{
+  "kind": "shape",
+  "label": "Center Polygon",
+  "values": {
+    "enabled": 1,
+    "sides": 6,
+    "x": 0.5,
+    "y": 0.5,
+    "rad": 0.18
+  }
+}

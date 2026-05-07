@@ -3,6 +3,7 @@
 RustyMilk is split into layers so hosts can use only what they need.
 
 - Core: pure Rust parser, expression VM, preset documents, compatibility analysis, frame runtime, primitive geometry, and packed renderer batches.
+- Pack: pure Rust folder-pack manifest parsing, path-safety checks, preset compatibility validation, and shared metadata for SDK/player/Studio imports.
 - Renderer core: shared renderer traits, capability reports, and render statistics contracts.
 - Headless renderer: renderer-neutral test/report backend that consumes frame sets or packed WebGPU-style batches.
 - CLI: validation, inspection, compatibility, and headless render-stat tooling built on core plus renderer contracts.

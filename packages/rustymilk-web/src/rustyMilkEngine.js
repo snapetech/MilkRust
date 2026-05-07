@@ -97,6 +97,141 @@ const defaultAutomation = {
   timedIntervalSeconds: 30,
 };
 
+const normalizeStringArray = (values = []) => Array.isArray(values)
+  ? values.filter((value) => typeof value === 'string')
+  : [];
+
+const normalizePackPath = (value = '') => String(value || '').replace(/^\/+/, '');
+
+const absoluteRustyMilkUrl = (url) =>
+  new URL(url, globalThis.location?.href || 'http://localhost/').toString();
+
+const isUnsafePackPath = (value = '') =>
+  normalizePackPath(value).split('/').some((segment) => segment === '..');
+
+const resolvePackAssetUrl = (baseUrl, file) => {
+  const normalizedFile = normalizePackPath(file);
+  if (!normalizedFile) return '';
+  if (/^[a-z][a-z0-9+.-]*:/i.test(normalizedFile)) return normalizedFile;
+  if (!baseUrl) return normalizedFile;
+  return new URL(normalizedFile, baseUrl).toString();
+};
+
+export const normalizeRustyMilkPackManifest = (manifest = {}, manifestUrl = '') => {
+  const baseUrl = manifestUrl
+    ? new URL('.', absoluteRustyMilkUrl(manifestUrl)).toString()
+    : '';
+  const presets = Array.isArray(manifest.presets) ? manifest.presets : [];
+  const textures = Array.isArray(manifest.textures) ? manifest.textures : [];
+  const fragments = Array.isArray(manifest.fragments) ? manifest.fragments : [];
+  const plugins = Array.isArray(manifest.plugins) ? manifest.plugins : [];
+  return {
+    schemaVersion: Number(manifest.schemaVersion ?? manifest.schema_version ?? 1) || 1,
+    id: String(manifest.id || ''),
+    name: String(manifest.name || ''),
+    version: String(manifest.version || ''),
+    author: String(manifest.author || ''),
+    description: String(manifest.description || ''),
+    license: String(manifest.license || ''),
+    requiredRustyMilkVersion: String(
+      manifest.requiredRustyMilkVersion || manifest.required_rustymilk_version || '',
+    ),
+    sourceUrls: normalizeStringArray(manifest.sourceUrls || manifest.source_urls),
+    presets: presets.map((preset) => ({
+      id: String(preset?.id || ''),
+      title: String(preset?.title || ''),
+      file: normalizePackPath(preset?.file),
+      url: resolvePackAssetUrl(baseUrl, preset?.file),
+      tags: normalizeStringArray(preset?.tags),
+      thumbnail: normalizePackPath(preset?.thumbnail),
+      thumbnailUrl: resolvePackAssetUrl(baseUrl, preset?.thumbnail),
+    })),
+    textures: textures.map((texture) => ({
+      id: String(texture?.id || ''),
+      file: normalizePackPath(texture?.file),
+      url: resolvePackAssetUrl(baseUrl, texture?.file),
+      aliases: normalizeStringArray(texture?.aliases),
+    })),
+    fragments: fragments.map((fragment) => ({
+      id: String(fragment?.id || ''),
+      kind: String(fragment?.kind || 'preset'),
+      file: normalizePackPath(fragment?.file),
+      url: resolvePackAssetUrl(baseUrl, fragment?.file),
+      tags: normalizeStringArray(fragment?.tags),
+    })),
+    plugins: plugins.map((plugin) => ({
+      id: String(plugin?.id || ''),
+      kind: String(plugin?.kind || 'data'),
+      entry: normalizePackPath(plugin?.entry),
+      url: resolvePackAssetUrl(baseUrl, plugin?.entry),
+    })),
+    playlist: normalizeStringArray(manifest.playlist),
+    automationDefaults: manifest.automationDefaults || manifest.automation_defaults || {},
+  };
+};
+
+export const validateRustyMilkPackManifest = (manifest = {}, manifestUrl = '') => {
+  const normalized = normalizeRustyMilkPackManifest(manifest, manifestUrl);
+  const errors = [];
+  const warnings = [];
+  if (normalized.schemaVersion !== 1) {
+    errors.push(`unsupported schemaVersion ${normalized.schemaVersion}`);
+  }
+  for (const field of ['id', 'name', 'version']) {
+    if (!normalized[field]) errors.push(`manifest field ${field} is required`);
+  }
+  if (!normalized.presets.length) warnings.push('pack contains no presets');
+  for (const preset of normalized.presets) {
+    if (!preset.id) errors.push('preset id is required');
+    if (!preset.file) errors.push(`preset ${preset.id || '<missing>'} file is required`);
+    if (isUnsafePackPath(preset.file)) errors.push(`preset ${preset.id || preset.file} path must stay inside the pack`);
+  }
+  return {
+    errors,
+    manifest: normalized,
+    valid: errors.length === 0,
+    warnings,
+  };
+};
+
+const packManifestUrl = (packUrl) => {
+  const value = String(packUrl || '');
+  if (value.endsWith('.json')) return absoluteRustyMilkUrl(value);
+  return new URL('manifest.json', absoluteRustyMilkUrl(value.endsWith('/') ? value : `${value}/`)).toString();
+};
+
+export const loadRustyMilkPack = async (packUrl, { fetchImpl = globalThis.fetch } = {}) => {
+  if (typeof fetchImpl !== 'function') {
+    throw new Error('loadRustyMilkPack requires a fetch implementation');
+  }
+  const manifestUrl = packManifestUrl(packUrl);
+  const manifestResponse = await fetchImpl(manifestUrl);
+  if (!manifestResponse.ok) {
+    throw new Error(`failed to load pack manifest ${manifestUrl}`);
+  }
+  const validation = validateRustyMilkPackManifest(await manifestResponse.json(), manifestUrl);
+  if (!validation.valid) {
+    throw new Error(`invalid RustyMilk pack: ${validation.errors.join('; ')}`);
+  }
+  const presets = await Promise.all(validation.manifest.presets.map(async (preset) => {
+    const response = await fetchImpl(preset.url);
+    if (!response.ok) {
+      throw new Error(`failed to load preset ${preset.file}`);
+    }
+    const source = await response.text();
+    return {
+      ...preset,
+      name: preset.title || preset.id || preset.file,
+      source,
+    };
+  }));
+  return {
+    ...validation,
+    manifest: validation.manifest,
+    presets,
+  };
+};
+
 let rustModulePromise;
 let rustModuleInitPromise;
 
@@ -268,9 +403,10 @@ export const createRustyMilkEngine = async ({
   const frameReader = createFrameReader(audioContext, audioNode);
   const webGpuStatus = getWebGpuStatus(rendererBackend);
   let presetIndex = 0;
+  let presetLibrary = [...rustyMilkPresets];
   let activePresetTitle = rustEngine.loadPresetText(
-    rustyMilkPresets[presetIndex].source,
-    rustyMilkPresets[presetIndex].name,
+    presetLibrary[presetIndex].source,
+    presetLibrary[presetIndex].name,
     '{}',
   );
   let automation = normalizeAutomation();
@@ -285,10 +421,10 @@ export const createRustyMilkEngine = async ({
   };
 
   const loadPreset = (index, options = {}) => {
-    presetIndex = (index + rustyMilkPresets.length) % rustyMilkPresets.length;
+    presetIndex = (index + presetLibrary.length) % presetLibrary.length;
     activePresetTitle = rustEngine.loadPresetText(
-      rustyMilkPresets[presetIndex].source,
-      rustyMilkPresets[presetIndex].name,
+      presetLibrary[presetIndex].source,
+      presetLibrary[presetIndex].name,
       textureAssetsJson(options.textureAssets),
     );
     return activePresetTitle;
@@ -369,6 +505,16 @@ export const createRustyMilkEngine = async ({
         textureAssetsJson(options.textureAssets),
       );
       return activePresetTitle;
+    },
+    loadPresetPack: (pack, options = {}) => {
+      const presets = Array.isArray(pack?.presets) ? pack.presets : [];
+      if (!presets.length) return null;
+      presetLibrary = presets.map((preset) => ({
+        name: preset.name || preset.title || preset.id || preset.file || 'Pack preset',
+        source: preset.source || '',
+      })).filter((preset) => preset.source);
+      if (!presetLibrary.length) return null;
+      return loadPreset(options.index || 0, options);
     },
     nextPreset: (options = {}) => loadPreset(presetIndex + 1, options),
     randomizePresetParameters: (options = {}) => {

@@ -7,6 +7,7 @@ RustyMilk is the standalone Rust/WASM visualizer engine extracted from slskR.
 This repository is being prepared as the home for:
 
 - `rustymilk-core`: preset parsing, expression evaluation, runtime frame generation, compatibility reports, geometry, and WebGPU batch builders.
+- `rustymilk-pack`: portable preset pack manifests, loading, and validation.
 - `rustymilk-renderer-core`: renderer backend contracts and capability types.
 - `rustymilk-renderer-headless`: headless renderer stats backend for tests, reports, and batch tooling.
 - `rustymilk-cli`: command-line validation, inspection, compatibility, and render-stat tooling.
@@ -19,7 +20,7 @@ This repository is being prepared as the home for:
 
 The current migration keeps legacy `.milk` and `.milk2` preset formats compatible while removing product naming from the engine identity.
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations. See [`docs/SOURCE_IMPORT_AUDIT.md`](docs/SOURCE_IMPORT_AUDIT.md), [`docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md`](docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md), and [`archive/slskdn-js-milkdrop-port`](archive/slskdn-js-milkdrop-port) for the preserved slskdN JavaScript port and import checklist.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations. See [`docs/PRESET_PACKS.md`](docs/PRESET_PACKS.md), [`docs/SOURCE_IMPORT_AUDIT.md`](docs/SOURCE_IMPORT_AUDIT.md), [`docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md`](docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md), and [`archive/slskdn-js-milkdrop-port`](archive/slskdn-js-milkdrop-port) for the current pack format, preserved slskdN JavaScript port, and import checklist.
 
 ## Build
 
@@ -48,4 +49,6 @@ cargo run -p rustymilk-cli -- validate preset.milk
 cargo run -p rustymilk-cli -- inspect preset.milk
 cargo run -p rustymilk-cli -- compat ./presets
 cargo run -p rustymilk-cli -- render-stats preset.milk
+cargo run -p rustymilk-cli -- pack-inspect examples/sample-pack
+cargo run -p rustymilk-cli -- pack-validate examples/sample-pack
 ```

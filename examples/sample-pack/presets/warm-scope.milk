@@ -1,0 +1,17 @@
+name=Warm Scope
+decay=0.9
+wave_r=0.85
+wave_g=0.38
+wave_b=0.16
+wave_a=0.9
+wave_scale=1.25
+zoom=1.01
+rot=0.02
+wavecode_0_enabled=1
+wavecode_0_samples=32
+wavecode_0_r=1
+wavecode_0_g=0.45
+wavecode_0_b=0.2
+wavecode_0_a=0.9
+wavecode_0_per_point1=x=i;
+wavecode_0_per_point2=y=0.5+sample*0.25;

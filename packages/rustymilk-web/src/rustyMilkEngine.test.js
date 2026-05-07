@@ -6,6 +6,9 @@ import {
   getRustyMilkBeatUpdate,
   getRustyMilkTransitionAlphas,
   getRustyMilkTransitionProgress,
+  loadRustyMilkPack,
+  normalizeRustyMilkPackManifest,
+  validateRustyMilkPackManifest,
 } from './rustyMilkEngine.js';
 
 const createAnalyser = () => ({
@@ -113,6 +116,67 @@ describe('createRustyMilkEngine', () => {
     assert.equal(pulse.beatCount, 1);
   });
 
+  it('normalizes and validates pack manifests', () => {
+    const normalized = normalizeRustyMilkPackManifest({
+      schemaVersion: 1,
+      id: 'web-pack',
+      name: 'Web Pack',
+      version: '0.1.0',
+      presets: [
+        {
+          id: 'one',
+          title: 'One',
+          file: 'presets/one.milk',
+          tags: ['fixture'],
+        },
+      ],
+    }, 'http://127.0.0.1:4173/examples/sample-pack/manifest.json');
+    const validation = validateRustyMilkPackManifest(normalized);
+    const relative = normalizeRustyMilkPackManifest({
+      id: 'relative-pack',
+      name: 'Relative Pack',
+      version: '0.1.0',
+      presets: [{ id: 'dots', file: 'presets/v1..ok.milk' }],
+    }, 'packs/relative/manifest.json');
+
+    assert.equal(normalized.presets[0].url, 'http://127.0.0.1:4173/examples/sample-pack/presets/one.milk');
+    assert.deepEqual(normalized.presets[0].tags, ['fixture']);
+    assert.equal(validation.valid, true);
+    assert.equal(relative.presets[0].url, 'http://localhost/packs/relative/presets/v1..ok.milk');
+    assert.equal(validateRustyMilkPackManifest(relative).valid, true);
+    assert.equal(validateRustyMilkPackManifest({
+      id: 'bad',
+      name: 'Bad',
+      version: '0.1.0',
+      presets: [{ id: 'escape', file: '../escape.milk' }],
+    }).valid, false);
+  });
+
+  it('loads pack manifests and preset sources through fetch', async () => {
+    const responses = new Map([
+      ['http://localhost/packs/demo/manifest.json', {
+        ok: true,
+        json: async () => ({
+          id: 'demo',
+          name: 'Demo',
+          version: '0.1.0',
+          presets: [{ id: 'first', title: 'First', file: 'presets/first.milk' }],
+        }),
+      }],
+      ['http://localhost/packs/demo/presets/first.milk', {
+        ok: true,
+        text: async () => 'name=First\nzoom=1\n',
+      }],
+    ]);
+    const pack = await loadRustyMilkPack('http://localhost/packs/demo/', {
+      fetchImpl: async (url) => responses.get(url),
+    });
+
+    assert.equal(pack.valid, true);
+    assert.equal(pack.presets[0].name, 'First');
+    assert.match(pack.presets[0].source, /zoom=1/);
+  });
+
   it('feeds waveform, spectrum, and mouse state into the Rust renderer', async () => {
     const analyser = createAnalyser();
     const audioNode = {
@@ -167,6 +231,16 @@ describe('createRustyMilkEngine', () => {
     });
 
     assert.equal(engine.name, 'RustyMilk WebGL2 fallback');
+    assert.equal(engine.loadPresetPack({
+      presets: [
+        {
+          id: 'packed',
+          title: 'Packed Preset',
+          file: 'packed.milk',
+          source: 'name=Packed Preset\nzoom=1\n',
+        },
+      ],
+    }), 'Packed Preset');
     assert.equal(engine.loadPresetText('name=Imported', 'imported.milk'), 'imported');
     assert.deepEqual(engine.inspectPresetText('name=Imported', 'imported.milk'), {
       title: 'imported',

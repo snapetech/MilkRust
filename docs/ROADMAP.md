@@ -22,6 +22,7 @@ RustyMilk should eventually ship as these related products:
 The repository currently contains:
 
 - `crates/rustymilk-core`: parser/runtime-facing Rust code, frame structs, preset handling, compatibility helpers, geometry, and render batch summaries.
+- `crates/rustymilk-pack`: preset pack manifest parser, folder-pack loader, path-safety validation, and preset compatibility reporting.
 - `crates/rustymilk-renderer-core`: renderer contracts, capabilities, and render statistics.
 - `crates/rustymilk-renderer-headless`: headless renderer stats backend for tests and tooling.
 - `crates/rustymilk-cli`: validation, inspection, compatibility, and headless render-stat commands.
@@ -314,10 +315,10 @@ Manifest fields:
 Work items:
 
 - Define manifest schema.
-- Add pack validation to core or CLI.
+- Add pack validation to core or CLI. Initial folder-pack validation now lives in `rustymilk-pack` and is exposed through `rustymilk pack-inspect` and `rustymilk pack-validate`.
 - Add pack loading to web SDK and desktop player.
 - Add pack publishing/export from Studio.
-- Add default sample pack.
+- Add default sample pack. `examples/sample-pack` is the initial local fixture pack.
 
 Exit criteria:
 
