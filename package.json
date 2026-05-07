@@ -1,7 +1,18 @@
 {
-  "name": "rustymilk-workspace",
-  "private": true,
+  "name": "@rustymilk/web",
+  "version": "0.1.0",
+  "private": false,
   "type": "module",
+  "main": "./packages/rustymilk-web/src/rustyMilkEngine.js",
+  "exports": {
+    ".": "./packages/rustymilk-web/src/rustyMilkEngine.js"
+  },
+  "files": [
+    "packages/rustymilk-web/src",
+    "pkg",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build:wasm": "bash ./tools/build-wasm-package.sh",
     "cli": "cargo run -p rustymilk-cli --",
