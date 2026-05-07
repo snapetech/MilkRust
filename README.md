@@ -60,4 +60,4 @@ npm run content:audit
 npm run content:validate
 ```
 
-Third-party packs live in [`content/catalog.json`](content/catalog.json). Vendored content requires explicit redistribution permission; unclear historical MilkDrop packs are tracked as link-only until their license is reviewed.
+Third-party packs live in [`content/catalog.json`](content/catalog.json). Vendored content requires explicit redistribution permission; unclear historical MilkDrop packs are tracked as link-only until their license is reviewed. The repo currently vendors the MIT-licensed [`butterchurn-presets@2.4.7`](content/third-party/butterchurn-presets-2.4.7) converted preset package.

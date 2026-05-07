@@ -22,6 +22,8 @@ const contentExtensions = new Set([
   '.ini',
 ]);
 const licenseNamePattern = /^(license|licenses|copying|copyright|notice)(\..*)?$/i;
+const isContentJson = (relativePath) => /(^|\/)(presets\/converted|fragments|plugins)\//.test(relativePath)
+  || /(^|\/)manifest\.json$/.test(relativePath);
 
 const args = process.argv.slice(2);
 const write = args.includes('--write');
@@ -61,7 +63,7 @@ const walk = async (root, stats) => {
     if (licenseNamePattern.test(entry.name)) {
       stats.licenses.push(relativePath);
     }
-    if (contentExtensions.has(extension)) {
+    if (contentExtensions.has(extension) || (extension === '.json' && isContentJson(relativePath))) {
       stats.files.push(relativePath);
       stats.byExtension[extension] = (stats.byExtension[extension] || 0) + 1;
     }

@@ -36,6 +36,7 @@ Only `manifest.json` is mandatory. Asset paths in the manifest must be relative 
       "id": "warm-scope",
       "title": "Warm Scope",
       "file": "presets/warm-scope.milk",
+      "sourceFormat": "milk",
       "tags": ["scope"],
       "thumbnail": "thumbnails/warm-scope.png"
     }
@@ -64,6 +65,8 @@ cargo run -p rustymilk-cli -- pack-validate examples/sample-pack
 ```
 
 `pack-inspect` reports manifest metadata. `pack-validate` reads referenced presets, runs compatibility analysis, checks path safety, and warns about missing optional assets such as thumbnails.
+
+`sourceFormat` defaults from the file extension. Supported values currently include `milk`, `milk2`, and `butterchurn-json`. Native RustyMilk rendering support is for `milk` and `milk2`; `butterchurn-json` is catalog/import material until a converter or compatibility adapter is added.
 
 ## Build Path
 

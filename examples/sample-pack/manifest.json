@@ -15,6 +15,7 @@
       "id": "warm-scope",
       "title": "Warm Scope",
       "file": "presets/warm-scope.milk",
+      "sourceFormat": "milk",
       "tags": [
         "scope",
         "geometry",
@@ -26,6 +27,7 @@
       "id": "blue-shape",
       "title": "Blue Shape",
       "file": "presets/blue-shape.milk",
+      "sourceFormat": "milk",
       "tags": [
         "shape",
         "fixture"

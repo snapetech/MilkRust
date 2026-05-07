@@ -33,6 +33,7 @@ The repository currently contains:
 - `tools`: smoke, compatibility, and performance checks.
 - `examples`: browser smoke client.
 - `content/catalog.json`: third-party content catalog with copy/link/review policy.
+- `content/third-party/butterchurn-presets-2.4.7`: MIT-licensed converted Butterchurn preset package vendored for compatibility/import work.
 
 The immediate migration target is for slskR to depend on RustyMilk instead of carrying the engine inline.
 

@@ -40,7 +40,7 @@ Not allowed for vendoring:
 - Packs that are only distributed through an installer or binary without source-content license terms.
 - Images, sprites, screenshots, fonts, or logos with unclear ownership.
 
-No-license historical MilkDrop presets are common. Those should be link-only by default, even if upstream projects have used them for many years.
+No-license historical MilkDrop presets are common. Those should be link-only by default, even if upstream projects have used them for many years. Upstream claims that no-license presets are "safe to assume" public domain should be recorded as provenance, but should not be treated as an explicit public-domain dedication for vendoring.
 
 ## Repo Model
 
@@ -61,4 +61,3 @@ Optional content can be supported through:
 - Compatibility reports generated from user-provided local copies.
 
 This keeps RustyMilk compatible with old MilkDrop packs without silently redistributing content that lacks explicit license permission.
-

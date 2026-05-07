@@ -23,10 +23,11 @@ RustyMilk can load old MilkDrop-family content, but the repo should only redistr
 
 ## Local Scan: `.`
 
-Content-like files: 2
+Content-like files: 1759
 
 By extension:
 
+  - `.json`: 1757
   - `.milk`: 2
 
 License/provenance files:
@@ -36,16 +37,56 @@ License/provenance files:
 
 Sample content files:
 
-  - `examples/sample-pack/presets/blue-shape.milk`
-  - `examples/sample-pack/presets/warm-scope.milk`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/!!!---flexi + amandio c - organic12-3d-2.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (160).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (169).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (177).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (197).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (220).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (222).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (253).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (273).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (307).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (326).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (337).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (383).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (431).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/$$$ Royal - Mashup (441).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/11.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/124.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/158.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/185.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/27_super_goats - have you ever been knocked out before, sunshine..json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/27_super_goats - neon country frequent flier program.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/27_super_goats-orbus_maximus.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/36.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/3dRaGoNs & Rovastar - CaVe LiFe - mash0000 - fire, beams, smoke.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/3dRaGoNs & Unchained - Dragon Science.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/414 bowel rebranding pr whore skinned to the teeth shader serial killer common glut.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/414 bowel rebranding pr whore skinned to the teeth shader serial killer.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/444.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/86.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/93.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/A Milk Art Detail 2 flexi - moebius transformation ft Martin With AdamFX B sentensual.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/A New Wave Trend in Milk - Martin - DiscoMix  3 Ft Phat Yin n AdamFX  A.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/A Tribute to Martin - bombyx mori - Ft Flexi - AdamFX - StahlRegen - Krash - Rovastar -  Hd in Milk T.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/A Twistin Infusion - Martin - shiny tunnel rewiredFX  Ft AdamFX InfusionFX (ElectricPoolFX).json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/Adam Eatit Mashup FX 2 martin - disco mix + Lodus + Geiss + Ludicrous speed + Aderrasi 2_1.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/Adam Eatit Mashup FX 2 martin - disco mix + Lodus + Geiss + Ludicrous speed + Baked Ft another AdamFX Mashup 7_1.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/Adam Eatit Mashup FX 2 martin - disco mix + Lodus + Geiss + Ludicrous speed + Eos Ft Flexi n Hexocollie + Baked + Santa Fucking Claus.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/Adam Fx 2 Zylot - Age of Science Fierceness 16 - mash0000 - gerber full heaving baby.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/Adam Fx 2 Zylot - Age of Science Fierceness BEAST2 - mash0000 - ethics is for weiner dogs - Geiss composite mix.json`
+  - `content/third-party/butterchurn-presets-2.4.7/presets/converted/Adam Fx 2 Zylot - Age of Science Fierceness BEAST2 - mash0000 - ethics is for weiner dogs.json`
+  - ... 1719 more
 
 ## Local Scan: `../slskdn`
 
-Content-like files: 157
+Content-like files: 177
 
 By extension:
 
   - `.jpg`: 6
+  - `.json`: 20
   - `.png`: 151
 
 License/provenance files:
@@ -73,45 +114,46 @@ Sample content files:
   - `../slskdn/docs/assets/readme-showcase/system-overview-version.png`
   - `../slskdn/publish/wwwroot/logo192.png`
   - `../slskdn/publish/wwwroot/logo512.png`
+  - `../slskdn/publish/wwwroot/manifest.json`
   - `../slskdn/publish/wwwroot/static/media/flags.99f63ae7a743f21ab308.png`
   - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/assets/flags-DOLqOU7Y.png`
   - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/assets/slskdn-icon-wire-BtXRoQBH.png`
   - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/assets/slskdn-logo-lockup-BXxB8Gil.png`
   - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/logo192.png`
   - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/logo512.png`
+  - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/manifest.json`
   - `../slskdn/src/slskd/bin/Release/net10.0/linux-x64/wwwroot/assets/flags-DOLqOU7Y.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/linux-x64/wwwroot/assets/slskdn-icon-wire-BtXRoQBH.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/linux-x64/wwwroot/assets/slskdn-logo-lockup-BXxB8Gil.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/linux-x64/wwwroot/logo192.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/linux-x64/wwwroot/logo512.png`
+  - `../slskdn/src/slskd/bin/Release/net10.0/linux-x64/wwwroot/manifest.json`
   - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/assets/flags-DOLqOU7Y.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/assets/slskdn-icon-wire-BtXRoQBH.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/assets/slskdn-logo-lockup-BXxB8Gil.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/logo192.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/logo512.png`
+  - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/manifest.json`
   - `../slskdn/src/slskd/wwwroot/assets/flags-DOLqOU7Y.png`
   - `../slskdn/src/slskd/wwwroot/assets/slskdn-icon-wire-BtXRoQBH.png`
   - `../slskdn/src/slskd/wwwroot/assets/slskdn-logo-lockup-BXxB8Gil.png`
   - `../slskdn/src/slskd/wwwroot/logo192.png`
   - `../slskdn/src/slskd/wwwroot/logo512.png`
+  - `../slskdn/src/slskd/wwwroot/manifest.json`
   - `../slskdn/src/web/contacts-debug.png`
   - `../slskdn/src/web/login-debug.png`
   - `../slskdn/src/web/public/logo192.png`
   - `../slskdn/src/web/public/logo512.png`
-  - `../slskdn/src/web/src/assets/brand/slskdn-icon-wire.png`
-  - `../slskdn/src/web/src/assets/brand/slskdn-icon.png`
-  - `../slskdn/src/web/src/assets/brand/slskdn-logo-lockup.png`
-  - `../slskdn/src/web/tmp/affordance-audit-after/browse.png`
-  - `../slskdn/src/web/tmp/affordance-audit-after/chat.png`
-  - `../slskdn/src/web/tmp/affordance-audit-after/downloads.png`
-  - ... 117 more
+  - `../slskdn/src/web/public/manifest.json`
+  - ... 137 more
 
 ## Local Scan: `../slskR`
 
-Content-like files: 51
+Content-like files: 52
 
 By extension:
 
+  - `.json`: 1
   - `.png`: 51
 
 License/provenance files:
@@ -132,6 +174,7 @@ Sample content files:
   - `../slskR/web/public/favicon-32x32.png`
   - `../slskR/web/public/logo192.png`
   - `../slskR/web/public/logo512.png`
+  - `../slskR/web/public/manifest.json`
   - `../slskR/web/public/slskr-logo.png`
   - `../slskR/web/public/slskr-mark.png`
   - `../slskR/web/tmp/affordance-audit-after/browse.png`
@@ -160,6 +203,5 @@ Sample content files:
   - `../slskR/web/tmp/visual-audit/after/system.png`
   - `../slskR/web/tmp/visual-audit/after/uploads.png`
   - `../slskR/web/tmp/visual-audit/after/users.png`
-  - `../slskR/web/tmp/visual-audit/after/wishlist.png`
-  - ... 11 more
+  - ... 12 more
 
