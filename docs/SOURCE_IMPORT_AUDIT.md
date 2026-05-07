@@ -5,6 +5,14 @@ RustyMilk has two local source histories worth preserving without copying applic
 - `../slskdn`: JavaScript native MilkDrop/MilkDrop3 implementation.
 - `../slskR`: later Rust/WASM RustyMilk integration and slskR host UI.
 
+The JavaScript port is preserved in-tree at:
+
+```text
+archive/slskdn-js-milkdrop-port/
+```
+
+That archive is reference material, not the production RustyMilk engine.
+
 ## Imported Now
 
 The first import pass brought the curated `../slskdn` MilkDrop fixture behavior into Rust core tests.
@@ -19,6 +27,8 @@ Source reference:
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/presetCompatibility.test.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/expressionVm.test.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/shaderTranslator.test.js
+../slskdn/src/web/src/components/Player/visualizers/milkdrop/milkdropRenderer.test.js
+../slskdn/src/web/src/components/Player/visualizers/milkdrop/webgpuRenderer.test.js
 ../slskR/web/src/components/Player/visualizers/rustyMilkEngine.test.js
 ```
 
@@ -35,6 +45,7 @@ RustyMilk coverage added:
 - Shader translator parity for ret assignments, shader bodies, q/audio uniforms, FFT/waveform helpers, named texture samplers, GLSL output, WGSL output, and rejected unsafe shader bodies.
 - Web SDK wrapper tests for transition helpers, beat detection, audio analyzer data flow, mouse state, resize, preset load/edit/export methods, debug summaries, and disposal across the Rust WASM boundary.
 - Parser parity for comments, base values, per-frame/per-pixel equations, shader sections, indexed shapes/sprites/waves, MilkDrop3 `.milk2` double presets, primitive aliases, standalone fragments, prefixed fragments, serialization, and compatibility diagnostics.
+- Renderer-neutral geometry and WebGPU packing parity for waveform vertices, motion vectors, screen borders, shape fills/outlines, sprites, UVs, colored vertex packing, textured vertex packing, and line/triangle conversion.
 
 Notable behavior difference:
 
@@ -47,6 +58,8 @@ Test location:
 crates/rustymilk-core/src/lib.rs
 packages/rustymilk-web/src/rustyMilkEngine.test.js
 ```
+
+The remaining browser/GPU/player import surface is mapped in [`RENDERER_AND_PLAYER_IMPORT_PLAN.md`](RENDERER_AND_PLAYER_IMPORT_PLAN.md).
 
 ## Still To Mine From `../slskdn`
 

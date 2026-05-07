@@ -106,6 +106,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustymilk-renderer-core"
+version = "0.1.0"
+dependencies = [
+ "rustymilk-core",
+]
+
+[[package]]
+name = "rustymilk-renderer-headless"
+version = "0.1.0"
+dependencies = [
+ "rustymilk-core",
+ "rustymilk-renderer-core",
+]
+
+[[package]]
 name = "rustymilk-wasm"
 version = "0.1.0"
 dependencies = [

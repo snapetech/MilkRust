@@ -5392,6 +5392,30 @@ mod tests {
         expected_error: &'static str,
     }
 
+    fn number_entry(values: &[(&str, f64)]) -> RustyMilkIndexedEntry {
+        let mut entry = RustyMilkIndexedEntry::default();
+        for (key, value) in values {
+            entry
+                .base_values
+                .insert((*key).to_string(), RustyMilkValue::Number(*value));
+        }
+        entry
+    }
+
+    fn number_scope(values: &[(&str, f64)]) -> BTreeMap<String, RustyMilkValue> {
+        values
+            .iter()
+            .map(|(key, value)| ((*key).to_string(), RustyMilkValue::Number(*value)))
+            .collect()
+    }
+
+    fn rounded(values: &[f64]) -> Vec<f64> {
+        values
+            .iter()
+            .map(|value| (value * 1000.0).round() / 1000.0)
+            .collect()
+    }
+
     fn dense_primitive_fixture_source() -> String {
         let mut lines = vec![
             "name=Fixture Dense Primitive Pack".to_string(),
@@ -6123,6 +6147,270 @@ comp_shader_2=ret = vec3(shifted, energy * bass_att);
         assert!(report.unsupported_functions.is_empty());
         assert!(report.shader_sections.is_empty());
         assert_eq!(rustymilk_compatibility_error(&report), "");
+    }
+
+    #[test]
+    fn rustymilk_core_matches_imported_renderer_neutral_waveform_and_primitive_geometry() {
+        assert_eq!(
+            create_rustymilk_waveform_vertices(&[-1.0, 0.0, 1.0], &BTreeMap::new()),
+            vec![-1.0, -1.0, 0.0, 0.0, 1.0, 1.0]
+        );
+        assert_eq!(
+            create_rustymilk_waveform_vertices(&[2.0, -2.0], &BTreeMap::new()),
+            vec![-1.0, 1.0, 1.0, -1.0]
+        );
+        assert!(create_rustymilk_waveform_vertices(&[0.0], &BTreeMap::new()).is_empty());
+
+        let centered = create_rustymilk_waveform_vertices(
+            &[-0.5, 0.0, 0.5],
+            &number_scope(&[("wave_mode", 1.0), ("wave_scale", 0.5), ("wave_y", 0.25)]),
+        );
+        assert_eq!(rounded(&centered), vec![-1.0, -0.75, 0.0, -0.5, 1.0, -0.25]);
+
+        let vertical = create_rustymilk_waveform_vertices(
+            &[-0.5, 0.5],
+            &number_scope(&[("wave_mode", 2.0), ("wave_x", 0.25)]),
+        );
+        assert_eq!(rounded(&vertical), vec![-1.0, -1.0, 0.0, 1.0]);
+
+        let circular = create_rustymilk_waveform_vertices(
+            &[0.0, 0.0],
+            &number_scope(&[("wave_mode", 3.0), ("wave_x", 0.5), ("wave_y", 0.5)]),
+        );
+        assert_eq!(rounded(&circular), vec![0.35, 0.0, 0.35, -0.0]);
+
+        let smoothed = create_rustymilk_waveform_vertices(
+            &[0.0, 1.0],
+            &number_scope(&[("wave_mode", 1.0), ("wave_smoothing", 0.5)]),
+        );
+        assert_eq!(rounded(&smoothed), vec![-1.0, 0.0, 1.0, 0.5]);
+
+        let motion = create_rustymilk_motion_vector_vertices(&number_scope(&[
+            ("mv_dx", 0.5),
+            ("mv_dy", -0.25),
+            ("mv_l", 0.1),
+            ("mv_x", 2.0),
+            ("mv_y", 1.0),
+        ]));
+        assert_eq!(
+            rounded(&motion),
+            vec![-1.0, 0.0, -0.9, -0.05, 1.0, 0.0, 1.1, -0.05]
+        );
+        assert!(create_rustymilk_motion_vector_vertices(&number_scope(&[
+            ("mv_x", 0.0),
+            ("mv_y", 3.0)
+        ]))
+        .is_empty());
+
+        let outer = create_rustymilk_screen_border_vertices(0.1, 0.0);
+        let inner = create_rustymilk_screen_border_vertices(0.05, 0.2);
+        assert_eq!(outer.len(), 48);
+        assert_eq!(
+            rounded(&outer[..12]),
+            vec![-1.0, -1.0, 1.0, -1.0, -1.0, -0.8, -1.0, -0.8, 1.0, -1.0, 1.0, -0.8]
+        );
+        assert_eq!(rounded(&inner[..4]), vec![-0.8, -0.8, 0.8, -0.8]);
+        assert!(create_rustymilk_screen_border_vertices(0.0, 0.0).is_empty());
+
+        let shape = number_entry(&[
+            ("enabled", 1.0),
+            ("rad", 0.5),
+            ("sides", 4.0),
+            ("x", 0.5),
+            ("y", 0.5),
+        ]);
+        let vertices = create_rustymilk_shape_vertices(&shape);
+        assert_eq!(vertices.len(), 10);
+        assert!((vertices[0] - vertices[8]).abs() < 0.00001);
+        assert!((vertices[1] - vertices[9]).abs() < 0.00001);
+        assert!(create_rustymilk_shape_vertices(&number_entry(&[("enabled", 0.0)])).is_empty());
+
+        let fill = create_rustymilk_shape_fill_vertices(&shape);
+        assert_eq!(fill.len(), 12);
+        assert_eq!(rounded(&fill[..2]), vec![0.0, 0.0]);
+
+        let sprite = number_entry(&[
+            ("enabled", 1.0),
+            ("w", 0.2),
+            ("h", 0.1),
+            ("x", 0.5),
+            ("y", 0.5),
+        ]);
+        assert_eq!(
+            rounded(&create_rustymilk_sprite_vertices(&sprite)[..8]),
+            vec![-0.2, -0.1, 0.2, -0.1, 0.2, 0.1, -0.2, 0.1]
+        );
+        assert_eq!(
+            create_rustymilk_sprite_texture_uvs(&sprite),
+            vec![0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+        );
+    }
+
+    #[test]
+    fn rustymilk_core_matches_imported_webgpu_vertex_packers() {
+        assert_eq!(
+            rounded(&create_rustymilk_webgpu_triangle_list_vertices(
+                &[-1.0, -1.0, 1.0, -1.0, 0.0, 1.0],
+                [0.2, 0.4, 0.6, 0.8],
+            )),
+            vec![
+                -1.0, -1.0, 0.2, 0.4, 0.6, 0.8, 1.0, -1.0, 0.2, 0.4, 0.6, 0.8, 0.0, 1.0, 0.2, 0.4,
+                0.6, 0.8,
+            ]
+        );
+
+        assert_eq!(
+            rounded(&create_rustymilk_webgpu_triangle_fan_vertices(
+                &[0.0, 0.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0],
+                &[1.0, 0.0, 0.0, 0.5, 0.0, 1.0, 0.0, 0.6, 0.0, 0.0, 1.0, 0.7, 1.0, 1.0, 1.0, 0.8],
+                [0.9, 0.9, 0.9, 1.0],
+            )),
+            vec![
+                0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -1.0, -1.0, 0.0, 1.0, 0.0, 0.6, 1.0, -1.0, 0.0, 0.0,
+                1.0, 0.7, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 1.0, -1.0, 0.0, 0.0, 1.0, 0.7, 1.0, 1.0,
+                1.0, 1.0, 1.0, 0.8,
+            ]
+        );
+
+        let textured = create_rustymilk_webgpu_textured_triangle_fan_vertices(
+            &[0.0, 0.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0],
+            &[0.5, 0.5, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0],
+            &[
+                1.0, 0.0, 0.0, 0.5, 0.0, 1.0, 0.0, 0.6, 0.0, 0.0, 1.0, 0.7, 1.0, 1.0, 1.0, 0.8,
+            ],
+            [0.9, 0.9, 0.9, 1.0],
+        );
+        assert_eq!(textured.len(), 48);
+        assert_eq!(
+            rounded(&textured[..8]),
+            vec![0.0, 0.0, 0.5, 0.5, 1.0, 0.0, 0.0, 0.5]
+        );
+
+        assert_eq!(
+            rounded(&create_rustymilk_webgpu_line_segment_vertices(
+                &[-1.0, 0.0, 0.0, 0.5, 1.0, 0.0],
+                [0.1, 0.2, 0.3, 0.4],
+            )),
+            vec![
+                -1.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.0, 0.5, 0.1, 0.2, 0.3, 0.4, 0.0, 0.5, 0.1, 0.2,
+                0.3, 0.4, 1.0, 0.0, 0.1, 0.2, 0.3, 0.4,
+            ]
+        );
+
+        let motion = create_rustymilk_webgpu_motion_vector_vertices(
+            &number_scope(&[
+                ("mv_a", 0.75),
+                ("mv_b", 0.3),
+                ("mv_dx", 0.5),
+                ("mv_dy", -0.25),
+                ("mv_g", 0.2),
+                ("mv_l", 0.1),
+                ("mv_r", 0.1),
+                ("mv_x", 2.0),
+                ("mv_y", 1.0),
+            ]),
+            [0.4, 0.5, 0.6],
+        );
+        assert_eq!(motion.len(), 24);
+        assert_eq!(rounded(&motion[2..6]), vec![0.1, 0.2, 0.3, 0.75]);
+
+        let borders = create_rustymilk_webgpu_screen_border_vertices(
+            &number_scope(&[
+                ("ib_a", 0.5),
+                ("ib_b", 1.0),
+                ("ib_g", 0.8),
+                ("ib_r", 0.2),
+                ("ib_size", 0.05),
+                ("ob_a", 0.4),
+                ("ob_b", 0.3),
+                ("ob_g", 0.2),
+                ("ob_r", 1.0),
+                ("ob_size", 0.1),
+            ]),
+            [0.3, 0.4, 0.5],
+        );
+        assert_eq!(borders.len(), 288);
+        assert_eq!(rounded(&borders[2..6]), vec![1.0, 0.2, 0.3, 0.4]);
+    }
+
+    #[test]
+    fn rustymilk_core_matches_imported_webgpu_shape_and_sprite_packers() {
+        let shape = number_entry(&[
+            ("a", 0.4),
+            ("a2", 0.2),
+            ("b", 0.3),
+            ("b2", 0.6),
+            ("enabled", 1.0),
+            ("g", 0.2),
+            ("g2", 0.5),
+            ("r", 0.1),
+            ("r2", 0.4),
+            ("rad", 0.25),
+            ("sides", 3.0),
+        ]);
+        let fill = create_rustymilk_webgpu_shape_fill_vertices(&[shape], [0.9, 0.8, 0.7]);
+        assert_eq!(fill.len(), 54);
+        assert_eq!(rounded(&fill[2..6]), vec![0.1, 0.2, 0.3, 0.4]);
+        assert_eq!(rounded(&fill[8..12]), vec![0.4, 0.5, 0.6, 0.2]);
+
+        let textured_shape = number_entry(&[
+            ("a", 0.4),
+            ("b", 0.3),
+            ("enabled", 1.0),
+            ("g", 0.2),
+            ("r", 0.1),
+            ("rad", 0.25),
+            ("sides", 3.0),
+            ("tex_zoom", 1.0),
+            ("textured", 1.0),
+        ]);
+        let textured =
+            create_rustymilk_webgpu_textured_shape_vertices(&textured_shape, [0.9, 0.8, 0.7]);
+        assert_eq!(textured.len(), 72);
+        assert_eq!(
+            rounded(&textured[..8]),
+            vec![0.0, 0.0, 0.5, 0.5, 0.1, 0.2, 0.3, 0.4]
+        );
+
+        let sprite = number_entry(&[
+            ("a", 0.4),
+            ("b", 0.3),
+            ("enabled", 1.0),
+            ("g", 0.2),
+            ("h", 0.1),
+            ("r", 0.1),
+            ("w", 0.2),
+            ("x", 0.5),
+            ("y", 0.5),
+        ]);
+        let sprite_vertices =
+            create_rustymilk_webgpu_sprite_vertices(&[sprite.clone()], [0.9, 0.8, 0.7]);
+        assert_eq!(sprite_vertices.len(), 36);
+        assert_eq!(
+            rounded(&sprite_vertices[..6]),
+            vec![-0.2, -0.1, 0.1, 0.2, 0.3, 0.4]
+        );
+
+        let textured_sprite =
+            create_rustymilk_webgpu_textured_sprite_vertices(&sprite, [0.9, 0.8, 0.7]);
+        assert_eq!(textured_sprite.len(), 48);
+        assert_eq!(
+            rounded(&textured_sprite[..8]),
+            vec![-0.2, -0.1, 0.0, 1.0, 0.1, 0.2, 0.3, 0.4]
+        );
+
+        let outline_shape = number_entry(&[
+            ("border_a", 0.5),
+            ("enabled", 1.0),
+            ("rad", 0.25),
+            ("sides", 4.0),
+            ("x", 0.5),
+            ("y", 0.5),
+        ]);
+        let outlines =
+            create_rustymilk_webgpu_shape_outline_vertices(&[outline_shape], [0.1, 0.2, 0.3]);
+        assert_eq!(outlines.len(), 48);
+        assert_eq!(rounded(&outlines[2..6]), vec![0.1, 0.2, 0.3, 0.5]);
     }
 
     #[test]

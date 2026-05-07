@@ -1,6 +1,8 @@
 [workspace]
 members = [
     "crates/rustymilk-core",
+    "crates/rustymilk-renderer-core",
+    "crates/rustymilk-renderer-headless",
     "crates/rustymilk-wasm",
 ]
 resolver = "2"
@@ -17,4 +19,3 @@ unsafe_code = "forbid"
 
 [workspace.lints.clippy]
 all = "warn"
-
