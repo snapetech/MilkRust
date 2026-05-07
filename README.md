@@ -14,7 +14,7 @@ This repository is being prepared as the home for:
 
 The current migration keeps legacy `.milk` and `.milk2` preset formats compatible while removing product naming from the engine identity.
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations. See [`docs/SOURCE_IMPORT_AUDIT.md`](docs/SOURCE_IMPORT_AUDIT.md) for the slskdN/slskR import checklist.
 
 ## Build
 

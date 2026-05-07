@@ -38,6 +38,8 @@ RustyMilk has two important neighboring source histories:
 
 These should not be imported wholesale. They should be mined deliberately for missing behavior, fixtures, tests, docs, and host UI workflows.
 
+The working checklist lives in [`SOURCE_IMPORT_AUDIT.md`](SOURCE_IMPORT_AUDIT.md).
+
 ### `../slskdn` JavaScript MilkDrop Source
 
 This is the richer compatibility reference. It contains a full browser-native MilkDrop-era implementation under:
