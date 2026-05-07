@@ -43,6 +43,21 @@ const show = (value) => {
   report.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
 };
 
+const readCanvasStats = () => {
+  const gl = canvas.getContext('webgl2');
+  if (!gl) return null;
+  const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+  gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  let litPixels = 0;
+  let channelTotal = 0;
+  for (let index = 0; index < pixels.length; index += 4) {
+    const total = pixels[index] + pixels[index + 1] + pixels[index + 2];
+    if (total > 12) litPixels += 1;
+    channelTotal += total;
+  }
+  return { channelTotal, litPixels, pixelCount: canvas.width * canvas.height };
+};
+
 const inspect = () => {
   try {
     const inspected = JSON.parse(engine.inspectPresetText(source.value, 'studio.milk'));
@@ -88,6 +103,9 @@ const render = (time = 0) => {
     0,
     0,
   );
+  if (window.__rustyMilkCollectStats) {
+    window.__rustyMilkStudioStats = readCanvasStats();
+  }
   animationFrame = requestAnimationFrame(render);
 };
 

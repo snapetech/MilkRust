@@ -98,6 +98,7 @@ const defaultAutomation = {
 };
 
 let rustModulePromise;
+let rustModuleInitPromise;
 
 const loadRustyMilkModule = async (modulePath = globalThis.__rustyMilkModulePath || '/rustymilk_wasm.js') => {
   if (globalThis.__rustyMilkModule) {
@@ -106,7 +107,13 @@ const loadRustyMilkModule = async (modulePath = globalThis.__rustyMilkModulePath
   if (!rustModulePromise) {
     rustModulePromise = import(/* @vite-ignore */ modulePath);
   }
-  return rustModulePromise;
+  const rustModule = await rustModulePromise;
+  if (typeof rustModule.default === 'function' && !rustModuleInitPromise) {
+    const wasmPath = modulePath.replace(/\.js(?:\?.*)?$/, '_bg.wasm');
+    rustModuleInitPromise = rustModule.default({ module_or_path: wasmPath });
+  }
+  await rustModuleInitPromise;
+  return rustModule;
 };
 
 const createFrameReader = (audioContext, audioNode) => {

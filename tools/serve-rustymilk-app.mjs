@@ -4,9 +4,6 @@ import { createServer } from 'node:http';
 import { extname, join, normalize, resolve } from 'node:path';
 
 const repoRoot = resolve(import.meta.dirname, '..');
-const appName = process.argv[2] === 'studio' ? 'rustymilk-studio' : 'rustymilk-player';
-const appPath = `/apps/${appName}/`;
-const port = Number(process.env.PORT || 4173);
 
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -23,30 +20,39 @@ const sendFile = (response, filePath) => {
   createReadStream(filePath).pipe(response);
 };
 
-const server = createServer((request, response) => {
-  const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
-  if (url.pathname === '/') {
-    response.writeHead(302, { Location: appPath });
-    response.end();
-    return;
-  }
+export const createRustyMilkAppServer = ({ app = 'player', root = repoRoot } = {}) => {
+  const appName = app === 'studio' ? 'rustymilk-studio' : 'rustymilk-player';
+  const appPath = `/apps/${appName}/`;
+  const server = createServer((request, response) => {
+    const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+    if (url.pathname === '/') {
+      response.writeHead(302, { Location: appPath });
+      response.end();
+      return;
+    }
 
-  const pathname = decodeURIComponent(url.pathname);
-  const relativePath = pathname === appPath
-    ? join('apps', appName, 'index.html')
-    : pathname.replace(/^\/+/, '');
-  const filePath = normalize(resolve(repoRoot, relativePath));
+    const pathname = decodeURIComponent(url.pathname);
+    const relativePath = pathname === appPath
+      ? join('apps', appName, 'index.html')
+      : pathname.replace(/^\/+/, '');
+    const filePath = normalize(resolve(root, relativePath));
 
-  if (!filePath.startsWith(repoRoot) || !existsSync(filePath)) {
-    response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-    response.end('Not found');
-    return;
-  }
+    if (!filePath.startsWith(root) || !existsSync(filePath)) {
+      response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end('Not found');
+      return;
+    }
 
-  sendFile(response, filePath);
-});
+    sendFile(response, filePath);
+  });
+  return { appName, appPath, server };
+};
 
-server.listen(port, '127.0.0.1', () => {
-  console.log(`RustyMilk ${appName.replace('rustymilk-', '')} running at http://127.0.0.1:${port}${appPath}`);
-});
-
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const app = process.argv[2] === 'studio' ? 'studio' : 'player';
+  const port = Number(process.env.PORT || 4173);
+  const { appName, appPath, server } = createRustyMilkAppServer({ app });
+  server.listen(port, '127.0.0.1', () => {
+    console.log(`RustyMilk ${appName.replace('rustymilk-', '')} running at http://127.0.0.1:${port}${appPath}`);
+  });
+}

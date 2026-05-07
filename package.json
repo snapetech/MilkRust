@@ -8,6 +8,7 @@
     "dev:studio": "node ./tools/serve-rustymilk-app.mjs studio",
     "test:compatibility": "node ./tools/report-rustymilk-compatibility.mjs",
     "test:performance": "node ./tools/measure-rustymilk-performance.mjs",
+    "test:apps": "node ./tools/smoke-rustymilk-apps.mjs",
     "test:web": "node --test packages/rustymilk-web/src/*.test.js",
     "test:smoke": "node ./tools/smoke-rustymilk.mjs"
   },
