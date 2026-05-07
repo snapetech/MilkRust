@@ -9,6 +9,7 @@ import {
   loadRustyMilkPack,
   loadRustyMilkPackManifest,
   loadRustyMilkPackPresetSource,
+  loadRustyMilkPackPlugins,
   normalizeRustyMilkPackManifest,
   validateRustyMilkPackManifest,
 } from './rustyMilkEngine.js';
@@ -97,6 +98,115 @@ describe('createRustyMilkEngine', () => {
       incoming: 1,
       outgoing: 0,
     });
+  });
+
+  it('loads pack data plugins through fetch', async () => {
+    const calls = [];
+    const responses = new Map([
+      ['http://localhost/packs/demo/manifest.json', {
+        ok: true,
+        json: async () => ({
+          id: 'demo',
+          name: 'Demo',
+          version: '0.1.0',
+          plugins: [{ id: 'playlist', kind: 'data', entry: 'plugins/playlist.json' }],
+          presets: [],
+        }),
+      }],
+      ['http://localhost/packs/demo/plugins/playlist.json', {
+        ok: true,
+        json: async () => ({
+          kind: 'playlist',
+          presetIds: ['first', 'second'],
+          shuffle: false,
+        }),
+      }],
+    ]);
+    const fetchImpl = async (url) => {
+      calls.push(url);
+      return responses.get(url);
+    };
+
+    const manifest = await loadRustyMilkPackManifest('http://localhost/packs/demo/', { fetchImpl });
+    const pluginState = await loadRustyMilkPackPlugins(manifest, { fetchImpl });
+    assert.equal(pluginState.valid, true);
+    assert.equal(pluginState.plugins.length, 1);
+    assert.equal(pluginState.plugins[0].kind, 'data');
+    assert.equal(pluginState.plugins[0].payload.kind, 'playlist');
+    assert.deepEqual(calls, [
+      'http://localhost/packs/demo/manifest.json',
+      'http://localhost/packs/demo/plugins/playlist.json',
+    ]);
+  });
+
+  it('loads pack js plugins through dynamic import', async () => {
+    const jsPluginUrl = `data:text/javascript,${encodeURIComponent(`
+      globalThis.__rustyMilkTestJsPluginCalls = globalThis.__rustyMilkTestJsPluginCalls || 0;
+      export const onFrameStart = () => {
+        globalThis.__rustyMilkTestJsPluginCalls += 1;
+      };
+    `)}`;
+    const manifest = validateRustyMilkPackManifest({
+      id: 'demo',
+      name: 'Demo',
+      version: '0.1.0',
+      plugins: [{ id: 'js-hook', kind: 'javascript', entry: jsPluginUrl }],
+      presets: [],
+    });
+
+    const pluginState = await loadRustyMilkPackPlugins(manifest, {
+      fetchImpl: async () => ({ ok: false }),
+    });
+
+    assert.equal(pluginState.valid, true);
+    assert.equal(pluginState.plugins.length, 1);
+    assert.equal(pluginState.plugins[0].kind, 'js');
+    assert.equal(pluginState.plugins[0].source, 'module');
+    assert.equal(typeof pluginState.plugins[0].api?.onFrameStart, 'function');
+
+    const analyser = createAnalyser();
+    const audioNode = {
+      connect: mock.fn(),
+      disconnect: mock.fn(),
+    };
+    const engine = await createRustyMilkEngine({
+      audioContext: {
+        createAnalyser: () => analyser,
+        currentTime: 1,
+      },
+      audioNode,
+      canvas: {},
+    });
+
+    globalThis.__rustyMilkTestJsPluginCalls = 0;
+    engine.loadPlugins(pluginState.plugins);
+    engine.render();
+
+    assert.equal(globalThis.__rustyMilkTestJsPluginCalls, 1);
+    delete globalThis.__rustyMilkTestJsPluginCalls;
+  });
+
+  it('marks failed plugin loads without crashing the pack load', async () => {
+    const badJsPluginUrl = `data:text/javascript,${encodeURIComponent(`
+      export const onFrameStart = () => {
+      // missing closing brace
+    `)}`;
+    const manifest = validateRustyMilkPackManifest({
+      id: 'demo',
+      name: 'Demo',
+      version: '0.1.0',
+      plugins: [{ id: 'bad-js', kind: 'javascript', entry: badJsPluginUrl }],
+      presets: [],
+    });
+
+    const pluginState = await loadRustyMilkPackPlugins(manifest, {
+      fetchImpl: async () => ({ ok: false }),
+    });
+
+    assert.equal(pluginState.valid, false);
+    assert.equal(pluginState.plugins.length, 0);
+    assert.equal(pluginState.errors.length, 1);
+    assert.match(pluginState.errors[0], /bad-js/);
   });
 
   it('detects beat pulses from low-frequency spectrum energy', () => {
@@ -230,6 +340,42 @@ describe('createRustyMilkEngine', () => {
     assert.equal(renderArgs[10], -0.1);
     assert.match(renderArgs[4], /-1/);
     assert.deepEqual(rustEngine.resize.mock.calls[0].arguments, [320, 180]);
+  });
+
+  it('fires plugin hooks for engine lifecycle events', async () => {
+    const analyser = createAnalyser();
+    const audioNode = {
+      connect: mock.fn(),
+      disconnect: mock.fn(),
+    };
+    const plugin = {
+      id: 'test-plugin',
+      kind: 'data',
+      onPresetLoad: mock.fn(),
+      onPresetChange: mock.fn(),
+      onFrameStart: mock.fn(),
+      onRenderFrame: mock.fn(),
+      onExport: mock.fn(),
+    };
+    const engine = await createRustyMilkEngine({
+      audioContext: {
+        createAnalyser: () => analyser,
+        currentTime: 4,
+      },
+      audioNode,
+      canvas: {},
+    });
+
+    engine.loadPlugins([plugin]);
+    engine.loadPresetText('name=Imported', 'imported.milk');
+    engine.render();
+    engine.exportPresetText();
+
+    assert.equal(plugin.onPresetLoad.mock.calls.length, 1);
+    assert.equal(plugin.onPresetChange.mock.calls.length, 1);
+    assert.equal(plugin.onFrameStart.mock.calls.length, 1);
+    assert.equal(plugin.onRenderFrame.mock.calls.length, 1);
+    assert.equal(plugin.onExport.mock.calls.length, 1);
   });
 
   it('loads, edits, exports, and disposes through the Rust WASM boundary', async () => {

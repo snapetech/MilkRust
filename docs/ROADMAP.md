@@ -4,6 +4,64 @@ RustyMilk should grow from an extracted Rust/WASM visualizer engine into a porta
 
 This roadmap is organized around product surfaces and build phases. The near-term priority is still clean extraction from slskR, but every extraction step should move the project toward stable APIs and multi-host reuse.
 
+## Current Execution Status (2026-05-07)
+
+Status legend: ✅ implemented, 🚧 partial, ⚪ not started.
+
+- Phase 0 Extraction And Stabilization: ✅
+  - Rust/WASM engine is extracted and tested (`crates/rustymilk-core`, `crates/rustymilk-wasm`).
+  - CLI and SDK wrapper are present and covered by tests.
+  - Compliance checks are wired into CI.
+- Phase 1 Core Engine Foundation: 🚧
+  - Rust parser/runtime/compatibility contracts are stable; full crate split is partial.
+- Phase 2 Renderer Backend Architecture: 🚧
+  - WebGL2 path and headless renderer are stable.
+  - WebGPU/native backends and shared capability negotiation are pending.
+- Phase 3 Web SDK: 🚧
+  - JavaScript SDK exists with audio/preset/pack loading, plugin hooks, and exports.
+  - Type definitions and React binding are pending.
+- Phase 4 CLI and Batch Tooling: ✅
+  - `validate`, `inspect`, `compat`, `render-stats`, `pack-inspect`, and `pack-validate` implemented.
+- Phase 5 Preset Pack Format: ✅
+  - Pack manifests, folder validation, plugin declarations, and compatibility metadata are stable.
+- Phase 6 Plugin Architecture: 🚧
+  - Data/JS pack plugins and lifecycle hook points are implemented in the web SDK.
+  - Native trait/plugin host model is implemented in `rustymilk-desktop` with hook points for preset load/frame/audio/render and data-plugin descriptors.
+- Phase 7 Standalone Desktop Player: 🚧
+  - Browser player prototype is implemented.
+  - Browser player now supports playlist lifecycle plus import/export for local playlists.
+  - `crates/rustymilk-desktop` now provides deterministic playback session plumbing and a headless probe.
+  - Desktop CI probe smoke now runs in `test:desktop`/`test:all`.
+  - Native windowed shell prototype exists (`player-ui`) under an optional feature gate.
+  - `player-ui` prototype now supports live playback controls (pause/resume, prev/next preset, reset, loop/no-loop).
+- Phase 8 RustyMilk Studio: 🚧
+  - Browser Studio prototype supports inspect/edit/fragment workflows.
+  - Preset libraries, favorites, and pack publish/import workflows are pending.
+- Phase 9 Language SDKs and Native Interop: ⚪
+  - CLI is Rust-native; additional language SDKs/host wrappers are pending.
+- Source Import & Content Expansion: 🚧
+  - JavaScript port archived in `archive/slskdn-js-milkdrop-port` and key behavior is reflected in tests.
+  - Aggressive content review is in place with `content/catalog.json` and policy docs.
+
+## Repo-Wide Completion Matrix
+
+- `crates/rustymilk-core`: ✅
+- `crates/rustymilk-pack`: ✅
+- `crates/rustymilk-renderer-core`: ✅
+- `crates/rustymilk-renderer-headless`: ✅
+- `crates/rustymilk-cli`: ✅
+- `crates/rustymilk-wasm`: ✅
+- `crates/rustymilk-desktop`: 🚧
+- `packages/rustymilk-web`: ✅
+- `apps/rustymilk-player`: 🚧
+- `apps/rustymilk-studio`: 🚧
+- `tools` (smoke/compat/perf/compliance): ✅
+- `content` governance and catalog: ✅
+- `third-party content legal inclusion`: 🚧
+- `desktop UI shells`: 🚧
+- `official docs and release notes`: ✅
+- `cross-repo extraction (slskR)`: 🚧
+
 ## Product Frame
 
 RustyMilk should eventually ship as these related products:
@@ -16,6 +74,7 @@ RustyMilk should eventually ship as these related products:
 - **RustyMilk CLI**: command-line validation, inspection, compatibility reports, thumbnails, offline renders, conversion, packing, and benchmarking.
 - **RustyMilk Packs**: distributable preset, texture, fragment, metadata, and plugin bundles.
 - **RustyMilk Plugins**: extension points for preset packs, audio analyzers, beat detectors, automation, input devices, post-processing, exports, and host integrations.
+- Browser player now includes local playlist lifecycle (save/update/rename/clear/delete), active-playlist navigation scope, and history-aware controls.
 
 ## Current Baseline
 
@@ -353,13 +412,15 @@ Initial approach:
 
 Core plugin hooks to design:
 
-- `onPresetLoaded`
+Implemented baseline hooks:
+- `onPresetLoad`/`onPresetLoaded`
+- `onPresetChange`
 - `onFrameStart`
 - `onAudioFrame`
 - `onBeat`
-- `onInput`
 - `onAutomationStep`
 - `onRenderFrame`
+- `onInput`
 - `onExport`
 
 Exit criteria:
@@ -403,6 +464,20 @@ Advanced features:
 Exit criteria:
 
 - A user can install and run RustyMilk as a standalone visualizer without slskR or a browser integration project.
+
+## Desktop Host Milestone
+
+- `crates/rustymilk-desktop` establishes a native-ready host crate/API in Rust:
+  - frame-set runtime host abstraction with persistent state,
+  - pluggable `DesktopAudioProvider` contract with a default deterministic synthetic implementation,
+  - headless frame accounting path for benchmark/probe mode,
+  - desktop playback runtime API (`DesktopPlayerEngine`) for reusable presets and host control,
+  - split host entrypoints:
+    - probe mode: `cargo run -p rustymilk-desktop --bin rustymilk-desktop -- ...`
+    - player mode: `cargo run -p rustymilk-desktop --bin player -- ...`
+    - player-ui mode: `cargo run -p rustymilk-desktop --features ui --bin player-ui -- --pack examples/sample-pack`
+    - studio mode: `cargo run -p rustymilk-desktop --bin studio -- ...`
+  - shared preset loading and compatibility inspection helpers for desktop tooling.
 
 ## Phase 8: RustyMilk Studio
 
@@ -540,7 +615,7 @@ Docs to add:
 6. Add pack manifest schema and loader.
 7. Add headless thumbnail/render path.
 8. Prototype desktop player with the fastest viable shell.
-9. Add plugin hooks for data packs, automation, audio, and input.
+9. Add plugin hooks for data packs, automation, audio, and input (desktop engine hook surface is in progress; web SDK remains the richer reference implementation).
 10. Build Studio features from the same SDK and CLI primitives.
 
 ## Open Design Questions

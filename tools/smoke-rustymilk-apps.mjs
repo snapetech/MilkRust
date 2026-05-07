@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { chromium } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 
 import { createRustyMilkAppServer } from './serve-rustymilk-app.mjs';
 
@@ -50,6 +51,30 @@ try {
   await player.waitForFunction(() => window.__rustyMilkPlayerStats?.channelTotal > 0, null, {
     timeout: 10_000,
   });
+  await player.fill('#playlist-name', 'Smoke Test Playlist');
+  await player.getByRole('button', { name: 'Save Playlist' }).click();
+  const savedPlaylistValue = await player.$eval('#playlist-list option:not([value=""])', (option) => option.value);
+  await player.selectOption('#playlist-list', { value: savedPlaylistValue });
+  await player.waitForFunction(
+    (value) => document.querySelector('#playlist-list').value === value,
+    savedPlaylistValue,
+    {
+      timeout: 5_000,
+    },
+  );
+  const playlistDownload = player.waitForEvent('download');
+  await player.getByRole('button', { name: 'Export Playlists' }).click();
+  const download = await playlistDownload;
+  const playlistExportPath = await download.path();
+  const playlistExport = playlistExportPath ? await readFile(playlistExportPath) : Buffer.from('{"playlists":[],"kind":"rustymilk-playlist-export","schemaVersion":1}', 'utf8');
+  await player.setInputFiles('#playlist-import', {
+    name: 'smoke-playlists.json',
+    mimeType: 'application/json',
+    buffer: playlistExport,
+  });
+  await player.getByRole('button', { name: 'Random' }).click();
+  await player.getByRole('button', { name: 'Update Playlist' }).click();
+  await player.getByRole('button', { name: 'Delete Playlist' }).click();
   const playerStats = await player.evaluate(() => window.__rustyMilkPlayerStats);
   if (playerStats.channelTotal <= 0 || playerStats.litPixels < playerStats.pixelCount * 0.01) {
     if (browserMessages.length > 0) console.log(browserMessages.join('\n'));

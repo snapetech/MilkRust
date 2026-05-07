@@ -103,6 +103,13 @@ const normalizeStringArray = (values = []) => Array.isArray(values)
 
 const normalizePackPath = (value = '') => String(value || '').replace(/^\/+/, '');
 
+const normalizePluginKind = (value = '') => {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'javascript') return 'js';
+  if (normalized === 'module') return 'js';
+  return normalized || 'data';
+};
+
 const absoluteRustyMilkUrl = (url) =>
   new URL(url, globalThis.location?.href || 'http://localhost/').toString();
 
@@ -162,9 +169,10 @@ export const normalizeRustyMilkPackManifest = (manifest = {}, manifestUrl = '') 
     })),
     plugins: plugins.map((plugin) => ({
       id: String(plugin?.id || ''),
-      kind: String(plugin?.kind || 'data'),
+      kind: normalizePluginKind(plugin?.kind),
       entry: normalizePackPath(plugin?.entry),
       url: resolvePackAssetUrl(baseUrl, plugin?.entry),
+      source: String(plugin?.entry || ''),
     })),
     playlist: normalizeStringArray(manifest.playlist),
     automationDefaults: manifest.automationDefaults || manifest.automation_defaults || {},
@@ -187,6 +195,15 @@ export const validateRustyMilkPackManifest = (manifest = {}, manifestUrl = '') =
     if (!preset.file) errors.push(`preset ${preset.id || '<missing>'} file is required`);
     if (isUnsafePackPath(preset.file)) errors.push(`preset ${preset.id || preset.file} path must stay inside the pack`);
   }
+  for (const plugin of normalized.plugins) {
+    if (!plugin.id) errors.push('plugin id is required');
+    if (!plugin.entry) errors.push(`plugin ${plugin.id || '<missing>'} entry is required`);
+    if (isUnsafePackPath(plugin.entry)) errors.push(`plugin ${plugin.id || plugin.entry || '<missing>'} path must stay inside the pack`);
+    if (!['data', 'js'].includes(plugin.kind)) {
+      warnings.push(`plugin ${plugin.id || '<missing>'} uses unsupported kind ${plugin.kind}; treated as data plugin`);
+      plugin.kind = 'data';
+    }
+  }
   return {
     errors,
     manifest: normalized,
@@ -208,8 +225,10 @@ export const loadRustyMilkPack = async (packUrl, { fetchImpl = globalThis.fetch 
     name: preset.title || preset.id || preset.file,
     source: await loadRustyMilkPackPresetSource(preset, { fetchImpl }),
   })));
+  const plugins = await loadRustyMilkPackPlugins(validation, { fetchImpl });
   return {
     ...validation,
+    plugins,
     manifest: validation.manifest,
     presets,
   };
@@ -228,6 +247,7 @@ export const loadRustyMilkPackManifest = async (packUrl, { fetchImpl = globalThi
   if (!validation.valid) {
     throw new Error(`invalid RustyMilk pack: ${validation.errors.join('; ')}`);
   }
+  validation.manifestUrl = manifestUrl;
   return validation;
 };
 
@@ -243,6 +263,68 @@ export const loadRustyMilkPackPresetSource = async (
     throw new Error(`failed to load preset ${preset?.file || preset?.id || '<unknown>'}`);
   }
   return response.text();
+};
+
+export const loadRustyMilkPackPlugins = async (
+  manifest,
+  { fetchImpl = globalThis.fetch } = {},
+) => {
+  if (typeof fetchImpl !== 'function') {
+    throw new Error('loadRustyMilkPackPlugins requires a fetch implementation');
+  }
+  const manifestUrl = manifest?.manifestUrl || manifest?.manifest?.manifestUrl || manifest?.manifest_url;
+  const normalized = normalizeRustyMilkPackManifest(manifest?.manifest || manifest, manifestUrl);
+  const warnings = [];
+  const errors = [];
+  const plugins = await Promise.all(normalized.plugins.map(async (plugin) => {
+    try {
+      if (plugin.kind === 'js') {
+        if (!plugin.url) {
+          warnings.push(`plugin ${plugin.id || '<missing>'} has no url`);
+          return null;
+        }
+        const loaded = await import(/* @vite-ignore */ plugin.url);
+        const api = loaded?.default ?? loaded;
+        if (!api || (typeof api !== 'object' && typeof api !== 'function')) {
+          throw new Error(`plugin ${plugin.id || '<missing>'} has no export object`);
+        }
+        return {
+          ...plugin,
+          source: 'module',
+          api,
+          module: loaded,
+        };
+      }
+
+      if (!plugin.url) {
+        warnings.push(`plugin ${plugin.id || '<missing>'} has no url`);
+        return null;
+      }
+      const response = await fetchImpl(plugin.url);
+      if (!response.ok) {
+        errors.push(`failed to load plugin ${plugin.id || plugin.entry || '<missing>'}`);
+        return null;
+      }
+      const payload = await response.json();
+      return {
+        ...plugin,
+        source: 'data',
+        payload,
+      };
+    } catch (error) {
+      errors.push(`${plugin.id || plugin.entry || 'plugin'} load error: ${error?.message || String(error)}`);
+      return null;
+    }
+  }));
+
+  const loadedPlugins = plugins.filter(Boolean);
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    plugins: loadedPlugins,
+    manifest: normalized,
+  };
 };
 
 let rustModulePromise;
@@ -404,6 +486,32 @@ const getWebGpuStatus = (rendererBackend) => ({
     : '',
 });
 
+const pluginHookNames = [
+  'onPresetLoad',
+  'onPresetLoaded',
+  'onPresetChange',
+  'onFrameStart',
+  'onAudioFrame',
+  'onBeat',
+  'onAutomationStep',
+  'onRenderFrame',
+  'onInput',
+  'onExport',
+];
+
+const createPluginHooks = () => Object.fromEntries(
+  pluginHookNames.map((name) => [name, []]),
+);
+
+const attachPluginHooks = (registry, target) => {
+  for (const name of pluginHookNames) {
+    const hook = target?.[name];
+    if (typeof hook === 'function') {
+      registry[name].push(hook);
+    }
+  }
+};
+
 export const createRustyMilkEngine = async ({
   audioContext,
   audioNode,
@@ -432,14 +540,134 @@ export const createRustyMilkEngine = async ({
     mouse_x: 0.5,
     mouse_y: 0.5,
   };
+  let pluginHooks = createPluginHooks();
+  let installedPlugins = [];
+  let pluginState = {
+    activePresetName: activePresetTitle,
+    lastPresetIndex: presetIndex,
+    automation,
+    pluginCount: 0,
+  };
+
+  const runPluginHooks = (name, context = {}) => {
+    const hooks = pluginHooks[name] || [];
+    let nextContext = { ...context };
+    for (const hook of hooks) {
+      try {
+        const next = hook(nextContext);
+        if (next && typeof next === 'object') {
+          nextContext = { ...nextContext, ...next };
+        }
+      } catch (error) {
+        console.warn(`RustyMilk plugin hook error (${name}):`, error?.message || error);
+      }
+    }
+    return nextContext;
+  };
+
+  const updatePluginState = (next = {}) => {
+    pluginState = {
+      ...pluginState,
+      ...next,
+    };
+    if (next?.automation) {
+      pluginState.automation = normalizeAutomation(next.automation);
+    }
+    return pluginState;
+  };
+
+  const installPlugins = (nextPlugins = []) => {
+    pluginHooks = createPluginHooks();
+    const plugins = Array.isArray(nextPlugins) ? nextPlugins : [];
+    installedPlugins = [];
+    for (const plugin of plugins) {
+      const hookSource = plugin?.api ?? plugin?.payload ?? plugin;
+      if (!hookSource || (typeof hookSource !== 'object' && typeof hookSource !== 'function')) {
+        continue;
+      }
+      if (plugin?.id && !installedPlugins.some((entry) => entry.id === plugin.id)) {
+        installedPlugins.push({
+          id: String(plugin.id),
+          kind: String(plugin.kind || 'data'),
+          source: String(plugin.source || (plugin.kind === 'js' ? 'module' : 'data')),
+          api: hookSource,
+          url: plugin.url,
+        });
+      }
+      attachPluginHooks(pluginHooks, hookSource);
+      if (typeof hookSource === 'function') {
+        pluginHooks.onRenderFrame.push((context) => hookSource(context));
+      }
+    }
+    pluginState.pluginCount = installedPlugins.length;
+    return {
+      pluginCount: installedPlugins.length,
+      pluginHooks: Object.fromEntries(
+        pluginHookNames.map((name) => [name, pluginHooks[name].length]),
+      ),
+      plugins: installedPlugins,
+    };
+  };
+
+  const pluginDescriptorsToLoad = (pack) => {
+    if (Array.isArray(pack?.plugins)) return pack.plugins;
+    if (Array.isArray(pack?.plugins?.plugins)) return pack.plugins.plugins;
+    return [];
+  };
+
+  const runPresetHooks = (preset, source, options = {}) => {
+    let context = {
+      preset,
+      source,
+      presetName: preset?.name || '',
+      presetIndex,
+      textureAssets: options.textureAssets,
+      automation,
+      timestamp: audioContext.currentTime || 0,
+    };
+    context = runPluginHooks('onPresetLoad', context);
+    context = runPluginHooks('onPresetLoaded', context);
+    return context;
+  };
+
+  const runFrameHooks = (now, frame) => {
+    const frameContext = runPluginHooks('onFrameStart', {
+      now,
+      presetIndex,
+      presetName: activePresetTitle,
+      automation,
+      frame,
+      bands: frame.bands,
+      spectrum: frame.spectrum,
+      samples: frame.samples,
+    });
+    runPluginHooks('onAudioFrame', frameContext);
+    return frameContext;
+  };
 
   const loadPreset = (index, options = {}) => {
     presetIndex = (index + presetLibrary.length) % presetLibrary.length;
+    const preset = presetLibrary[presetIndex];
+    if (!preset) return null;
+    const hookResult = runPresetHooks(preset, preset.source, options);
+    const presetSource = typeof hookResult.source === 'string' ? hookResult.source : preset.source;
+    const presetName = typeof hookResult.presetName === 'string' ? hookResult.presetName : preset.name;
     activePresetTitle = rustEngine.loadPresetText(
-      presetLibrary[presetIndex].source,
-      presetLibrary[presetIndex].name,
+      presetSource,
+      presetName,
       textureAssetsJson(options.textureAssets),
     );
+    updatePluginState({
+      activePresetName: activePresetTitle,
+      lastPresetIndex: presetIndex,
+    });
+    runPluginHooks('onPresetChange', {
+      presetIndex,
+      presetName: activePresetTitle,
+      preset,
+      presetSource,
+      textureAssets: options.textureAssets,
+    });
     return activePresetTitle;
   };
 
@@ -457,14 +685,38 @@ export const createRustyMilkEngine = async ({
       now,
       automation,
     );
-    beatState = nextBeatState;
+    const beatContext = runPluginHooks('onBeat', {
+      ...nextBeatState,
+      automation,
+      now,
+      presetIndex,
+      presetName: activePresetTitle,
+      source: presetLibrary[presetIndex]?.source,
+      audio: {
+        bands: renderFrame.bands,
+        spectrum: renderFrame.spectrum,
+        samples: renderFrame.samples,
+      },
+    });
+    beatState = {
+      ...nextBeatState,
+      ...beatContext,
+    };
     if (
-      !nextBeatState.isBeat
-      || nextBeatState.beatCount < automation.beatsPerPreset
+      !beatState.isBeat
+      || beatState.beatCount < automation.beatsPerPreset
       || now - lastAutomatedPresetAt < defaultTransitionSeconds
     ) {
       return null;
     }
+    const automationStep = runPluginHooks('onAutomationStep', {
+      automation,
+      now,
+      presetIndex,
+      beatState,
+      source: presetLibrary[presetIndex]?.source,
+    });
+    if (automationStep?.advancePreset === false) return null;
     beatState = {
       ...nextBeatState,
       beatCount: 0,
@@ -478,13 +730,29 @@ export const createRustyMilkEngine = async ({
       ? 'RustyMilk WebGL2 fallback'
       : 'RustyMilk WebGL2',
     presetName: activePresetTitle,
+    getPluginState: () => ({ ...pluginState }),
     dispose: () => {
       frameReader.disconnect();
       rustEngine.free?.();
     },
-    exportPresetFragment: (type = 'shape', index = 0) =>
-      parseJson(rustEngine.exportPresetFragment(type, index)),
-    exportPresetText: () => parseJson(rustEngine.exportPresetText()),
+    exportPresetFragment: (type = 'shape', index = 0) => {
+      const result = parseJson(rustEngine.exportPresetFragment(type, index));
+      const finalized = runPluginHooks('onExport', {
+        operation: 'export-preset-fragment',
+        artifact: result,
+        type,
+        index,
+      });
+      return finalized.artifact || result;
+    },
+    exportPresetText: () => {
+      const result = parseJson(rustEngine.exportPresetText());
+      const finalized = runPluginHooks('onExport', {
+        operation: 'export-preset-text',
+        artifact: result,
+      });
+      return finalized.artifact || result;
+    },
     getPresetDebugSnapshot: () => parseJson(
       rustEngine.getPresetDebugSnapshotJson(JSON.stringify(webGpuStatus)),
       {},
@@ -502,24 +770,50 @@ export const createRustyMilkEngine = async ({
       const type = options.type || (String(fileName).toLowerCase().endsWith('.wave')
         ? 'wave'
         : 'shape');
+      const hookContext = runPluginHooks('onPresetLoad', {
+        source,
+        presetName: fileName,
+        textureAssets: options.textureAssets,
+      });
       const result = parseJson(rustEngine.loadPresetFragmentText(
         source,
         fileName,
         type,
-        textureAssetsJson(options.textureAssets),
+        textureAssetsJson(hookContext.textureAssets || options.textureAssets),
       ));
       if (result?.title) activePresetTitle = result.title;
+      runPluginHooks('onPresetChange', {
+        presetName: activePresetTitle,
+        source: typeof hookContext.source === 'string' ? hookContext.source : source,
+        preset: {
+          name: fileName,
+        },
+      });
       return result;
     },
     loadPresetText: (source, fileName = '', options = {}) => {
-      activePresetTitle = rustEngine.loadPresetText(
+      const hookContext = runPluginHooks('onPresetLoad', {
         source,
-        fileName,
-        textureAssetsJson(options.textureAssets),
+        presetName: fileName,
+        textureAssets: options.textureAssets,
+      });
+      activePresetTitle = rustEngine.loadPresetText(
+        typeof hookContext.source === 'string' ? hookContext.source : source,
+        typeof hookContext.presetName === 'string' ? hookContext.presetName : fileName,
+        textureAssetsJson(hookContext.textureAssets || options.textureAssets),
       );
+      updatePluginState({ activePresetName: activePresetTitle });
+      runPluginHooks('onPresetChange', {
+        presetName: activePresetTitle,
+        source: typeof hookContext.source === 'string' ? hookContext.source : source,
+      });
       return activePresetTitle;
     },
     loadPresetPack: (pack, options = {}) => {
+      const pluginSummary = pluginDescriptorsToLoad(pack);
+      if (pluginSummary.length) {
+        installPlugins(pluginSummary);
+      }
       const presets = Array.isArray(pack?.presets) ? pack.presets : [];
       if (!presets.length) return null;
       presetLibrary = presets.map((preset) => ({
@@ -535,8 +829,10 @@ export const createRustyMilkEngine = async ({
         textureAssetsJson(options.textureAssets),
       ));
       if (result?.title) activePresetTitle = result.title;
+      updatePluginState({ activePresetName: activePresetTitle });
       return result;
     },
+    loadPlugins: (plugins = []) => installPlugins(plugins),
     removePresetFragment: (type = 'shape', index = 0, options = {}) => {
       const result = parseJson(rustEngine.removePresetFragment(
         type === 'wave' ? 'wave' : 'shape',
@@ -544,11 +840,13 @@ export const createRustyMilkEngine = async ({
         textureAssetsJson(options.textureAssets),
       ));
       if (result?.title) activePresetTitle = result.title;
+      updatePluginState({ activePresetName: activePresetTitle });
       return result;
     },
     render: () => {
       const now = audioContext.currentTime || 0;
       const frame = frameReader.read();
+      runFrameHooks(now, frame);
       const automatedPresetName = maybeAdvanceAutomatedPreset(frame, now);
       rustEngine.render(
         now,
@@ -563,6 +861,12 @@ export const createRustyMilkEngine = async ({
         mouseState.mouse_dx,
         mouseState.mouse_dy,
       );
+      runPluginHooks('onRenderFrame', {
+        now,
+        frame,
+        presetIndex,
+        presetName: activePresetTitle,
+      });
       return automatedPresetName ? { presetName: automatedPresetName } : null;
     },
     resize: (width, height) => {
@@ -573,10 +877,15 @@ export const createRustyMilkEngine = async ({
         ...mouseState,
         ...nextMouseState,
       };
+      runPluginHooks('onInput', {
+        state: mouseState,
+        input: nextMouseState,
+      });
       return mouseState;
     },
     setPresetAutomation: (nextAutomation = {}) => {
       automation = normalizeAutomation(nextAutomation);
+      updatePluginState({ automation });
       beatState = {};
       lastAutomatedPresetAt = audioContext.currentTime || 0;
       return automation;

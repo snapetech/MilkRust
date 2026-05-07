@@ -85,6 +85,14 @@ import {
 
 RustyMilk Player uses the lazy path for bundled community packs so packs with thousands of presets can populate the browser list without fetching every `.milk` file at startup.
 
+The SDK now also supports plugin entries:
+
+- `loadRustyMilkPackPlugins(manifest)` loads each plugin entry from `plugins/`.
+- `engine.loadPlugins(plugins)` registers lifecycle hooks and data descriptors.
+- pack plugin JSON descriptors can drive playlist order through a `kind: "playlist"` payload and `presetIds`.
+
+See [`docs/PLUGIN_API.md`](PLUGIN_API.md) for the current hook surface.
+
 ## Build Path
 
 - `rustymilk-pack` is the shared Rust crate for pack manifests and validation.

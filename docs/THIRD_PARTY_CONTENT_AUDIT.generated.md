@@ -121,8 +121,8 @@ Sample content files:
   - `../slskdn/publish/wwwroot/manifest.json`
   - `../slskdn/publish/wwwroot/static/media/flags.99f63ae7a743f21ab308.png`
   - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/assets/flags-DOLqOU7Y.png`
-  - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/assets/slskdn-icon-wire-BtXRoQBH.png`
-  - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/assets/slskdn-logo-lockup-BXxB8Gil.png`
+  - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/assets/slskdn-icon-wire-C82vFmIR.png`
+  - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/assets/slskdn-logo-lockup-RdjImHzX.png`
   - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/logo192.png`
   - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/logo512.png`
   - `../slskdn/src/slskd/bin/Debug/net10.0/wwwroot/manifest.json`
@@ -133,14 +133,14 @@ Sample content files:
   - `../slskdn/src/slskd/bin/Release/net10.0/linux-x64/wwwroot/logo512.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/linux-x64/wwwroot/manifest.json`
   - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/assets/flags-DOLqOU7Y.png`
-  - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/assets/slskdn-icon-wire-BtXRoQBH.png`
-  - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/assets/slskdn-logo-lockup-BXxB8Gil.png`
+  - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/assets/slskdn-icon-wire-C82vFmIR.png`
+  - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/assets/slskdn-logo-lockup-RdjImHzX.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/logo192.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/logo512.png`
   - `../slskdn/src/slskd/bin/Release/net10.0/wwwroot/manifest.json`
   - `../slskdn/src/slskd/wwwroot/assets/flags-DOLqOU7Y.png`
-  - `../slskdn/src/slskd/wwwroot/assets/slskdn-icon-wire-BtXRoQBH.png`
-  - `../slskdn/src/slskd/wwwroot/assets/slskdn-logo-lockup-BXxB8Gil.png`
+  - `../slskdn/src/slskd/wwwroot/assets/slskdn-icon-wire-C82vFmIR.png`
+  - `../slskdn/src/slskd/wwwroot/assets/slskdn-logo-lockup-RdjImHzX.png`
   - `../slskdn/src/slskd/wwwroot/logo192.png`
   - `../slskdn/src/slskd/wwwroot/logo512.png`
   - `../slskdn/src/slskd/wwwroot/manifest.json`

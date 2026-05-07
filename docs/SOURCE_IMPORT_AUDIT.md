@@ -59,7 +59,7 @@ crates/rustymilk-core/src/lib.rs
 packages/rustymilk-web/src/rustyMilkEngine.test.js
 ```
 
-The remaining browser/GPU/player import surface is mapped in [`RENDERER_AND_PLAYER_IMPORT_PLAN.md`](RENDERER_AND_PLAYER_IMPORT_PLAN.md).
+The remaining browser/GPU/player import surface is mapped in [`RENDERER_AND_PLAYER_IMPORT_PLAN.md`](./RENDERER_AND_PLAYER_IMPORT_PLAN.md).
 
 ## Still To Mine From `../slskdn`
 

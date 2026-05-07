@@ -13,14 +13,18 @@ This repository is being prepared as the home for:
 - `rustymilk-cli`: command-line validation, inspection, compatibility, and render-stat tooling.
 - `rustymilk-wasm`: browser-facing WASM bindings and renderers.
 - `packages/rustymilk-web`: JavaScript client wrapper for applications that consume the WASM package.
+- TypeScript typings for the web SDK are now published in `packages/rustymilk-web/src/rustyMilkEngine.d.ts`.
 - `apps/rustymilk-player`: standalone browser player prototype.
 - `apps/rustymilk-studio`: browser authoring/debugging prototype.
+- `crates/rustymilk-desktop`: native desktop host primitives and headless playback probe.
+- `crates/rustymilk-desktop` also exposes `DesktopPlayerEngine` for host-side playback integration and control, including a
+  pluggable `DesktopAudioProvider` contract.
 - `tools`: smoke, compatibility, and performance checks.
 - `examples`: small browser clients used for SDK verification.
 
 The current migration keeps legacy `.milk` and `.milk2` preset formats compatible while removing product naming from the engine identity.
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations. See [`docs/PRESET_PACKS.md`](docs/PRESET_PACKS.md), [`docs/THIRD_PARTY_CONTENT_POLICY.md`](docs/THIRD_PARTY_CONTENT_POLICY.md), [`docs/THIRD_PARTY_CONTENT_AUDIT.generated.md`](docs/THIRD_PARTY_CONTENT_AUDIT.generated.md), [`docs/SOURCE_IMPORT_AUDIT.md`](docs/SOURCE_IMPORT_AUDIT.md), [`docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md`](docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md), and [`archive/slskdn-js-milkdrop-port`](archive/slskdn-js-milkdrop-port) for the current pack format, content policy, preserved slskdN JavaScript port, and import checklist.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations. See [`docs/PLUGIN_API.md`](docs/PLUGIN_API.md), [`docs/PRESET_PACKS.md`](docs/PRESET_PACKS.md), [`docs/THIRD_PARTY_CONTENT_POLICY.md`](docs/THIRD_PARTY_CONTENT_POLICY.md), [`docs/THIRD_PARTY_CONTENT_AUDIT.generated.md`](docs/THIRD_PARTY_CONTENT_AUDIT.generated.md), [`docs/SOURCE_IMPORT_AUDIT.md`](docs/SOURCE_IMPORT_AUDIT.md), [`docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md`](docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md), and [`archive/slskdn-js-milkdrop-port`](archive/slskdn-js-milkdrop-port) for the current pack format, content policy, preserved slskdN JavaScript port, and import checklist.
 
 ## License
 
@@ -53,6 +57,47 @@ Community-unlicensed packs are not served by the local app server unless explici
 ```bash
 RUSTYMILK_INCLUDE_COMMUNITY_CONTENT=1 npm run dev:player
 ```
+
+## Desktop Host Probe
+
+```bash
+cargo run -p rustymilk-desktop --bin rustymilk-desktop -- --preset examples/sample-pack/presets/warm-scope.milk --frames 120 --fps 60
+npm run test:desktop
+```
+
+The native probe exercises deterministic frame generation and headless render accounting for desktop integration work.
+
+Also available:
+
+```bash
+cargo run -p rustymilk-desktop --bin player -- --pack examples/sample-pack --frames 120 --fps 60
+cargo run -p rustymilk-desktop --bin studio -- --pack examples/sample-pack --json
+```
+
+The new `player` and `studio` entries split the desktop runtime surface into playback-focused and
+compatibility/inspection-oriented paths while sharing the same preset loading and session runtime.
+
+An optional native windowed prototype is also available (synthetic audio by default):
+
+```bash
+cargo run -p rustymilk-desktop --features ui --bin player-ui -- --preset examples/sample-pack/presets/warm-scope.milk
+```
+
+```bash
+cargo run -p rustymilk-desktop --features ui --bin player-ui -- --pack examples/sample-pack --fps 60 --preset-duration 20 --no-loop
+```
+
+To enable live audio capture for `player-ui`, also enable the `audio` feature:
+
+```bash
+cargo run -p rustymilk-desktop --features "ui audio" --bin player-ui -- --pack examples/sample-pack --audio-device "Built-in Audio Analog Stereo"
+```
+
+Player controls for this shell are:
+
+- `Left` / `Right`: previous / next preset
+- `Space`: pause / resume
+- `R`: reset the current preset timer
 
 ## CLI
 

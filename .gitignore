@@ -2,6 +2,6 @@
 /dist/
 /pkg/
 /node_modules/
+content/generated/desktop-plugin-reports/
 *.log
 .DS_Store
-

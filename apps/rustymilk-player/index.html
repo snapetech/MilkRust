@@ -22,6 +22,22 @@
         </div>
         <div class="control-grid">
           <label>
+            Search
+            <input id="preset-search" type="search" placeholder="filter presets...">
+          </label>
+          <label>
+            Playlist
+            <select id="playlist-list"></select>
+          </label>
+          <label>
+            Playlist Name
+            <input id="playlist-name" type="text" placeholder="active or new playlist">
+          </label>
+          <label class="file-button">
+            Playlist Import
+            <input id="playlist-import" type="file" accept=".json,.rmplaylist,application/json" multiple>
+          </label>
+          <label>
             Library
             <select id="pack-list"></select>
           </label>
@@ -47,6 +63,16 @@
           </label>
         </div>
         <div class="button-row">
+          <button id="save-playlist" type="button">Save Playlist</button>
+          <button id="update-playlist" type="button">Update Playlist</button>
+          <button id="rename-playlist" type="button">Rename Playlist</button>
+          <button id="clear-playlist" type="button">Clear Playlist</button>
+          <button id="delete-playlist" type="button">Delete Playlist</button>
+          <button id="export-playlists" type="button">Export Playlists</button>
+          <button id="toggle-favorite" type="button">♡ Favorite</button>
+          <button id="view-all" type="button">View: All</button>
+          <button id="prev-history" type="button">History Prev</button>
+          <button id="next-history" type="button">History Next</button>
           <button id="previous" type="button">Previous</button>
           <button id="next" type="button">Next</button>
           <button id="random" type="button">Random</button>

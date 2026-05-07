@@ -23,11 +23,17 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Install wasm-bindgen CLI
+        run: cargo install wasm-bindgen-cli --version 0.2.120 --locked
+
+      - name: Build browser WASM package
+        run: npm run build:wasm
+
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
-      - name: Install wasm-bindgen CLI
-        run: cargo install wasm-bindgen-cli --version 0.2.120 --locked
+      - name: Run compliance audit
+        run: npm run compliance:ci
 
       - name: Test Rust workspace
         run: cargo test --workspace
@@ -35,11 +41,10 @@ jobs:
       - name: Check WASM target
         run: cargo check -p rustymilk-wasm --target wasm32-unknown-unknown
 
-      - name: Build browser WASM package
-        run: npm run build:wasm
-
       - name: Run RustyMilk tool checks
         run: |
           npm run test:compatibility
           npm run test:performance
           npm run test:smoke
+          npm run desktop:probe:ci
+          npm run desktop:plugin-report:ci

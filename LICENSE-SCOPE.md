@@ -7,6 +7,7 @@ This applies to RustyMilk-owned source code, tooling, app prototypes, SDK wrappe
 ## Published Packages
 
 - Rust crates in `crates/`: `AGPL-3.0-only`.
+- `crates/rustymilk-desktop`: native desktop host primitives and headless probe are also `AGPL-3.0-only`.
 - JavaScript package `@rustymilk/web`: `AGPL-3.0-only`.
 - Browser app prototypes in `apps/`: `AGPL-3.0-only`.
 - RustyMilk build and audit tools in `tools/`: `AGPL-3.0-only`.
