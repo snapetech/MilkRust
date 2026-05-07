@@ -15,6 +15,8 @@ Source reference:
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/presetFixtures.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/presetFixtures.test.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/presetCompatibilityMatrix.js
+../slskdn/src/web/src/components/Player/visualizers/milkdrop/presetParser.test.js
+../slskdn/src/web/src/components/Player/visualizers/milkdrop/presetCompatibility.test.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/expressionVm.test.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/shaderTranslator.test.js
 ../slskR/web/src/components/Player/visualizers/rustyMilkEngine.test.js
@@ -32,10 +34,12 @@ RustyMilk coverage added:
 - Expression VM parity for arithmetic, q-register assignments, compound assignment, comparisons, condition helpers, audio helpers, constants, bitwise helpers, shifts, unary operators, and logical operators.
 - Shader translator parity for ret assignments, shader bodies, q/audio uniforms, FFT/waveform helpers, named texture samplers, GLSL output, WGSL output, and rejected unsafe shader bodies.
 - Web SDK wrapper tests for transition helpers, beat detection, audio analyzer data flow, mouse state, resize, preset load/edit/export methods, debug summaries, and disposal across the Rust WASM boundary.
+- Parser parity for comments, base values, per-frame/per-pixel equations, shader sections, indexed shapes/sprites/waves, MilkDrop3 `.milk2` double presets, primitive aliases, standalone fragments, prefixed fragments, serialization, and compatibility diagnostics.
 
 Notable behavior difference:
 
 - The old JavaScript WebGPU translator rejected a ternary ret expression. RustyMilk currently accepts that safe case, so the Rust test preserves the newer Rust behavior instead of reintroducing the older limitation.
+- The old JavaScript compatibility test treated `megabuf` as unsupported. RustyMilk currently supports `megabuf`/`gmegabuf` buffer state, so imported compatibility assertions preserve that newer Rust behavior.
 
 Test location:
 

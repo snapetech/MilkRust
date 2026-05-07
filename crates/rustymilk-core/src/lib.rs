@@ -5867,6 +5867,265 @@ ret = tint + vec3(time * 0.01, get_fft(0.25), get_waveform(0.5));
     }
 
     #[test]
+    fn rustymilk_core_matches_imported_preset_parser_edges() {
+        let parsed = parse_rustymilk_preset_set(
+            r#"
+// comments are ignored
+[preset00]
+name=RustyMilk parser smoke
+fRating=4.0
+fGammaAdj=1.35
+zoom=1.01
+rot=0
+per_frame_1=q1 = bass_att * 0.2;
+per_frame_2=zoom = zoom + q1;
+per_pixel_1=rot = rot + rad * 0.01;
+warp_shader=shader_body {
+warp_shader_1=  ret = texture(sampler_main, uv).xyz;
+warp_shader_2=}
+comp_shader=shader_body { ret = vec3(q1); }
+shape00_enabled=1
+shape00_sides=5
+shape00_init1=q2=0;
+shape00_per_frame1=q2=q2+0.1;
+sprite00_enabled=1
+sprite00_image=logo.png
+sprite00_init1=q3=0.2;
+sprite00_per_frame1=x=0.5+q3;
+wavecode_0_enabled=1
+wavecode_0_samples=512
+wavecode_0_per_point1=x=sample;
+"#,
+            false,
+        );
+
+        assert_eq!(parsed.format, "milk");
+        let preset = parsed.presets.first().unwrap();
+        assert_eq!(preset.title, "RustyMilk parser smoke");
+        assert_eq!(
+            preset.base_values.get("frating"),
+            Some(&RustyMilkValue::Number(4.0))
+        );
+        assert_eq!(
+            preset.base_values.get("fgammaadj"),
+            Some(&RustyMilkValue::Number(1.35))
+        );
+        assert_eq!(
+            preset.equations.per_frame,
+            "q1 = bass_att * 0.2;\nzoom = zoom + q1;"
+        );
+        assert_eq!(preset.equations.per_pixel, "rot = rot + rad * 0.01;");
+        assert!(preset.warp_shader.contains("texture(sampler_main, uv)"));
+        assert_eq!(preset.comp_shader, "shader_body { ret = vec3(q1); }");
+        assert_eq!(
+            preset.shapes[0].base_values.get("enabled"),
+            Some(&RustyMilkValue::Number(1.0))
+        );
+        assert_eq!(
+            preset.shapes[0].base_values.get("sides"),
+            Some(&RustyMilkValue::Number(5.0))
+        );
+        assert_eq!(preset.shapes[0].equations.init, "q2=0;");
+        assert_eq!(preset.shapes[0].equations.frame, "q2=q2+0.1;");
+        assert_eq!(
+            preset.sprites[0].base_values.get("image"),
+            Some(&RustyMilkValue::Text("logo.png".to_string()))
+        );
+        assert_eq!(preset.sprites[0].equations.init, "q3=0.2;");
+        assert_eq!(preset.sprites[0].equations.frame, "x=0.5+q3;");
+        assert_eq!(
+            preset.waves[0].base_values.get("samples"),
+            Some(&RustyMilkValue::Number(512.0))
+        );
+        assert_eq!(preset.waves[0].equations.point, "x=sample;");
+
+        let double = parse_rustymilk_preset_set(
+            r#"
+[preset00]
+name=left preset
+zoom=1
+[preset01]
+name=right preset
+zoom=0.9
+per_frame_1=q33=treb_att;
+"#,
+            false,
+        );
+        assert_eq!(double.format, "milk2");
+        assert_eq!(double.presets.len(), 2);
+        assert_eq!(double.presets[0].title, "left preset");
+        assert_eq!(double.presets[1].title, "right preset");
+        assert_eq!(double.presets[1].equations.per_frame, "q33=treb_att;");
+        assert_eq!(double.presets[1].format, "milk2");
+    }
+
+    #[test]
+    fn rustymilk_core_matches_imported_fragment_and_alias_parser_edges() {
+        let parsed = parse_rustymilk_preset_set(
+            r#"
+shape00_bTextured=1
+shape00_numSides=6
+shape00_texName=panel.png
+wavecode_0_bSpectrum=1
+wavecode_0_bUseDots=1
+wavecode_0_bDrawThick=1
+wavecode_0_nSamples=256
+"#,
+            false,
+        );
+        let preset = parsed.presets.first().unwrap();
+        assert_eq!(
+            preset.shapes[0].base_values.get("btextured"),
+            Some(&RustyMilkValue::Number(1.0))
+        );
+        assert_eq!(
+            preset.shapes[0].base_values.get("numsides"),
+            Some(&RustyMilkValue::Number(6.0))
+        );
+        assert_eq!(
+            preset.shapes[0].base_values.get("texname"),
+            Some(&RustyMilkValue::Text("panel.png".to_string()))
+        );
+        assert_eq!(
+            preset.waves[0].base_values.get("bdrawthick"),
+            Some(&RustyMilkValue::Number(1.0))
+        );
+        assert_eq!(
+            preset.waves[0].base_values.get("bspectrum"),
+            Some(&RustyMilkValue::Number(1.0))
+        );
+        assert_eq!(
+            preset.waves[0].base_values.get("busedots"),
+            Some(&RustyMilkValue::Number(1.0))
+        );
+        assert_eq!(
+            preset.waves[0].base_values.get("nsamples"),
+            Some(&RustyMilkValue::Number(256.0))
+        );
+
+        let shape = parse_rustymilk_fragment(
+            r#"
+[shape]
+sides=7
+rad=0.22
+r=1
+per_frame_1=ang=time;
+"#,
+            "star.shape",
+            "",
+        );
+        assert_eq!(shape.fragment_type, "shape");
+        assert_eq!(shape.entries.len(), 1);
+        assert_eq!(
+            shape.entries[0].base_values.get("enabled"),
+            Some(&RustyMilkValue::Number(1.0))
+        );
+        assert_eq!(
+            shape.entries[0].base_values.get("sides"),
+            Some(&RustyMilkValue::Number(7.0))
+        );
+        assert_eq!(shape.entries[0].equations.frame, "ang=time;");
+        assert!(serialize_rustymilk_fragment(&shape.entries[0], "shape")
+            .contains("per_frame_1=ang=time;"));
+
+        let wave = parse_rustymilk_fragment(
+            r#"
+samples=64
+spectrum=1
+per_point_1=x=i;
+per_point_2=y=sample;
+"#,
+            "spectrum.wave",
+            "",
+        );
+        assert_eq!(wave.fragment_type, "wave");
+        assert_eq!(
+            wave.entries[0].base_values.get("samples"),
+            Some(&RustyMilkValue::Number(64.0))
+        );
+        assert_eq!(wave.entries[0].equations.point, "x=i;\ny=sample;");
+
+        let prefixed = parse_rustymilk_fragment(
+            r#"
+shape00_enabled=1
+shape00_sides=4
+shape00_per_frame1=rad=0.25+0.05*sin(time);
+"#,
+            "prefixed.shape",
+            "",
+        );
+        assert_eq!(
+            prefixed.entries[0].base_values.get("sides"),
+            Some(&RustyMilkValue::Number(4.0))
+        );
+        assert_eq!(
+            prefixed.entries[0].equations.frame,
+            "rad=0.25+0.05*sin(time);"
+        );
+
+        let serialized = serialize_rustymilk_preset_set(&parse_rustymilk_preset_set(
+            r#"
+name=Serializable
+wave_r=1
+shape00_enabled=1
+shape00_sides=5
+wavecode_0_enabled=1
+wavecode_0_samples=16
+wavecode_0_per_point1=x=i;
+"#,
+            false,
+        ));
+        assert!(serialized.contains("name=Serializable"));
+        assert!(serialized.contains("shape00_sides=5"));
+        assert!(serialized.contains("wavecode_0_samples=16"));
+        assert!(serialized.contains("wavecode_0_per_point_1=x=i;"));
+    }
+
+    #[test]
+    fn rustymilk_core_matches_imported_preset_compatibility_edges() {
+        let parsed = parse_rustymilk_preset_set(
+            r#"
+per_frame_1=q1=megabuf(0);
+per_pixel_1=q2=sin(pi);
+comp_shader=for (;;) { ret = vec3(1.0); }
+wavecode_0_enabled=1
+wavecode_0_per_point1=y=customcall(sample);
+shape00_enabled=1
+shape00_per_frame1=rad=rand(4);
+sprite00_enabled=1
+sprite00_per_frame1=x=spritecall(time);
+"#,
+            false,
+        );
+        let report = analyze_rustymilk_preset_compatibility(parsed.presets.first().unwrap());
+        assert_eq!(
+            report.unsupported_functions,
+            vec!["customcall".to_string(), "spritecall".to_string()]
+        );
+        assert_eq!(report.shader_sections, vec!["comp_shader".to_string()]);
+        assert_eq!(
+            rustymilk_compatibility_error(&report),
+            "RustyMilk preset has unsupported functions: customcall, spritecall; shader translation pending: comp_shader."
+        );
+
+        let parsed = parse_rustymilk_preset_set(
+            r#"
+per_frame_1=q1=rand(4)+get_fft(0.5)+atan2(1,0);
+per_frame_2=q2=band(7,3)+sigmoid(q1,2);
+warp_shader=ret = tex2D(sampler_main, uv).rgb * vec3(0.5, 0.7, 1.0);
+comp_shader=float2 shifted = uv + float2(frac(time), fmod(time, 1.0));
+comp_shader_1=float energy = rsqrt(max(get_fft(0.5), 0.001));
+comp_shader_2=ret = vec3(shifted, energy * bass_att);
+"#,
+            false,
+        );
+        let report = analyze_rustymilk_preset_compatibility(parsed.presets.first().unwrap());
+        assert!(report.unsupported_functions.is_empty());
+        assert!(report.shader_sections.is_empty());
+        assert_eq!(rustymilk_compatibility_error(&report), "");
+    }
+
+    #[test]
     fn rustymilk_core_preserves_imported_milkdrop_fixture_summaries() {
         let summaries = imported_milkdrop_fixtures()
             .into_iter()
