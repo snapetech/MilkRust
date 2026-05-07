@@ -141,6 +141,7 @@ export const normalizeRustyMilkPackManifest = (manifest = {}, manifestUrl = '') 
       id: String(preset?.id || ''),
       title: String(preset?.title || ''),
       file: normalizePackPath(preset?.file),
+      sourceFormat: String(preset?.sourceFormat || preset?.source_format || preset?.format || ''),
       url: resolvePackAssetUrl(baseUrl, preset?.file),
       tags: normalizeStringArray(preset?.tags),
       thumbnail: normalizePackPath(preset?.thumbnail),

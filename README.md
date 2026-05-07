@@ -20,7 +20,7 @@ This repository is being prepared as the home for:
 
 The current migration keeps legacy `.milk` and `.milk2` preset formats compatible while removing product naming from the engine identity.
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations. See [`docs/PRESET_PACKS.md`](docs/PRESET_PACKS.md), [`docs/SOURCE_IMPORT_AUDIT.md`](docs/SOURCE_IMPORT_AUDIT.md), [`docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md`](docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md), and [`archive/slskdn-js-milkdrop-port`](archive/slskdn-js-milkdrop-port) for the current pack format, preserved slskdN JavaScript port, and import checklist.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations. See [`docs/PRESET_PACKS.md`](docs/PRESET_PACKS.md), [`docs/THIRD_PARTY_CONTENT_POLICY.md`](docs/THIRD_PARTY_CONTENT_POLICY.md), [`docs/THIRD_PARTY_CONTENT_AUDIT.generated.md`](docs/THIRD_PARTY_CONTENT_AUDIT.generated.md), [`docs/SOURCE_IMPORT_AUDIT.md`](docs/SOURCE_IMPORT_AUDIT.md), [`docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md`](docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md), and [`archive/slskdn-js-milkdrop-port`](archive/slskdn-js-milkdrop-port) for the current pack format, content policy, preserved slskdN JavaScript port, and import checklist.
 
 ## Build
 
@@ -52,3 +52,12 @@ cargo run -p rustymilk-cli -- render-stats preset.milk
 cargo run -p rustymilk-cli -- pack-inspect examples/sample-pack
 cargo run -p rustymilk-cli -- pack-validate examples/sample-pack
 ```
+
+## Content Catalog
+
+```bash
+npm run content:audit
+npm run content:validate
+```
+
+Third-party packs live in [`content/catalog.json`](content/catalog.json). Vendored content requires explicit redistribution permission; unclear historical MilkDrop packs are tracked as link-only until their license is reviewed.

@@ -242,6 +242,7 @@ fn pack_inspect_command(path: Option<&String>) -> RustyMilkCliResult {
                     "id": preset.id,
                     "title": preset.title,
                     "file": preset.file,
+                    "sourceFormat": preset.source_format,
                     "tags": preset.tags,
                     "thumbnail": preset.thumbnail,
                 })).collect::<Vec<_>>(),

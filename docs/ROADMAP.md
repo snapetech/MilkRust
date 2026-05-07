@@ -32,6 +32,7 @@ The repository currently contains:
 - `apps/rustymilk-studio`: browser authoring/debugging prototype.
 - `tools`: smoke, compatibility, and performance checks.
 - `examples`: browser smoke client.
+- `content/catalog.json`: third-party content catalog with copy/link/review policy.
 
 The immediate migration target is for slskR to depend on RustyMilk instead of carrying the engine inline.
 
@@ -319,6 +320,7 @@ Work items:
 - Add pack loading to web SDK and desktop player.
 - Add pack publishing/export from Studio.
 - Add default sample pack. `examples/sample-pack` is the initial local fixture pack.
+- Maintain a third-party content catalog and audit generated from local/source scans.
 
 Exit criteria:
 

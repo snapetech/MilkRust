@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "manual-seed",
+  "entries": [
+    {
+      "id": "rustymilk-sample-pack",
+      "name": "RustyMilk Sample Pack",
+      "kind": "pack",
+      "status": "vendored",
+      "license": "CC0-1.0",
+      "copyPolicy": "include",
+      "source": {
+        "type": "local",
+        "path": "examples/sample-pack"
+      },
+      "notes": "RustyMilk-owned fixture pack used by CLI, SDK, player, and Studio integration tests."
+    },
+    {
+      "id": "butterchurn-presets-2.4.7",
+      "name": "Butterchurn Presets 2.4.7",
+      "kind": "converted-preset-pack",
+      "status": "vendored",
+      "license": "MIT",
+      "copyPolicy": "include",
+      "source": {
+        "type": "npm",
+        "path": "content/third-party/butterchurn-presets-2.4.7",
+        "url": "https://www.npmjs.com/package/butterchurn-presets/v/2.4.7"
+      },
+      "licenseUrl": "https://raw.githubusercontent.com/jberg/butterchurn-presets/master/LICENSE",
+      "notes": "MIT-licensed converted Butterchurn preset package. Contains 1,754 converted JSON presets plus bundle files. This is not raw .milk source, but it is redistributable and useful for compatibility/import tooling."
+    },
+    {
+      "id": "projectm-cream-of-the-crop",
+      "name": "Milkdrop Cream of the Crop Presets",
+      "kind": "preset-pack",
+      "status": "link-only",
+      "license": "NOASSERTION",
+      "copyPolicy": "link",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/projectM-visualizer/presets-cream-of-the-crop"
+      },
+      "licenseUrl": "https://raw.githubusercontent.com/projectM-visualizer/presets-cream-of-the-crop/master/LICENSE.md",
+      "notes": "Large curated pack used by projectM. The upstream license note says most original preset authors did not publish explicit licenses, so this is useful for compatibility testing by user opt-in but should not be vendored without accepting that provenance risk."
+    },
+    {
+      "id": "projectm-milkdrop-original",
+      "name": "Original MilkDrop Preset Pack",
+      "kind": "preset-pack",
+      "status": "link-only",
+      "license": "NOASSERTION",
+      "copyPolicy": "link",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/projectM-visualizer/presets-milkdrop-original"
+      },
+      "notes": "Original presets from the last official MilkDrop release. Repository has no explicit license file beyond README provenance, so it remains link-only."
+    },
+    {
+      "id": "projectm-milkdrop-texture-pack",
+      "name": "MilkDrop Texture Pack",
+      "kind": "texture-pack",
+      "status": "link-only",
+      "license": "NOASSERTION",
+      "copyPolicy": "link",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/projectM-visualizer/presets-milkdrop-texture-pack"
+      },
+      "notes": "Textures originally released with MilkDrop plus common community textures. Repository has no explicit license file, so it remains link-only."
+    },
+    {
+      "id": "projectm-classic",
+      "name": "Classic projectM Preset Pack",
+      "kind": "preset-pack",
+      "status": "link-only",
+      "license": "NOASSERTION",
+      "copyPolicy": "link",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/projectM-visualizer/presets-projectm-classic"
+      },
+      "notes": "Classic projectM preset collection published until projectM 3.1.12. Repository has no explicit license file, so it remains link-only."
+    },
+    {
+      "id": "projectm-en-d",
+      "name": "En D Presets",
+      "kind": "preset-pack",
+      "status": "link-only",
+      "license": "NOASSERTION",
+      "copyPolicy": "link",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/projectM-visualizer/presets-en-d"
+      },
+      "licenseUrl": "https://raw.githubusercontent.com/projectM-visualizer/presets-en-d/master/LICENSE.md",
+      "notes": "Small En D preset collection. Upstream uses the same no-explicit-license/public-domain-assumption text as Cream of the Crop, so it remains link-only."
+    },
+    {
+      "id": "projectm-community",
+      "name": "projectM Community Presets",
+      "kind": "preset-pack",
+      "status": "review",
+      "license": "NOASSERTION",
+      "copyPolicy": "review",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/projectM-visualizer/presets-community"
+      },
+      "notes": "Community preset submission repo. The default branch/content layout needs further review before any copy/link decision."
+    },
+    {
+      "id": "milkdrop3",
+      "name": "MilkDrop3",
+      "kind": "app-reference",
+      "status": "link-only",
+      "license": "NOASSERTION",
+      "copyPolicy": "link",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/milkdrop2077/MilkDrop3"
+      },
+      "notes": "Important compatibility reference for .milk2, sprites, saved images, shader injection, transitions, drag/drop, and saved state behavior. Treat presets/assets as link-only until license terms are confirmed."
+    },
+    {
+      "id": "sourceforge-mdpresetpack",
+      "name": "Milk Drop Preset Pack",
+      "kind": "preset-pack",
+      "status": "link-only",
+      "license": "NOASSERTION",
+      "copyPolicy": "link",
+      "source": {
+        "type": "web",
+        "url": "https://sourceforge.net/projects/mdpresetpack/files/"
+      },
+      "notes": "Large historic preset pack. Needs license/provenance review before any redistribution."
+    }
+  ]
+}

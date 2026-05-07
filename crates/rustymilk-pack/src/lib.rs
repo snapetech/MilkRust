@@ -30,6 +30,7 @@ pub struct RustyMilkPackPreset {
     pub id: String,
     pub title: String,
     pub file: String,
+    pub source_format: String,
     pub tags: Vec<String>,
     pub thumbnail: String,
 }
@@ -61,6 +62,7 @@ pub struct RustyMilkPackPresetReport {
     pub id: String,
     pub file: String,
     pub title: String,
+    pub source_format: String,
     pub format: String,
     pub preset_count: usize,
     pub supported: bool,
@@ -102,6 +104,7 @@ impl RustyMilkPackValidationReport {
                 "id": preset.id,
                 "file": preset.file,
                 "title": preset.title,
+                "sourceFormat": preset.source_format,
                 "format": preset.format,
                 "presetCount": preset.preset_count,
                 "supported": preset.supported,
@@ -274,32 +277,67 @@ pub fn validate_rustymilk_pack_source(
             &mut errors,
         );
         validate_relative_pack_path(&preset.file, &format!("preset {}", preset.id), &mut errors);
+        let source_format = normalize_source_format(&preset.source_format, &preset.file);
         if preset.title.trim().is_empty() {
             warnings.push(format!("preset {} has no title", preset.id));
         }
         let preset_path = pack_path.join(&preset.file);
         match fs::read_to_string(&preset_path) {
             Ok(preset_source) => {
-                let entry = build_rustymilk_compatibility_entry(
-                    &preset.id,
-                    &preset.file,
-                    &preset_source,
-                    preset.file.to_ascii_lowercase().ends_with(".milk2"),
-                );
-                preset_reports.push(RustyMilkPackPresetReport {
-                    id: preset.id.clone(),
-                    file: preset.file.clone(),
-                    title: if preset.title.trim().is_empty() {
-                        rustymilk_preset_name(&preset_source)
-                    } else {
-                        preset.title.clone()
-                    },
-                    format: entry.format,
-                    preset_count: entry.preset_count,
-                    supported: entry.supported,
-                    webgpu_supported: entry.webgpu_supported,
-                    missing: false,
-                });
+                if source_format == "milk" || source_format == "milk2" {
+                    let entry = build_rustymilk_compatibility_entry(
+                        &preset.id,
+                        &preset.file,
+                        &preset_source,
+                        source_format == "milk2",
+                    );
+                    preset_reports.push(RustyMilkPackPresetReport {
+                        id: preset.id.clone(),
+                        file: preset.file.clone(),
+                        title: if preset.title.trim().is_empty() {
+                            rustymilk_preset_name(&preset_source)
+                        } else {
+                            preset.title.clone()
+                        },
+                        source_format: source_format.clone(),
+                        format: entry.format,
+                        preset_count: entry.preset_count,
+                        supported: entry.supported,
+                        webgpu_supported: entry.webgpu_supported,
+                        missing: false,
+                    });
+                } else if source_format == "butterchurn-json" {
+                    if serde_json::from_str::<Value>(&preset_source).is_err() {
+                        errors.push(format!("preset {} is not valid JSON", preset.file));
+                    }
+                    preset_reports.push(RustyMilkPackPresetReport {
+                        id: preset.id.clone(),
+                        file: preset.file.clone(),
+                        title: preset.title.clone(),
+                        source_format: source_format.clone(),
+                        format: source_format,
+                        preset_count: 1,
+                        supported: false,
+                        webgpu_supported: false,
+                        missing: false,
+                    });
+                } else {
+                    errors.push(format!(
+                        "preset {} uses unsupported sourceFormat {}",
+                        preset.file, source_format
+                    ));
+                    preset_reports.push(RustyMilkPackPresetReport {
+                        id: preset.id.clone(),
+                        file: preset.file.clone(),
+                        title: preset.title.clone(),
+                        source_format: source_format.clone(),
+                        format: source_format,
+                        preset_count: 0,
+                        supported: false,
+                        webgpu_supported: false,
+                        missing: false,
+                    });
+                }
             }
             Err(error) => {
                 errors.push(format!("preset {} failed to read: {error}", preset.file));
@@ -307,6 +345,7 @@ pub fn validate_rustymilk_pack_source(
                     id: preset.id.clone(),
                     file: preset.file.clone(),
                     title: preset.title.clone(),
+                    source_format,
                     format: String::new(),
                     preset_count: 0,
                     supported: false,
@@ -454,6 +493,10 @@ fn parse_pack_preset(
         id: required_string(value.get("id"), &format!("{field}[{index}].id"), errors),
         title: optional_string(value.get("title")).unwrap_or_default(),
         file: required_string(value.get("file"), &format!("{field}[{index}].file"), errors),
+        source_format: optional_string(value.get("sourceFormat"))
+            .or_else(|| optional_string(value.get("source_format")))
+            .or_else(|| optional_string(value.get("format")))
+            .unwrap_or_default(),
         tags: string_array(value.get("tags")).unwrap_or_default(),
         thumbnail: optional_string(value.get("thumbnail")).unwrap_or_default(),
     }
@@ -547,6 +590,21 @@ fn validate_relative_pack_path(path: &str, label: &str, errors: &mut Vec<String>
     }
 }
 
+fn normalize_source_format(source_format: &str, file: &str) -> String {
+    let normalized = source_format.trim().to_ascii_lowercase().replace('_', "-");
+    if !normalized.is_empty() {
+        return normalized;
+    }
+    let lower_file = file.to_ascii_lowercase();
+    if lower_file.ends_with(".milk2") {
+        "milk2".to_string()
+    } else if lower_file.ends_with(".json") {
+        "butterchurn-json".to_string()
+    } else {
+        "milk".to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -572,14 +630,15 @@ mod tests {
           "license": "CC0-1.0",
           "requiredRustyMilkVersion": "0.1.0",
           "sourceUrls": ["https://example.invalid/rustymilk"],
-          "presets": [
-            {
-              "id": "warm-lines",
-              "title": "Warm Lines",
-              "file": "presets/warm-lines.milk",
-              "tags": ["lines", "fixture"],
-              "thumbnail": "thumbnails/warm-lines.png"
-            }
+              "presets": [
+                {
+                  "id": "warm-lines",
+                  "title": "Warm Lines",
+                  "file": "presets/warm-lines.milk",
+                  "sourceFormat": "milk",
+                  "tags": ["lines", "fixture"],
+                  "thumbnail": "thumbnails/warm-lines.png"
+                }
           ],
           "textures": [
             { "id": "noise", "file": "textures/noise.png", "aliases": ["noise_lq"] }
@@ -608,6 +667,7 @@ mod tests {
         let manifest = parse_rustymilk_pack_manifest(manifest_source()).unwrap();
         assert_eq!(manifest.id, "sample-pack");
         assert_eq!(manifest.presets[0].file, "presets/warm-lines.milk");
+        assert_eq!(manifest.presets[0].source_format, "milk");
         assert_eq!(manifest.textures[0].aliases, vec!["noise_lq"]);
     }
 
