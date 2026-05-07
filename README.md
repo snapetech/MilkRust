@@ -22,6 +22,12 @@ The current migration keeps legacy `.milk` and `.milk2` preset formats compatibl
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the expanded plan covering the core engine, renderer backends, web SDK, CLI, preset packs, plugins, standalone player, Studio tooling, language SDKs, and host integrations. See [`docs/PRESET_PACKS.md`](docs/PRESET_PACKS.md), [`docs/THIRD_PARTY_CONTENT_POLICY.md`](docs/THIRD_PARTY_CONTENT_POLICY.md), [`docs/THIRD_PARTY_CONTENT_AUDIT.generated.md`](docs/THIRD_PARTY_CONTENT_AUDIT.generated.md), [`docs/SOURCE_IMPORT_AUDIT.md`](docs/SOURCE_IMPORT_AUDIT.md), [`docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md`](docs/RENDERER_AND_PLAYER_IMPORT_PLAN.md), and [`archive/slskdn-js-milkdrop-port`](archive/slskdn-js-milkdrop-port) for the current pack format, content policy, preserved slskdN JavaScript port, and import checklist.
 
+## License
+
+RustyMilk code is licensed as `AGPL-3.0-only`; see [`LICENSE`](LICENSE). The license scope and content carve-outs are documented in [`LICENSE-SCOPE.md`](LICENSE-SCOPE.md).
+
+Preset packs, textures, archived reference material, and generated content reports are not automatically relicensed by the RustyMilk code license. Their status is tracked in [`content/catalog.json`](content/catalog.json). In particular, `content/community-unlicensed` is compatibility material with `NOASSERTION` license status and is excluded from default builds unless a distribution explicitly opts in.
+
 ## Build
 
 ```bash
