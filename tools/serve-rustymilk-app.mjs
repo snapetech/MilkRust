@@ -30,8 +30,17 @@ export const createRustyMilkAppServer = ({
   includeCommunityContent = false,
   root = repoRoot,
 } = {}) => {
-  const appName = app === 'studio' ? 'rustymilk-studio' : 'rustymilk-player';
-  const appPath = `/apps/${appName}/`;
+  const appName = app === 'studio'
+    ? 'rustymilk-studio'
+    : app === 'web-component'
+      ? 'web-component'
+      : 'rustymilk-player';
+  const appPath = app === 'web-component'
+    ? '/examples/web-component/'
+    : `/apps/${appName}/`;
+  const indexName = app === 'web-component'
+    ? '/examples/web-component/index.html'
+    : `/apps/${appName}/index.html`;
   const server = createServer((request, response) => {
     const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
     if (url.pathname === '/') {
@@ -46,8 +55,9 @@ export const createRustyMilkAppServer = ({
       response.end('Community-unlicensed content is disabled for this server.');
       return;
     }
-    const relativePath = pathname === appPath
-      ? join('apps', appName, 'index.html')
+    const isAppRoot = pathname === appPath || pathname === appPath.replace(/\/$/, '');
+    const relativePath = isAppRoot
+      ? indexName.replace(/^\//, '')
       : pathname.replace(/^\/+/, '');
     const filePath = normalize(resolve(root, relativePath));
 
@@ -63,7 +73,9 @@ export const createRustyMilkAppServer = ({
 };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const app = process.argv[2] === 'studio' ? 'studio' : 'player';
+  const app = process.argv[2] === 'studio' || process.argv[2] === 'web-component'
+    ? process.argv[2]
+    : 'player';
   const port = Number(process.env.PORT || 4173);
   const includeCommunityContent = process.env.RUSTYMILK_INCLUDE_COMMUNITY_CONTENT === '1';
   const { appName, appPath, server } = createRustyMilkAppServer({

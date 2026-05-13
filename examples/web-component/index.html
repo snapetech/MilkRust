@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RustyMilk Web Component</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        color: #e5e7eb;
+        background: #0f172a;
+      }
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 1.25rem;
+      }
+
+      .frame {
+        width: min(100%, 960px);
+        aspect-ratio: 16 / 9;
+        border: 1px solid #334155;
+        background: black;
+      }
+
+      #viz {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      #status {
+        margin-top: 0.75rem;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>RustyMilk Web Component</h1>
+      <p>Minimal vanilla example using <code>&lt;rustymilk-visualizer&gt;</code>.</p>
+      <div class="frame">
+        <rustymilk-visualizer id="viz" auto-start="false"></rustymilk-visualizer>
+      </div>
+      <p>
+        <button id="start">Start synthetic audio</button>
+        <button id="stop" disabled>Stop</button>
+      </p>
+      <p id="status">Status: idle</p>
+      <pre id="report"></pre>
+    </main>
+    <script type="module">
+      import { defineRustyMilkVisualizerElement } from '/packages/rustymilk-web/src/rustyMilkVisualElement.js';
+      import { createRustyMilkEngine } from '/packages/rustymilk-web/src/rustyMilkEngine.js';
+
+      const VizTagName = 'rustymilk-visualizer';
+      defineRustyMilkVisualizerElement({
+        tagName: VizTagName,
+        createEngine: createRustyMilkEngine,
+      });
+
+      const visualizer = document.querySelector('#viz');
+      const startButton = document.querySelector('#start');
+      const stopButton = document.querySelector('#stop');
+      const statusText = document.querySelector('#status');
+      const report = document.querySelector('#report');
+
+      let audioContext;
+      let oscillator;
+      visualizer.presetText = `name=RustyMilk Component Demo
+decay=0.91
+wave_r=0.8
+wave_g=0.35
+wave_b=0.9
+zoom=1.15
+rot=0.01
+per_frame_1=shape00_enabled=1;
+shape00_sides=5
+shape00_rad=0.22
+shape00_x=0.5
+shape00_y=0.5
+shape00_r=0.1
+shape00_g=0.9
+shape00_b=0.45
+shape00_a=0.38
+shape00_r2=0.9
+shape00_g2=0.8
+shape00_b2=0.3
+shape00_a2=0.2
+wavecode_0_enabled=1
+wavecode_0_samples=128
+wavecode_0_r=0.95
+wavecode_0_g=0.85
+wavecode_0_b=0.3
+wavecode_0_a=0.82
+wavecode_0_per_point1=x=i;
+wavecode_0_per_point2=y=0.12+sample*0.5;
+`;
+
+      visualizer.addEventListener('rustymilk:status', (event) => {
+        const { status, error } = event.detail || {};
+        statusText.textContent = `Status: ${status}${error ? ` (${error})` : ''}`;
+      });
+
+      visualizer.addEventListener('rustymilk:ready', () => {
+        report.textContent = `Preset loaded: ${visualizer.engine?.presetName || 'unknown'}`;
+      });
+
+      startButton.addEventListener('click', async () => {
+        const context = new AudioContext();
+        await context.resume();
+        const gain = context.createGain();
+        gain.gain.value = 0.0001;
+        oscillator = context.createOscillator();
+        oscillator.frequency.value = 96;
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start();
+        visualizer.setAudioSource(context, oscillator);
+        await visualizer.start();
+        audioContext = context;
+        startButton.disabled = true;
+        stopButton.disabled = false;
+      });
+
+      stopButton.addEventListener('click', () => {
+        visualizer.stop();
+        oscillator?.stop?.();
+        oscillator = null;
+        if (audioContext?.state === 'running') {
+          audioContext.close();
+        }
+        audioContext = null;
+        startButton.disabled = false;
+        stopButton.disabled = true;
+      });
+    </script>
+  </body>
+</html>

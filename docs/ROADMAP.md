@@ -19,7 +19,7 @@ Status legend: ✅ implemented, 🚧 partial, ⚪ not started.
   - WebGPU/native backends and shared capability negotiation are pending.
 - Phase 3 Web SDK: 🚧
   - JavaScript SDK exists with audio/preset/pack loading, plugin hooks, and exports.
-  - Type definitions and React binding are pending.
+  - Type definitions are published and React bindings are now scaffolded in `packages/rustymilk-react`.
 - Phase 4 CLI and Batch Tooling: ✅
   - `validate`, `inspect`, `compat`, `render-stats`, `pack-inspect`, and `pack-validate` implemented.
 - Phase 5 Preset Pack Format: ✅
@@ -54,6 +54,7 @@ Status legend: ✅ implemented, 🚧 partial, ⚪ not started.
 - `crates/rustymilk-wasm`: ✅
 - `crates/rustymilk-desktop`: 🚧
 - `packages/rustymilk-web`: ✅
+- `packages/rustymilk-react`: 🚧
 - `apps/rustymilk-player`: 🚧
 - `apps/rustymilk-studio`: 🚧
 - `tools` (smoke/compat/perf/compliance): ✅
@@ -62,6 +63,7 @@ Status legend: ✅ implemented, 🚧 partial, ⚪ not started.
 - `desktop UI shells`: 🚧
 - `official docs and release notes`: ✅
 - `cross-repo extraction (slskR)`: 🚧
+- `examples/web-component`: ✅
 
 ## Product Frame
 
@@ -92,6 +94,7 @@ The repository currently contains:
 - `apps/rustymilk-studio`: browser authoring/debugging prototype.
 - `tools`: smoke, compatibility, and performance checks.
 - `examples`: browser smoke client.
+- `examples/web-component`: vanilla HTML/JS use of `<rustymilk-visualizer>`.
 - `content/catalog.json`: third-party content catalog with copy/link/review policy.
 - `content/third-party/butterchurn-presets-2.4.7`: MIT-licensed converted Butterchurn preset package vendored for compatibility/import work.
 - `content/community-unlicensed`: public projectM/MilkDrop community preset and texture packs imported for aggressive compatibility testing and opt-in builds.
@@ -215,6 +218,7 @@ apps/
 examples/
   browser-basic/
   react-basic/
+  web-component/
   tauri-player/
   native-wgpu/
   node-thumbnailer/
@@ -298,7 +302,7 @@ Goal: make the browser package feel like a real SDK, not a thin wrapper.
 - Provide high-level `createRustyMilkEngine()` for common usage.
 - Provide lower-level APIs for advanced hosts: runtime, preset library, audio source, texture assets, automation, and diagnostics.
 - Add React bindings in `packages/rustymilk-react`.
-- Add a Web Component wrapper: `<rustymilk-visualizer>`.
+- Add a Web Component wrapper: `<rustymilk-visualizer>` and add `examples/web-component` for vanilla embedding.
 - Add browser examples for vanilla JS, Vite, React, and CDN usage.
 - Add support for user-provided audio sample streams, not only Web Audio analyzer nodes.
 - Add asset loading helpers for textures and preset packs.

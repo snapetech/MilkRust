@@ -13,6 +13,8 @@ This repository is being prepared as the home for:
 - `rustymilk-cli`: command-line validation, inspection, compatibility, and render-stat tooling.
 - `rustymilk-wasm`: browser-facing WASM bindings and renderers.
 - `packages/rustymilk-web`: JavaScript client wrapper for applications that consume the WASM package.
+- `packages/rustymilk-react`: optional React integration built from the web SDK.
+- `examples/web-component`: vanilla web component embedding sample for `<rustymilk-visualizer>`.
 - TypeScript typings for the web SDK are now published in `packages/rustymilk-web/src/rustyMilkEngine.d.ts`.
 - `apps/rustymilk-player`: standalone browser player prototype.
 - `apps/rustymilk-studio`: browser authoring/debugging prototype.
@@ -48,9 +50,12 @@ npm run build:wasm
 npm run build:wasm
 npm run dev:player
 npm run dev:studio
+npm run dev:web-component
 ```
 
 The app commands serve the local repo at `http://127.0.0.1:4173/`.
+
+`npm run dev:web-component` serves the `examples/web-component/` HTML demo at `http://127.0.0.1:4173/examples/web-component/`.
 
 Community-unlicensed packs are not served by the local app server unless explicitly enabled:
 
