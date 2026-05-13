@@ -935,6 +935,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustymilk-preset"
+version = "0.1.0"
+dependencies = [
+ "rustymilk-expr",
+ "serde_json",
+]
+
+[[package]]
 name = "rustymilk-renderer-core"
 version = "0.1.0"
 dependencies = [
