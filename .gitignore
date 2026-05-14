@@ -5,3 +5,6 @@
 content/generated/desktop-plugin-reports/
 *.log
 .DS_Store
+
+# Local private denylist/config
+/.local/
