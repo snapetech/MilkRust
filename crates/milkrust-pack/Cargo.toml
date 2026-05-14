@@ -1,0 +1,18 @@
+[package]
+name = "milkrust-pack"
+version = "0.1.0"
+description = "Portable MilkRust preset pack manifests, loading, and validation"
+keywords = ["visualizer", "preset", "pack", "milkdrop", "audio"]
+categories = ["multimedia", "rendering"]
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+milkrust-core = { path = "../milkrust-core" }
+serde_json = "1"
+
+[lints]
+workspace = true

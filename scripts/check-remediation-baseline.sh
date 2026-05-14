@@ -7,4 +7,4 @@ cd "$repo_root"
 scripts/check-council-negative-space.sh
 scripts/check-council-active-backlog.sh
 
-printf '\nRustyMilk remediation baseline checks passed.\n'
+printf '\nMilkRust remediation baseline checks passed.\n'

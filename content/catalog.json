@@ -3,8 +3,8 @@
   "generatedBy": "manual-seed",
   "entries": [
     {
-      "id": "rustymilk-sample-pack",
-      "name": "RustyMilk Sample Pack",
+      "id": "milkrust-sample-pack",
+      "name": "MilkRust Sample Pack",
       "kind": "pack",
       "status": "vendored",
       "license": "CC0-1.0",
@@ -13,7 +13,7 @@
         "type": "local",
         "path": "examples/sample-pack"
       },
-      "notes": "RustyMilk-owned fixture pack used by CLI, SDK, player, and Studio integration tests."
+      "notes": "MilkRust-owned fixture pack used by CLI, SDK, player, and Studio integration tests."
     },
     {
       "id": "butterchurn-presets-2.4.7",

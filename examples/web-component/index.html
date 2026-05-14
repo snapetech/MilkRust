@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>RustyMilk Web Component</title>
+    <title>MilkRust Web Component</title>
     <style>
       body {
         margin: 0;
@@ -39,10 +39,10 @@
   </head>
   <body>
     <main>
-      <h1>RustyMilk Web Component</h1>
-      <p>Minimal vanilla example using <code>&lt;rustymilk-visualizer&gt;</code>.</p>
+      <h1>MilkRust Web Component</h1>
+      <p>Minimal vanilla example using <code>&lt;milkrust-visualizer&gt;</code>.</p>
       <div class="frame">
-        <rustymilk-visualizer id="viz" auto-start="false"></rustymilk-visualizer>
+        <milkrust-visualizer id="viz" auto-start="false"></milkrust-visualizer>
       </div>
       <p>
         <button id="start">Start synthetic audio</button>
@@ -52,13 +52,13 @@
       <pre id="report"></pre>
     </main>
     <script type="module">
-      import { defineRustyMilkVisualizerElement } from '/packages/rustymilk-web/src/rustyMilkVisualElement.js';
-      import { createRustyMilkEngine } from '/packages/rustymilk-web/src/rustyMilkEngine.js';
+      import { defineMilkRustVisualizerElement } from '/packages/milkrust-web/src/milkrustVisualElement.js';
+      import { createMilkRustEngine } from '/packages/milkrust-web/src/milkrustEngine.js';
 
-      const VizTagName = 'rustymilk-visualizer';
-      defineRustyMilkVisualizerElement({
+      const VizTagName = 'milkrust-visualizer';
+      defineMilkRustVisualizerElement({
         tagName: VizTagName,
-        createEngine: createRustyMilkEngine,
+        createEngine: createMilkRustEngine,
       });
 
       const visualizer = document.querySelector('#viz');
@@ -69,7 +69,7 @@
 
       let audioContext;
       let oscillator;
-      visualizer.presetText = `name=RustyMilk Component Demo
+      visualizer.presetText = `name=MilkRust Component Demo
 decay=0.91
 wave_r=0.8
 wave_g=0.35
@@ -99,12 +99,12 @@ wavecode_0_per_point1=x=i;
 wavecode_0_per_point2=y=0.12+sample*0.5;
 `;
 
-      visualizer.addEventListener('rustymilk:status', (event) => {
+      visualizer.addEventListener('milkrust:status', (event) => {
         const { status, error } = event.detail || {};
         statusText.textContent = `Status: ${status}${error ? ` (${error})` : ''}`;
       });
 
-      visualizer.addEventListener('rustymilk:ready', () => {
+      visualizer.addEventListener('milkrust:ready', () => {
         report.textContent = `Preset loaded: ${visualizer.engine?.presetName || 'unknown'}`;
       });
 

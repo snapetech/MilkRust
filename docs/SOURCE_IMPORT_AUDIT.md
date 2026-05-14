@@ -1,9 +1,9 @@
 # Source Import Audit
 
-RustyMilk has two local source histories worth preserving without copying application code wholesale:
+MilkRust has two local source histories worth preserving without copying application code wholesale:
 
 - `../slskdn`: JavaScript native MilkDrop/MilkDrop3 implementation.
-- `../slskR`: later Rust/WASM RustyMilk integration and slskR host UI.
+- `../slskR`: later Rust/WASM MilkRust integration and slskR host UI.
 
 The JavaScript port is preserved in-tree at:
 
@@ -11,7 +11,7 @@ The JavaScript port is preserved in-tree at:
 archive/slskdn-js-milkdrop-port/
 ```
 
-That archive is reference material, not the production RustyMilk engine.
+That archive is reference material, not the production MilkRust engine.
 
 ## Imported Now
 
@@ -29,10 +29,10 @@ Source reference:
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/shaderTranslator.test.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/milkdropRenderer.test.js
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/webgpuRenderer.test.js
-../slskR/web/src/components/Player/visualizers/rustyMilkEngine.test.js
+../slskR/web/src/components/Player/visualizers/milkrustEngine.test.js
 ```
 
-RustyMilk coverage added:
+MilkRust coverage added:
 
 - Classic primitive fixture: per-frame, per-pixel, motion vectors, shape, sprite, and custom wave.
 - Shader subset fixture: supported warp and comp shader body forms.
@@ -49,14 +49,14 @@ RustyMilk coverage added:
 
 Notable behavior difference:
 
-- The old JavaScript WebGPU translator rejected a ternary ret expression. RustyMilk currently accepts that safe case, so the Rust test preserves the newer Rust behavior instead of reintroducing the older limitation.
-- The old JavaScript compatibility test treated `megabuf` as unsupported. RustyMilk currently supports `megabuf`/`gmegabuf` buffer state, so imported compatibility assertions preserve that newer Rust behavior.
+- The old JavaScript WebGPU translator rejected a ternary ret expression. MilkRust currently accepts that safe case, so the Rust test preserves the newer Rust behavior instead of reintroducing the older limitation.
+- The old JavaScript compatibility test treated `megabuf` as unsupported. MilkRust currently supports `megabuf`/`gmegabuf` buffer state, so imported compatibility assertions preserve that newer Rust behavior.
 
 Test location:
 
 ```text
-crates/rustymilk-core/src/lib.rs
-packages/rustymilk-web/src/rustyMilkEngine.test.js
+crates/milkrust-core/src/lib.rs
+packages/milkrust-web/src/milkrustEngine.test.js
 ```
 
 The remaining browser/GPU/player import surface is mapped in [`RENDERER_AND_PLAYER_IMPORT_PLAN.md`](./RENDERER_AND_PLAYER_IMPORT_PLAN.md).
@@ -68,20 +68,20 @@ These should be imported as behavior, fixtures, or requirements, not as app-spec
 - `expressionVm.js` and tests: continue translating any remaining edge cases into Rust expression VM tests.
 - `shaderTranslator.js` and tests: continue translating any remaining GLSL/WGSL safe-subset expectations into core and renderer tests.
 - `milkdropRenderer.js` and tests: split useful WebGL2 behavior into future renderer backend tests.
-- `webgpuRenderer.js` and tests: use as design/reference material for `rustymilk-renderer-wgpu`.
+- `webgpuRenderer.js` and tests: use as design/reference material for `milkrust-renderer-wgpu`.
 - `nativeMilkdropEngine.js` and tests: preserve SDK/player workflows for preset library, favorites, search, playlists, fragment import/export, automation, debug snapshots, FPS caps, quality presets, and texture assets.
-- `smoke-native-milkdrop.mjs`: port context-loss and nonblank-canvas smoke coverage against RustyMilk packages.
+- `smoke-native-milkdrop.mjs`: port context-loss and nonblank-canvas smoke coverage against MilkRust packages.
 - `measure-native-milkdrop-performance.mjs`: port fixture-based browser performance measurement.
-- `report-native-milkdrop-compatibility.mjs`: replace app-path imports with RustyMilk CLI/package calls.
+- `report-native-milkdrop-compatibility.mjs`: replace app-path imports with MilkRust CLI/package calls.
 - `docs/design/webgl-milkdrop3-port.md`: fold remaining design notes into architecture docs and issues.
 
 ## Still To Check From `../slskR`
 
 Use `../slskR` mostly as a parity source.
 
-- Confirm every slskR `RustyMilkEngine` call exists in `crates/rustymilk-wasm`.
+- Confirm every slskR `MilkRustEngine` call exists in `crates/milkrust-wasm`.
 - Keep slskR smoke, compatibility, and performance expectations working against this standalone package.
-- Extract player workflow requirements into RustyMilk Web SDK, Player, and Studio docs.
+- Extract player workflow requirements into MilkRust Web SDK, Player, and Studio docs.
 - Do not import slskR routing, static shell HTML, Soulseek-specific components, or app storage keys.
 
 ## Import Rules

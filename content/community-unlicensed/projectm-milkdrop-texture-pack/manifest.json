@@ -4,9 +4,9 @@
   "name": "MilkDrop Texture Pack",
   "version": "community-2026-05-07",
   "author": "MilkDrop/projectM community",
-  "description": "Community-imported public MilkDrop/projectM content. License status is NOASSERTION; see RUSTYMILK-COMMUNITY-NOTICE.md.",
+  "description": "Community-imported public MilkDrop/projectM content. License status is NOASSERTION; see MILKRUST-COMMUNITY-NOTICE.md.",
   "license": "NOASSERTION",
-  "requiredRustyMilkVersion": "0.1.0",
+  "requiredMilkRustVersion": "0.1.0",
   "sourceUrls": [
     "https://github.com/projectM-visualizer/presets-milkdrop-texture-pack"
   ],

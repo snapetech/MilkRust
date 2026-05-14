@@ -3,6 +3,6 @@ export function goodDom(value) {
 }
 
 export function goodStorage(key, value) {
-  const safeKey = `rustymilk:${String(key).slice(0, 64)}`;
+  const safeKey = `milkrust:${String(key).slice(0, 64)}`;
   localStorage.setItem(safeKey, value);
 }

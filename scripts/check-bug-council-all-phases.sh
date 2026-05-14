@@ -21,7 +21,7 @@ require_literal() {
 require_literal "scan-bug-council-candidates.sh" "$runner"
 require_literal "run-council-active-bughunt.sh" "$runner"
 require_literal "check-remediation-baseline.sh" "$runner"
-require_literal "check-rustymilk-taint-lenses.sh" "$runner"
+require_literal "check-milkrust-taint-lenses.sh" "$runner"
 require_literal "cargo test --workspace" "$runner"
 require_literal "npm run test:web" "$runner"
 require_literal "npm run test:apps" "$runner"
@@ -33,4 +33,4 @@ if [[ "$failed" -ne 0 ]]; then
   exit 1
 fi
 
-printf '\nRustyMilk all-phases runner is registered.\n'
+printf '\nMilkRust all-phases runner is registered.\n'

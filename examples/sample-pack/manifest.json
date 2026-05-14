@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "id": "rustymilk-sample-pack",
-  "name": "RustyMilk Sample Pack",
+  "id": "milkrust-sample-pack",
+  "name": "MilkRust Sample Pack",
   "version": "0.1.0",
-  "author": "RustyMilk",
+  "author": "MilkRust",
   "description": "Small local fixture pack for CLI, SDK, player, and Studio integration tests.",
   "license": "CC0-1.0",
-  "requiredRustyMilkVersion": "0.1.0",
+  "requiredMilkRustVersion": "0.1.0",
   "sourceUrls": [
-    "https://github.com/snapetech/RustyMilk"
+    "https://github.com/snapetech/MilkRust"
   ],
   "presets": [
     {

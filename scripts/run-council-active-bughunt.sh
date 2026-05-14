@@ -20,7 +20,7 @@ write_section() {
 }
 
 cat >"$report" <<'EOF'
-# RustyMilk Active Council Bughunt Candidate Report
+# MilkRust Active Council Bughunt Candidate Report
 
 This report is a fresh discovery queue, not proof of no bugs. A green all-phases
 run means registered gates passed; every accepted row still needs a ledger row,
@@ -36,5 +36,5 @@ write_section "JS storage/network/file sinks" 'localStorage|sessionStorage|fetch
 write_section "Content/catalog path and generated artifact sinks" 'content/|generated|manifest|catalog|pack|preset|\.milk|\.milk2' content docs tools crates packages apps
 write_section "Release/package metadata sinks" 'version|license|repository|homepage|publish|files|package|artifact|release|workflow' package.json Cargo.toml .github docs tools
 
-printf 'Active RustyMilk bughunt candidates saved to %s.\n' "$report"
+printf 'Active MilkRust bughunt candidates saved to %s.\n' "$report"
 printf 'Verdict boundary: this report is a discovery queue, not proof of no bugs.\n'

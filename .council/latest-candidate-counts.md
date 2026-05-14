@@ -1,4 +1,4 @@
-# RustyMilk Council Scan Candidate Counts
+# MilkRust Council Scan Candidate Counts
 
 Generated from local source patterns. Counts are candidate lines, not confirmed bugs.
 

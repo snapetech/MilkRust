@@ -1,0 +1,18 @@
+[package]
+name = "milkrust-core"
+version = "0.1.0"
+description = "Core MilkRust preset parser, runtime, compatibility analyzer, and render batch builders"
+keywords = ["visualizer", "audio", "wasm", "webgl", "webgpu"]
+categories = ["multimedia", "rendering"]
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true
+

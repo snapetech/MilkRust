@@ -1,6 +1,6 @@
 # Roadmap
 
-RustyMilk should grow from an extracted Rust/WASM visualizer engine into a portable MilkDrop-compatible ecosystem: a reusable core engine, renderer backends, SDKs, standalone clients, authoring tools, plugin surfaces, preset packs, and automation tooling.
+MilkRust should grow from an extracted Rust/WASM visualizer engine into a portable MilkDrop-compatible ecosystem: a reusable core engine, renderer backends, SDKs, standalone clients, authoring tools, plugin surfaces, preset packs, and automation tooling.
 
 This roadmap is organized around product surfaces and build phases. The near-term priority is still clean extraction from slskR, but every extraction step should move the project toward stable APIs and multi-host reuse.
 
@@ -9,7 +9,7 @@ This roadmap is organized around product surfaces and build phases. The near-ter
 Status legend: ✅ implemented, 🚧 partial, ⚪ not started.
 
 - Phase 0 Extraction And Stabilization: ✅
-  - Rust/WASM engine is extracted and tested (`crates/rustymilk-core`, `crates/rustymilk-wasm`).
+  - Rust/WASM engine is extracted and tested (`crates/milkrust-core`, `crates/milkrust-wasm`).
   - CLI and SDK wrapper are present and covered by tests.
   - Compliance checks are wired into CI.
 - Phase 1 Core Engine Foundation: 🚧
@@ -19,22 +19,22 @@ Status legend: ✅ implemented, 🚧 partial, ⚪ not started.
   - WebGPU/native backends and shared capability negotiation are pending.
 - Phase 3 Web SDK: 🚧
   - JavaScript SDK exists with audio/preset/pack loading, plugin hooks, and exports.
-  - Type definitions are published and React bindings are now scaffolded in `packages/rustymilk-react`.
+  - Type definitions are published and React bindings are now scaffolded in `packages/milkrust-react`.
 - Phase 4 CLI and Batch Tooling: ✅
   - `validate`, `inspect`, `compat`, `render-stats`, `pack-inspect`, and `pack-validate` implemented.
 - Phase 5 Preset Pack Format: ✅
   - Pack manifests, folder validation, plugin declarations, and compatibility metadata are stable.
 - Phase 6 Plugin Architecture: 🚧
   - Data/JS pack plugins and lifecycle hook points are implemented in the web SDK.
-  - Native trait/plugin host model is implemented in `rustymilk-desktop` with hook points for preset load/frame/audio/render and data-plugin descriptors.
+  - Native trait/plugin host model is implemented in `milkrust-desktop` with hook points for preset load/frame/audio/render and data-plugin descriptors.
 - Phase 7 Standalone Desktop Player: 🚧
   - Browser player prototype is implemented.
   - Browser player now supports playlist lifecycle plus import/export for local playlists.
-  - `crates/rustymilk-desktop` now provides deterministic playback session plumbing and a headless probe.
+  - `crates/milkrust-desktop` now provides deterministic playback session plumbing and a headless probe.
   - Desktop CI probe smoke now runs in `test:desktop`/`test:all`.
   - Native windowed shell prototype exists (`player-ui`) under an optional feature gate.
   - `player-ui` prototype now supports live playback controls (pause/resume, prev/next preset, reset, loop/no-loop).
-- Phase 8 RustyMilk Studio: 🚧
+- Phase 8 MilkRust Studio: 🚧
   - Browser Studio prototype supports inspect/edit/fragment workflows.
   - Browser Studio now supports preset pack import/export (single-pack export with embedded sources).
   - Preset libraries and favorites workflows are still pending.
@@ -46,17 +46,17 @@ Status legend: ✅ implemented, 🚧 partial, ⚪ not started.
 
 ## Repo-Wide Completion Matrix
 
-- `crates/rustymilk-core`: ✅
-- `crates/rustymilk-pack`: ✅
-- `crates/rustymilk-renderer-core`: ✅
-- `crates/rustymilk-renderer-headless`: ✅
-- `crates/rustymilk-cli`: ✅
-- `crates/rustymilk-wasm`: ✅
-- `crates/rustymilk-desktop`: 🚧
-- `packages/rustymilk-web`: ✅
-- `packages/rustymilk-react`: 🚧
-- `apps/rustymilk-player`: 🚧
-- `apps/rustymilk-studio`: 🚧
+- `crates/milkrust-core`: ✅
+- `crates/milkrust-pack`: ✅
+- `crates/milkrust-renderer-core`: ✅
+- `crates/milkrust-renderer-headless`: ✅
+- `crates/milkrust-cli`: ✅
+- `crates/milkrust-wasm`: ✅
+- `crates/milkrust-desktop`: 🚧
+- `packages/milkrust-web`: ✅
+- `packages/milkrust-react`: 🚧
+- `apps/milkrust-player`: 🚧
+- `apps/milkrust-studio`: 🚧
 - `tools` (smoke/compat/perf/compliance): ✅
 - `content` governance and catalog: ✅
 - `third-party content legal inclusion`: 🚧
@@ -67,47 +67,47 @@ Status legend: ✅ implemented, 🚧 partial, ⚪ not started.
 
 ## Product Frame
 
-RustyMilk should eventually ship as these related products:
+MilkRust should eventually ship as these related products:
 
-- **RustyMilk Core**: pure Rust parser, preset document model, expression VM, runtime frame generation, compatibility analysis, and renderer-neutral frame output.
-- **RustyMilk Renderers**: modular render backends for WebGL2, canvas fallback, WebGPU/wgpu, native GPU windows, and headless capture.
-- **RustyMilk Web SDK**: installable TypeScript/JavaScript package for browser, Electron, Tauri webviews, and web apps.
-- **RustyMilk Desktop Player**: standalone MilkDrop-style visualizer client with fullscreen playback, preset browsing, automation, audio input selection, and capture/export tools.
-- **RustyMilk Studio**: preset authoring, debugging, compatibility inspection, fragment editing, texture management, and pack publishing.
-- **RustyMilk CLI**: command-line validation, inspection, compatibility reports, thumbnails, offline renders, conversion, packing, and benchmarking.
-- **RustyMilk Packs**: distributable preset, texture, fragment, metadata, and plugin bundles.
-- **RustyMilk Plugins**: extension points for preset packs, audio analyzers, beat detectors, automation, input devices, post-processing, exports, and host integrations.
+- **MilkRust Core**: pure Rust parser, preset document model, expression VM, runtime frame generation, compatibility analysis, and renderer-neutral frame output.
+- **MilkRust Renderers**: modular render backends for WebGL2, canvas fallback, WebGPU/wgpu, native GPU windows, and headless capture.
+- **MilkRust Web SDK**: installable TypeScript/JavaScript package for browser, Electron, Tauri webviews, and web apps.
+- **MilkRust Desktop Player**: standalone MilkDrop-style visualizer client with fullscreen playback, preset browsing, automation, audio input selection, and capture/export tools.
+- **MilkRust Studio**: preset authoring, debugging, compatibility inspection, fragment editing, texture management, and pack publishing.
+- **MilkRust CLI**: command-line validation, inspection, compatibility reports, thumbnails, offline renders, conversion, packing, and benchmarking.
+- **MilkRust Packs**: distributable preset, texture, fragment, metadata, and plugin bundles.
+- **MilkRust Plugins**: extension points for preset packs, audio analyzers, beat detectors, automation, input devices, post-processing, exports, and host integrations.
 - Browser player now includes local playlist lifecycle (save/update/rename/clear/delete), active-playlist navigation scope, and history-aware controls.
 
 ## Current Baseline
 
 The repository currently contains:
 
-- `crates/rustymilk-core`: parser/runtime-facing Rust code, frame structs, preset handling, compatibility helpers, geometry, and render batch summaries.
-- `crates/rustymilk-pack`: preset pack manifest parser, folder-pack loader, path-safety validation, and preset compatibility reporting.
-- `crates/rustymilk-renderer-core`: renderer contracts, capabilities, and render statistics.
-- `crates/rustymilk-renderer-headless`: headless renderer stats backend for tests and tooling.
-- `crates/rustymilk-cli`: validation, inspection, compatibility, and headless render-stat commands.
-- `crates/rustymilk-wasm`: `wasm-bindgen` exports, browser-facing `RustyMilkEngine`, and WebGL2/canvas rendering.
-- `packages/rustymilk-web`: JavaScript convenience wrapper for Web Audio, automation, preset loading, and WASM consumption.
-- `apps/rustymilk-player`: standalone browser player prototype.
-- `apps/rustymilk-studio`: browser authoring/debugging prototype.
+- `crates/milkrust-core`: parser/runtime-facing Rust code, frame structs, preset handling, compatibility helpers, geometry, and render batch summaries.
+- `crates/milkrust-pack`: preset pack manifest parser, folder-pack loader, path-safety validation, and preset compatibility reporting.
+- `crates/milkrust-renderer-core`: renderer contracts, capabilities, and render statistics.
+- `crates/milkrust-renderer-headless`: headless renderer stats backend for tests and tooling.
+- `crates/milkrust-cli`: validation, inspection, compatibility, and headless render-stat commands.
+- `crates/milkrust-wasm`: `wasm-bindgen` exports, browser-facing `MilkRustEngine`, and WebGL2/canvas rendering.
+- `packages/milkrust-web`: JavaScript convenience wrapper for Web Audio, automation, preset loading, and WASM consumption.
+- `apps/milkrust-player`: standalone browser player prototype.
+- `apps/milkrust-studio`: browser authoring/debugging prototype.
 - `tools`: smoke, compatibility, and performance checks.
 - `examples`: browser smoke client.
-- `examples/web-component`: vanilla HTML/JS use of `<rustymilk-visualizer>`.
+- `examples/web-component`: vanilla HTML/JS use of `<milkrust-visualizer>`.
 - `content/catalog.json`: third-party content catalog with copy/link/review policy.
 - `content/third-party/butterchurn-presets-2.4.7`: MIT-licensed converted Butterchurn preset package vendored for compatibility/import work.
 - `content/community-unlicensed`: public projectM/MilkDrop community preset and texture packs imported for aggressive compatibility testing and opt-in builds.
 - `content/generated`: generated summaries for community pack counts and sampled compatibility.
 
-The immediate migration target is for slskR to depend on RustyMilk instead of carrying the engine inline.
+The immediate migration target is for slskR to depend on MilkRust instead of carrying the engine inline.
 
 ## Source Import Audit
 
-RustyMilk has two important neighboring source histories:
+MilkRust has two important neighboring source histories:
 
 - `../slskdn`: the earlier JavaScript native MilkDrop/MilkDrop3 implementation.
-- `../slskR`: the later Rust/WASM RustyMilk integration and slskR player UI.
+- `../slskR`: the later Rust/WASM MilkRust integration and slskR player UI.
 
 These should not be imported wholesale. They should be mined deliberately for missing behavior, fixtures, tests, docs, and host UI workflows.
 
@@ -146,38 +146,38 @@ This is mostly the extraction source and current host integration. It contains:
 
 ```text
 ../slskR/crates/slskr-web/src/lib.rs
-../slskR/web/src/components/Player/visualizers/rustyMilkEngine.js
+../slskR/web/src/components/Player/visualizers/milkrustEngine.js
 ../slskR/web/src/components/Player/Visualizer.jsx
 ../slskR/web/src/components/Player/Visualizer.test.jsx
-../slskR/web/scripts/smoke-rustymilk.mjs
-../slskR/web/scripts/report-rustymilk-compatibility.mjs
-../slskR/web/scripts/measure-rustymilk-performance.mjs
+../slskR/web/scripts/smoke-milkrust.mjs
+../slskR/web/scripts/report-milkrust-compatibility.mjs
+../slskR/web/scripts/measure-milkrust-performance.mjs
 ```
 
-Most of the standalone web wrapper and scripts have already been copied here with product naming and package paths changed. `../slskR/crates/slskr-web/src/lib.rs` still has the old monolithic host crate shape, so it should be used for parity checks rather than copied back into RustyMilk.
+Most of the standalone web wrapper and scripts have already been copied here with product naming and package paths changed. `../slskR/crates/slskr-web/src/lib.rs` still has the old monolithic host crate shape, so it should be used for parity checks rather than copied back into MilkRust.
 
 Import candidates:
 
-- Any RustyMilk-specific tests not already represented in this repo.
-- Player UI behavior and tests that should become SDK examples or RustyMilk Studio/player requirements.
+- Any MilkRust-specific tests not already represented in this repo.
+- Player UI behavior and tests that should become SDK examples or MilkRust Studio/player requirements.
 - slskR integration boundary docs.
-- Any missing WASM export methods if slskR still calls APIs not present in `crates/rustymilk-wasm`.
+- Any missing WASM export methods if slskR still calls APIs not present in `crates/milkrust-wasm`.
 
-Do not import slskR application shell, routing, static UI, or Soulseek-specific code into RustyMilk.
+Do not import slskR application shell, routing, static UI, or Soulseek-specific code into MilkRust.
 
 ### Import Workstream
 
-- Create a migration checklist from `../slskdn` MilkDrop modules to RustyMilk modules.
-- Convert JS parser/VM/shader fixtures into Rust tests where the behavior belongs in `rustymilk-core`.
+- Create a migration checklist from `../slskdn` MilkDrop modules to MilkRust modules.
+- Convert JS parser/VM/shader fixtures into Rust tests where the behavior belongs in `milkrust-core`.
 - Convert renderer-specific WebGL/WebGPU tests into renderer backend tests after renderer modularization.
 - Move curated preset fixtures into this repo under a license-reviewed fixture location.
-- Bring compatibility/performance scripts forward only when they operate against RustyMilk packages, not slskdN or slskR app paths.
+- Bring compatibility/performance scripts forward only when they operate against MilkRust packages, not slskdN or slskR app paths.
 - Preserve host UI workflows as requirements for the future Web SDK, Desktop Player, and Studio rather than embedding app-specific React components.
-- Add parity checks that compare slskR host expectations against the standalone RustyMilk API until slskR fully consumes the package.
+- Add parity checks that compare slskR host expectations against the standalone MilkRust API until slskR fully consumes the package.
 
 ## Guiding Principles
 
-- Keep `rustymilk-core` host-independent and deterministic.
+- Keep `milkrust-core` host-independent and deterministic.
 - Treat renderer output as a stable contract instead of binding the core to one graphics API.
 - Prefer additive modules and crates over a single monolithic package.
 - Keep MilkDrop `.milk` and `.milk2` compatibility central.
@@ -191,29 +191,29 @@ The project does not need all of this immediately, but this is the intended dire
 
 ```text
 crates/
-  rustymilk-core/
-  rustymilk-expr/
-  rustymilk-preset/
-  rustymilk-runtime/
-  rustymilk-renderer-core/
-  rustymilk-renderer-webgl/
-  rustymilk-renderer-wgpu/
-  rustymilk-renderer-canvas/
-  rustymilk-renderer-headless/
-  rustymilk-audio/
-  rustymilk-cli/
-  rustymilk-desktop/
+  milkrust-core/
+  milkrust-expr/
+  milkrust-preset/
+  milkrust-runtime/
+  milkrust-renderer-core/
+  milkrust-renderer-webgl/
+  milkrust-renderer-wgpu/
+  milkrust-renderer-canvas/
+  milkrust-renderer-headless/
+  milkrust-audio/
+  milkrust-cli/
+  milkrust-desktop/
 
 packages/
-  rustymilk-web/
-  rustymilk-react/
-  rustymilk-node/
-  rustymilk-authoring/
-  rustymilk-presets-default/
+  milkrust-web/
+  milkrust-react/
+  milkrust-node/
+  milkrust-authoring/
+  milkrust-presets-default/
 
 apps/
-  rustymilk-player/
-  rustymilk-studio/
+  milkrust-player/
+  milkrust-studio/
 
 examples/
   browser-basic/
@@ -228,23 +228,23 @@ examples/
 
 Goal: finish the standalone migration without expanding the surface too quickly.
 
-- Update slskR to consume `rustymilk-core`, `rustymilk-wasm`, and/or `packages/rustymilk-web`.
+- Update slskR to consume `milkrust-core`, `milkrust-wasm`, and/or `packages/milkrust-web`.
 - Preserve parity with the old in-tree slskR implementation.
 - Add migration fixtures for representative `.milk` and `.milk2` presets.
 - Publish internal/private package builds before public releases.
-- Convert `packages/rustymilk-web` into an installable package with typed exports.
+- Convert `packages/milkrust-web` into an installable package with typed exports.
 - Delete the old in-tree slskR implementation after parity tests pass.
-- Document the current API boundary between slskR and RustyMilk.
+- Document the current API boundary between slskR and MilkRust.
 
 Exit criteria:
 
-- slskR uses RustyMilk as an external dependency.
+- slskR uses MilkRust as an external dependency.
 - Existing smoke, compatibility, and performance checks pass.
 - README and package docs explain how to consume the standalone engine.
 
 ## Phase 1: Core Engine Foundation
 
-Goal: make `rustymilk-core` the stable engine contract.
+Goal: make `milkrust-core` the stable engine contract.
 
 - Define stable Rust APIs for parsing, validation, inspection, serialization, and runtime rendering.
 - Split or internally organize the core into preset parsing, expression evaluation, runtime state, compatibility analysis, geometry, and frame output.
@@ -257,9 +257,9 @@ Goal: make `rustymilk-core` the stable engine contract.
 
 Candidate modules or future crates:
 
-- `rustymilk-preset`: preset documents, parsing, fragments, serialization, pack metadata.
-- `rustymilk-expr`: expression parser, VM, scope handling, math compatibility.
-- `rustymilk-runtime`: frame runtime, transitions, automation hooks, deterministic replay.
+- `milkrust-preset`: preset documents, parsing, fragments, serialization, pack metadata.
+- `milkrust-expr`: expression parser, VM, scope handling, math compatibility.
+- `milkrust-runtime`: frame runtime, transitions, automation hooks, deterministic replay.
 
 Exit criteria:
 
@@ -270,7 +270,7 @@ Exit criteria:
 
 Goal: make renderers replaceable and host-specific.
 
-- Define `rustymilk-renderer-core` traits and data contracts.
+- Define `milkrust-renderer-core` traits and data contracts.
 - Move renderer-neutral types out of browser-specific code.
 - Keep WebGL2 as the first production renderer.
 - Keep canvas as a debug/fallback renderer.
@@ -282,11 +282,11 @@ Goal: make renderers replaceable and host-specific.
 
 Candidate backends:
 
-- `rustymilk-renderer-webgl`: browser WebGL2.
-- `rustymilk-renderer-canvas`: 2D fallback and debug rendering.
-- `rustymilk-renderer-wgpu`: native and browser WebGPU path.
-- `rustymilk-renderer-headless`: image buffers, thumbnails, video frame sequences.
-- `rustymilk-renderer-gl`: optional native OpenGL if wgpu is insufficient for a target.
+- `milkrust-renderer-webgl`: browser WebGL2.
+- `milkrust-renderer-canvas`: 2D fallback and debug rendering.
+- `milkrust-renderer-wgpu`: native and browser WebGPU path.
+- `milkrust-renderer-headless`: image buffers, thumbnails, video frame sequences.
+- `milkrust-renderer-gl`: optional native OpenGL if wgpu is insufficient for a target.
 
 Exit criteria:
 
@@ -297,12 +297,12 @@ Exit criteria:
 
 Goal: make the browser package feel like a real SDK, not a thin wrapper.
 
-- Convert `packages/rustymilk-web` to TypeScript.
+- Convert `packages/milkrust-web` to TypeScript.
 - Publish typed ESM exports.
-- Provide high-level `createRustyMilkEngine()` for common usage.
+- Provide high-level `createMilkRustEngine()` for common usage.
 - Provide lower-level APIs for advanced hosts: runtime, preset library, audio source, texture assets, automation, and diagnostics.
-- Add React bindings in `packages/rustymilk-react`.
-- Add a Web Component wrapper: `<rustymilk-visualizer>` and add `examples/web-component` for vanilla embedding.
+- Add React bindings in `packages/milkrust-react`.
+- Add a Web Component wrapper: `<milkrust-visualizer>` and add `examples/web-component` for vanilla embedding.
 - Add browser examples for vanilla JS, Vite, React, and CDN usage.
 - Add support for user-provided audio sample streams, not only Web Audio analyzer nodes.
 - Add asset loading helpers for textures and preset packs.
@@ -319,30 +319,30 @@ Public API surfaces to design:
 
 Exit criteria:
 
-- A web app can embed RustyMilk with typed APIs and no repo-specific assumptions.
+- A web app can embed MilkRust with typed APIs and no repo-specific assumptions.
 - Browser examples double as SDK verification.
 
 ## Phase 4: CLI And Batch Tooling
 
-Goal: make RustyMilk useful in scripts, CI, content pipelines, and compatibility work.
+Goal: make MilkRust useful in scripts, CI, content pipelines, and compatibility work.
 
-Add a `rustymilk` CLI with commands such as:
+Add a `milkrust` CLI with commands such as:
 
 ```text
-rustymilk validate preset.milk
-rustymilk inspect preset.milk --json
-rustymilk compat presets/ --report report.html
-rustymilk render preset.milk --audio song.wav --out frame.png
-rustymilk thumbnail presets/*.milk --out thumbnails/
-rustymilk convert old.milk --format milk2
-rustymilk normalize preset.milk --out normalized.milk
-rustymilk pack ./presets ./textures --out collection.rmpack
-rustymilk bench presets/
+milkrust validate preset.milk
+milkrust inspect preset.milk --json
+milkrust compat presets/ --report report.html
+milkrust render preset.milk --audio song.wav --out frame.png
+milkrust thumbnail presets/*.milk --out thumbnails/
+milkrust convert old.milk --format milk2
+milkrust normalize preset.milk --out normalized.milk
+milkrust pack ./presets ./textures --out collection.rmpack
+milkrust bench presets/
 ```
 
 Implementation work:
 
-- Add `crates/rustymilk-cli`.
+- Add `crates/milkrust-cli`.
 - Reuse core parser, compatibility analyzer, and headless renderer.
 - Emit human-readable and JSON output.
 - Add fixture-based CLI tests.
@@ -376,14 +376,14 @@ Manifest fields:
 - License and source URLs.
 - Preset list with titles, tags, compatibility score, and thumbnail references.
 - Texture aliases and usage.
-- Required RustyMilk version.
+- Required MilkRust version.
 - Optional plugin declarations.
 - Optional playlist and automation defaults.
 
 Work items:
 
 - Define manifest schema.
-- Add pack validation to core or CLI. Initial folder-pack validation now lives in `rustymilk-pack` and is exposed through `rustymilk pack-inspect` and `rustymilk pack-validate`.
+- Add pack validation to core or CLI. Initial folder-pack validation now lives in `milkrust-pack` and is exposed through `milkrust pack-inspect` and `milkrust pack-validate`.
 - Add pack loading to web SDK and desktop player.
 - Add pack publishing/export from Studio.
 - Add default sample pack. `examples/sample-pack` is the initial local fixture pack.
@@ -430,11 +430,11 @@ Implemented baseline hooks:
 
 Exit criteria:
 
-- Third-party packs and host-specific integrations can extend RustyMilk without modifying core engine code.
+- Third-party packs and host-specific integrations can extend MilkRust without modifying core engine code.
 
 ## Phase 7: Standalone Desktop Player
 
-Goal: build a MilkDrop3-style RustyMilk client.
+Goal: build a MilkDrop3-style MilkRust client.
 
 Implementation options:
 
@@ -468,23 +468,23 @@ Advanced features:
 
 Exit criteria:
 
-- A user can install and run RustyMilk as a standalone visualizer without slskR or a browser integration project.
+- A user can install and run MilkRust as a standalone visualizer without slskR or a browser integration project.
 
 ## Desktop Host Milestone
 
-- `crates/rustymilk-desktop` establishes a native-ready host crate/API in Rust:
+- `crates/milkrust-desktop` establishes a native-ready host crate/API in Rust:
   - frame-set runtime host abstraction with persistent state,
   - pluggable `DesktopAudioProvider` contract with a default deterministic synthetic implementation,
   - headless frame accounting path for benchmark/probe mode,
   - desktop playback runtime API (`DesktopPlayerEngine`) for reusable presets and host control,
   - split host entrypoints:
-    - probe mode: `cargo run -p rustymilk-desktop --bin rustymilk-desktop -- ...`
-    - player mode: `cargo run -p rustymilk-desktop --bin player -- ...`
-    - player-ui mode: `cargo run -p rustymilk-desktop --features ui --bin player-ui -- --pack examples/sample-pack`
-    - studio mode: `cargo run -p rustymilk-desktop --bin studio -- ...`
+    - probe mode: `cargo run -p milkrust-desktop --bin milkrust-desktop -- ...`
+    - player mode: `cargo run -p milkrust-desktop --bin player -- ...`
+    - player-ui mode: `cargo run -p milkrust-desktop --features ui --bin player-ui -- --pack examples/sample-pack`
+    - studio mode: `cargo run -p milkrust-desktop --bin studio -- ...`
   - shared preset loading and compatibility inspection helpers for desktop tooling.
 
-## Phase 8: RustyMilk Studio
+## Phase 8: MilkRust Studio
 
 Goal: make authoring and debugging presets first-class.
 
@@ -506,11 +506,11 @@ Features:
 
 Exit criteria:
 
-- Preset creators can author, debug, package, and publish RustyMilk content from one app.
+- Preset creators can author, debug, package, and publish MilkRust content from one app.
 
 ## Phase 9: Language SDKs And Native Interop
 
-Goal: make RustyMilk embeddable beyond Rust and the browser.
+Goal: make MilkRust embeddable beyond Rust and the browser.
 
 Priority order:
 
@@ -544,11 +544,11 @@ Candidate integrations:
 
 Exit criteria:
 
-- RustyMilk has at least one stable integration path for web, desktop, and live/video workflows.
+- MilkRust has at least one stable integration path for web, desktop, and live/video workflows.
 
 ## Audio Roadmap
 
-RustyMilk should treat audio input as pluggable.
+MilkRust should treat audio input as pluggable.
 
 Work items:
 
@@ -613,8 +613,8 @@ Docs to add:
 ## Suggested Build Order
 
 1. Finish slskR extraction and parity.
-2. Stabilize `rustymilk-core` API boundaries.
-3. Type and publish `packages/rustymilk-web`.
+2. Stabilize `milkrust-core` API boundaries.
+3. Type and publish `packages/milkrust-web`.
 4. Define renderer-core contracts.
 5. Add CLI validate/inspect/compat commands.
 6. Add pack manifest schema and loader.
@@ -627,7 +627,7 @@ Docs to add:
 
 - Should the first desktop client be Tauri/Electron for speed, or native `winit`/`wgpu` for long-term architecture?
 - Should renderer modularization happen before or after the first public web SDK release?
-- How strict should MilkDrop compatibility be versus RustyMilk-specific extensions?
+- How strict should MilkDrop compatibility be versus MilkRust-specific extensions?
 - What is the minimum stable plugin API that does not lock the project into the wrong abstraction?
 - Should `.rmpack` be zip-based, folder-based, or support both?
 - Which preset corpus can be used legally for compatibility and regression testing?

@@ -6,33 +6,33 @@ Each gap references the concrete file(s) and crate(s) that need work.
 
 ---
 
-## Phase 1: Core Engine Foundation (rustymilk-core split)
+## Phase 1: Core Engine Foundation (milkrust-core split)
 
-**Status:** `rustymilk-core` is a single 6,920-line lib with all parsing,
+**Status:** `milkrust-core` is a single 6,920-line lib with all parsing,
 VM, runtime, compatibility, geometry, and WebGPU batching.
 
 **Gaps:**
-- No `rustymilk-preset` crate (preset docs, parsing, fragments, serialization).
-- No `rustymilk-expr` crate (expression parser, VM, scope, math compatibility).
-- No `rustymilk-runtime` crate (frame runtime, transitions, automation, deterministic replay).
+- No `milkrust-preset` crate (preset docs, parsing, fragments, serialization).
+- No `milkrust-expr` crate (expression parser, VM, scope, math compatibility).
+- No `milkrust-runtime` crate (frame runtime, transitions, automation, deterministic replay).
 - Structured diagnostics (error codes, source locations, remediation hints) missing.
 - Preset normalization/migration helpers missing.
 
-**Plan:** Extract in this order: expr → preset → runtime, keeping `rustymilk-core`
+**Plan:** Extract in this order: expr → preset → runtime, keeping `milkrust-core`
 as a compatibility re-export crate during the transition.
 
 ---
 
 ## Phase 2: Renderer Backend Architecture
 
-**Status:** `rustymilk-renderer-core` defines contracts;
-`rustymilk-renderer-headless` provides stats backend.
+**Status:** `milkrust-renderer-core` defines contracts;
+`milkrust-renderer-headless` provides stats backend.
 
 **Gaps:**
-- `rustymilk-renderer-webgl` — WebGL2 renderer lives inside
-  `crates/rustymilk-wasm/src/renderer.rs` (1,538 lines). Needs extraction.
-- `rustymilk-renderer-canvas` — 2D fallback/debug renderer missing entirely.
-- `rustymilk-renderer-wgpu` — Native/WebGPU renderer missing entirely.
+- `milkrust-renderer-webgl` — WebGL2 renderer lives inside
+  `crates/milkrust-wasm/src/renderer.rs` (1,538 lines). Needs extraction.
+- `milkrust-renderer-canvas` — 2D fallback/debug renderer missing entirely.
+- `milkrust-renderer-wgpu` — Native/WebGPU renderer missing entirely.
 - Golden-frame/perceptual snapshot tests missing.
 - Renderer capability reporting defined but not fully fleshed out.
 
@@ -40,7 +40,7 @@ as a compatibility re-export crate during the transition.
 
 ## Phase 3: Web SDK (TypeScript conversion)
 
-**Status:** `packages/rustymilk-web` exists as JS with typed `.d.ts` files.
+**Status:** `packages/milkrust-web` exists as JS with typed `.d.ts` files.
 React bindings scaffolded. Web component working.
 
 **Gaps:**
@@ -55,7 +55,7 @@ React bindings scaffolded. Web component working.
 **Status:** Rust crate APIs exist. TypeScript SDK (JS) exists.
 
 **Gaps:**
-- `rustymilk-node` package missing (Node.js headless/batch).
+- `milkrust-node` package missing (Node.js headless/batch).
 - C ABI layer missing (C, C++, C#, Godot, Unity integration).
 - Python bindings, C# wrapper, Swift/Kotlin all future.
 
@@ -63,7 +63,7 @@ React bindings scaffolded. Web component working.
 
 ## Desktop UI / Player Enhancements
 
-**Status:** `crates/rustymilk-desktop` has headless probe, player-api, and
+**Status:** `crates/milkrust-desktop` has headless probe, player-api, and
 a `player-ui` shell behind feature gates. Browser player has playlist lifecycle.
 
 **Gaps:**

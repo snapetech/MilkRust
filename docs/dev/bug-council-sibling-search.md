@@ -2,7 +2,7 @@
 
 Every accepted finding requires a sibling sweep before closure.
 
-For RustyMilk, sibling search means checking at least:
+For MilkRust, sibling search means checking at least:
 
 - Rust crates under `crates/`
 - browser packages under `packages/`

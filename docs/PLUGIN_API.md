@@ -1,10 +1,10 @@
 # Plugin API (JavaScript SDK)
 
-`@rustymilk/web` exposes a lightweight plugin surface in the browser SDK so hosts can add behavior without forking the engine.
+`@milkrust/web` exposes a lightweight plugin surface in the browser SDK so hosts can add behavior without forking the engine.
 
 ## Plugin model
 
-`loadRustyMilkPackPlugins(manifest, { fetchImpl })` loads plugin entries from a normalized
+`loadMilkRustPackPlugins(manifest, { fetchImpl })` loads plugin entries from a normalized
 pack manifest. It returns:
 
 - `valid`: whether every plugin loaded successfully
@@ -53,8 +53,8 @@ Hooks receive a mutable context object and may return a plain object to merge ad
 ```
 
 ```js
-const packed = await loadRustyMilkPack('examples/sample-pack/');
-const plugins = await loadRustyMilkPackPlugins(packed);
+const packed = await loadMilkRustPack('examples/sample-pack/');
+const plugins = await loadMilkRustPackPlugins(packed);
 engine.loadPlugins(plugins.plugins);
 ```
 

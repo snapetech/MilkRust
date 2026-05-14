@@ -11,7 +11,7 @@ count_rg() {
   rg -n --pcre2 --hidden --glob '!.git/**' --glob '!.council/**' --glob '!node_modules/**' "$pattern" "$@" 2>/dev/null | wc -l | tr -d ' '
 }
 
-printf '# RustyMilk Council Scan Candidate Counts\n\n'
+printf '# MilkRust Council Scan Candidate Counts\n\n'
 printf 'Generated from local source patterns. Counts are candidate lines, not confirmed bugs.\n\n'
 printf '| Candidate Class | Count |\n'
 printf '| --- | ---: |\n'

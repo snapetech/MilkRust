@@ -25,16 +25,16 @@ const isCommunityUnlicensedPath = (pathname = '') =>
   || pathname === '/content/generated/community-pack-summary.json'
   || pathname === '/content/generated/COMMUNITY_PACK_SUMMARY.md';
 
-export const createRustyMilkAppServer = ({
+export const createMilkRustAppServer = ({
   app = 'player',
   includeCommunityContent = false,
   root = repoRoot,
 } = {}) => {
   const appName = app === 'studio'
-    ? 'rustymilk-studio'
+    ? 'milkrust-studio'
     : app === 'web-component'
       ? 'web-component'
-      : 'rustymilk-player';
+      : 'milkrust-player';
   const appPath = app === 'web-component'
     ? '/examples/web-component/'
     : `/apps/${appName}/`;
@@ -77,13 +77,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     ? process.argv[2]
     : 'player';
   const port = Number(process.env.PORT || 4173);
-  const includeCommunityContent = process.env.RUSTYMILK_INCLUDE_COMMUNITY_CONTENT === '1';
-  const { appName, appPath, server } = createRustyMilkAppServer({
+  const includeCommunityContent = process.env.MILKRUST_INCLUDE_COMMUNITY_CONTENT === '1';
+  const { appName, appPath, server } = createMilkRustAppServer({
     app,
     includeCommunityContent,
   });
   server.listen(port, '127.0.0.1', () => {
-    console.log(`RustyMilk ${appName.replace('rustymilk-', '')} running at http://127.0.0.1:${port}${appPath}`);
+    console.log(`MilkRust ${appName.replace('milkrust-', '')} running at http://127.0.0.1:${port}${appPath}`);
     if (includeCommunityContent) {
       console.log('Community-unlicensed content serving is enabled for this local server.');
     }

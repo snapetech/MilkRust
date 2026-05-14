@@ -24,7 +24,7 @@ const mimeTypes = {
 };
 
 const presetSource = `
-  name=RustyMilk smoke
+  name=MilkRust smoke
   decay=0.88
   wave_r=0.9
   wave_g=0.45
@@ -49,11 +49,11 @@ const smokeHtml = `
     <body>
       <canvas id="canvas" width="240" height="160"></canvas>
       <script type="module">
-        import init, { RustyMilkEngine } from '/rustymilk_wasm.js';
+        import init, { MilkRustEngine } from '/milkrust_wasm.js';
 
-        await init({ module_or_path: '/rustymilk_wasm_bg.wasm' });
+        await init({ module_or_path: '/milkrust_wasm_bg.wasm' });
         const canvas = document.getElementById('canvas');
-        const engine = new RustyMilkEngine(canvas);
+        const engine = new MilkRustEngine(canvas);
         engine.resize(canvas.width, canvas.height);
         engine.loadPresetText(${JSON.stringify(presetSource)}, 'smoke.milk', '{}');
 
@@ -83,7 +83,7 @@ const smokeHtml = `
           if (total > 12) litPixels += 1;
           channelTotal += total;
         }
-        window.__rustyMilkSmoke = {
+        window.__milkrustSmoke = {
           channelTotal,
           litPixels,
           pixelCount: canvas.width * canvas.height,
@@ -96,13 +96,13 @@ const smokeHtml = `
 
 const server = createServer(async (request, response) => {
   try {
-    if (request.url === '/rustymilk-smoke') {
+    if (request.url === '/milkrust-smoke') {
       response.writeHead(200, { 'Content-Type': 'text/html' });
       response.end(smokeHtml);
       return;
     }
     const requestPath = decodeURIComponent((request.url || '/').split('?')[0]);
-    const filePath = join(pkgDir, requestPath === '/' ? 'rustymilk_wasm.js' : requestPath);
+    const filePath = join(pkgDir, requestPath === '/' ? 'milkrust_wasm.js' : requestPath);
     const body = await readFile(filePath);
     response.writeHead(200, {
       'Content-Type': mimeTypes[extname(filePath)] || 'application/octet-stream',
@@ -130,15 +130,15 @@ page.on('pageerror', (error) => {
 });
 
 try {
-  await page.goto(`http://127.0.0.1:${port}/rustymilk-smoke`);
-  const handle = await page.waitForFunction(() => window.__rustyMilkSmoke, null, {
+  await page.goto(`http://127.0.0.1:${port}/milkrust-smoke`);
+  const handle = await page.waitForFunction(() => window.__milkrustSmoke, null, {
     timeout: 10_000,
   });
   const stats = await handle.jsonValue();
   if (stats.litPixels < stats.pixelCount * 0.05 || stats.channelTotal <= 0) {
-    throw new Error(`RustyMilk smoke rendered a blank canvas: ${JSON.stringify(stats)}`);
+    throw new Error(`MilkRust smoke rendered a blank canvas: ${JSON.stringify(stats)}`);
   }
-  console.log(`RustyMilk smoke passed: ${JSON.stringify(stats)}`);
+  console.log(`MilkRust smoke passed: ${JSON.stringify(stats)}`);
 } catch (error) {
   if (browserMessages.length > 0) {
     console.log(browserMessages.join('\n'));

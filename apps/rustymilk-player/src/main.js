@@ -1,9 +1,9 @@
 import {
-  createRustyMilkEngine,
-  loadRustyMilkPackManifest,
-  loadRustyMilkPackPlugins,
-  loadRustyMilkPackPresetSource,
-} from '/packages/rustymilk-web/src/rustyMilkEngine.js';
+  createMilkRustEngine,
+  loadMilkRustPackManifest,
+  loadMilkRustPackPlugins,
+  loadMilkRustPackPresetSource,
+} from '/packages/milkrust-web/src/milkrustEngine.js';
 
 const canvas = document.querySelector('#visualizer');
 const status = document.querySelector('#status');
@@ -31,13 +31,13 @@ const exportPlaylistsButton = document.querySelector('#export-playlists');
 const builtInPresets = [
   {
     id: 'builtin-grid-smoke',
-    name: 'RustyMilk Grid Smoke',
-    source: 'name=RustyMilk Grid Smoke\ndecay=0.91\nwave_r=0.12\nwave_g=0.64\nwave_b=0.88\nwave_a=0.86\nwave_scale=1.2\nzoom=1\nrot=0\nper_frame_1=rot=0.02*sin(time);\nshape00_enabled=1\nshape00_sides=5\nshape00_rad=0.22\nshape00_x=0.5\nshape00_y=0.5\nshape00_r=0.1\nshape00_g=0.9\nshape00_b=0.45\nshape00_a=0.42\nshape00_r2=0.9\nshape00_g2=0.8\nshape00_b2=0.2\nshape00_a2=0.18\nshape00_border_a=0.85\nwavecode_0_enabled=1\nwavecode_0_samples=96\nwavecode_0_spectrum=1\nwavecode_0_r=0.7\nwavecode_0_g=0.95\nwavecode_0_b=0.25\nwavecode_0_a=0.82\nwavecode_0_per_point1=x=i;\nwavecode_0_per_point2=y=0.5+sample*0.35;',
+    name: 'MilkRust Grid Smoke',
+    source: 'name=MilkRust Grid Smoke\ndecay=0.91\nwave_r=0.12\nwave_g=0.64\nwave_b=0.88\nwave_a=0.86\nwave_scale=1.2\nzoom=1\nrot=0\nper_frame_1=rot=0.02*sin(time);\nshape00_enabled=1\nshape00_sides=5\nshape00_rad=0.22\nshape00_x=0.5\nshape00_y=0.5\nshape00_r=0.1\nshape00_g=0.9\nshape00_b=0.45\nshape00_a=0.42\nshape00_r2=0.9\nshape00_g2=0.8\nshape00_b2=0.2\nshape00_a2=0.18\nshape00_border_a=0.85\nwavecode_0_enabled=1\nwavecode_0_samples=96\nwavecode_0_spectrum=1\nwavecode_0_r=0.7\nwavecode_0_g=0.95\nwavecode_0_b=0.25\nwavecode_0_a=0.82\nwavecode_0_per_point1=x=i;\nwavecode_0_per_point2=y=0.5+sample*0.35;',
   },
   {
     id: 'builtin-amber-tunnel',
-    name: 'RustyMilk Amber Tunnel',
-    source: 'name=RustyMilk Amber Tunnel\ndecay=0.86\nwave_r=0.92\nwave_g=0.52\nwave_b=0.18\nwave_a=0.82\nwave_scale=1.55\nzoom=1.05\nrot=-0.018\nper_frame_1=dx=0.02*sin(time*0.4);\nper_frame_2=dy=0.015*cos(time*0.3);\nshape00_enabled=1\nshape00_sides=3\nshape00_rad=0.15\nshape00_x=0.35\nshape00_y=0.55\nshape00_r=0.9\nshape00_g=0.2\nshape00_b=0.1\nshape00_a=0.32\nshape01_enabled=1\nshape01_sides=6\nshape01_rad=0.11\nshape01_x=0.67\nshape01_y=0.45\nshape01_r=0.1\nshape01_g=0.55\nshape01_b=0.95\nshape01_a=0.36\nwavecode_0_enabled=1\nwavecode_0_samples=128\nwavecode_0_r=0.95\nwavecode_0_g=0.85\nwavecode_0_b=0.2\nwavecode_0_a=0.8\nwavecode_0_per_point1=x=i;\nwavecode_0_per_point2=y=0.5+sample*0.35;',
+    name: 'MilkRust Amber Tunnel',
+    source: 'name=MilkRust Amber Tunnel\ndecay=0.86\nwave_r=0.92\nwave_g=0.52\nwave_b=0.18\nwave_a=0.82\nwave_scale=1.55\nzoom=1.05\nrot=-0.018\nper_frame_1=dx=0.02*sin(time*0.4);\nper_frame_2=dy=0.015*cos(time*0.3);\nshape00_enabled=1\nshape00_sides=3\nshape00_rad=0.15\nshape00_x=0.35\nshape00_y=0.55\nshape00_r=0.9\nshape00_g=0.2\nshape00_b=0.1\nshape00_a=0.32\nshape01_enabled=1\nshape01_sides=6\nshape01_rad=0.11\nshape01_x=0.67\nshape01_y=0.45\nshape01_r=0.1\nshape01_g=0.55\nshape01_b=0.95\nshape01_a=0.36\nwavecode_0_enabled=1\nwavecode_0_samples=128\nwavecode_0_r=0.95\nwavecode_0_g=0.85\nwavecode_0_b=0.2\nwavecode_0_a=0.8\nwavecode_0_per_point1=x=i;\nwavecode_0_per_point2=y=0.5+sample*0.35;',
   },
 ];
 
@@ -57,11 +57,11 @@ let favorites = new Set();
 let playlists = [];
 let activePlaylistId = '';
 let activePackId = 'builtin';
-const FAVORITE_STORAGE_KEY = 'rustymilk-player-favorites-v1';
-const PLAYLISTS_STORAGE_KEY = 'rustymilk-player-playlists-v1';
-const ACTIVE_PLAYLIST_STORAGE_KEY = 'rustymilk-player-active-playlist-v1';
+const FAVORITE_STORAGE_KEY = 'milkrust-player-favorites-v1';
+const PLAYLISTS_STORAGE_KEY = 'milkrust-player-playlists-v1';
+const ACTIVE_PLAYLIST_STORAGE_KEY = 'milkrust-player-active-playlist-v1';
 const PLAYLIST_EXPORT_VERSION = 1;
-const PLAYLIST_EXPORT_FILE_PREFIX = 'rustymilk-playlists';
+const PLAYLIST_EXPORT_FILE_PREFIX = 'milkrust-playlists';
 
 try {
   const storedFavorites = JSON.parse(localStorage.getItem(FAVORITE_STORAGE_KEY) || '[]');
@@ -234,7 +234,7 @@ const buildPlaylistExportPayload = (playlistsToExport = collectCurrentPackPlayli
     : [];
   return {
     schemaVersion: PLAYLIST_EXPORT_VERSION,
-    kind: 'rustymilk-playlist-export',
+    kind: 'milkrust-playlist-export',
     generatedAt: new Date().toISOString(),
     packId: activePackId,
     playlists: normalized,
@@ -424,8 +424,8 @@ const recordHistory = (index) => {
 let packLibrary = [
   builtinPack,
   {
-    id: 'rustymilk-sample-pack',
-    name: 'RustyMilk Sample Pack',
+    id: 'milkrust-sample-pack',
+    name: 'MilkRust Sample Pack',
     path: '/examples/sample-pack/',
   },
 ];
@@ -505,7 +505,7 @@ const loadActivePreset = async (recordVisit = true) => {
   if (!preset) return;
   if (!preset.source && preset.url) {
     setStatus(`Loading ${presetLabel(preset)}`);
-    preset.source = await loadRustyMilkPackPresetSource(preset);
+    preset.source = await loadMilkRustPackPresetSource(preset);
   }
   if (loadToken !== activeLoadToken) return;
   const title = engine.loadPresetText(preset.source, presetLabel(preset), { textureAssets });
@@ -520,8 +520,8 @@ const loadActivePreset = async (recordVisit = true) => {
 const render = () => {
   resize();
   const update = engine?.render();
-  if (window.__rustyMilkCollectStats) {
-    window.__rustyMilkPlayerStats = readCanvasStats();
+  if (window.__milkrustCollectStats) {
+    window.__milkrustPlayerStats = readCanvasStats();
   }
   if (update?.presetName) setStatus(update.presetName);
   animationFrame = requestAnimationFrame(render);
@@ -539,11 +539,11 @@ const startWithNode = async (context, node) => {
   stopEngine();
   audioContext = context;
   audioNode = node;
-  engine = await createRustyMilkEngine({
+  engine = await createMilkRustEngine({
     audioContext,
     audioNode,
     canvas,
-    modulePath: '/pkg/rustymilk_wasm.js',
+    modulePath: '/pkg/milkrust_wasm.js',
   });
   engine.setPresetAutomation({
     beatsPerPreset: Number(beats.value) || 8,
@@ -552,7 +552,7 @@ const startWithNode = async (context, node) => {
   });
   await loadActivePreset();
   render();
-  window.__rustyMilkPlayerReady = true;
+  window.__milkrustPlayerReady = true;
 };
 
 const visiblePresetKeys = () => visiblePresetEntries().map(({ preset, index }) => ({
@@ -599,8 +599,8 @@ const loadPack = async (packId) => {
   if (pack.presets) {
     presets = normalizePresetIds(pack.presets, pack.id);
   } else {
-    const loaded = await loadRustyMilkPackManifest(pack.path || pack.url);
-    const pluginState = await loadRustyMilkPackPlugins(loaded);
+    const loaded = await loadMilkRustPackManifest(pack.path || pack.url);
+    const pluginState = await loadMilkRustPackPlugins(loaded);
     const pluginPackPresets = loaded.manifest.presets.map((preset) => ({
       ...preset,
       name: preset.title || preset.id || preset.file,

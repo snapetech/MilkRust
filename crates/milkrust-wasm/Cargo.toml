@@ -1,0 +1,36 @@
+[package]
+name = "milkrust-wasm"
+version = "0.1.0"
+description = "WASM bindings and browser renderers for MilkRust"
+keywords = ["visualizer", "wasm", "webgl", "webgpu", "audio"]
+categories = ["wasm", "web-programming", "multimedia"]
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+milkrust-core = { path = "../milkrust-core" }
+serde_json = "1"
+js-sys = "0.3"
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = [
+    "CanvasRenderingContext2d",
+    "Event",
+    "HtmlCanvasElement",
+    "HtmlImageElement",
+    "WebGlBuffer",
+    "WebGlFramebuffer",
+    "WebGl2RenderingContext",
+    "WebGlProgram",
+    "WebGlShader",
+    "WebGlTexture",
+    "WebGlUniformLocation",
+] }
+
+[lints]
+workspace = true

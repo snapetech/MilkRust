@@ -2,10 +2,10 @@
 import { chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
-import { createRustyMilkAppServer } from './serve-rustymilk-app.mjs';
+import { createMilkRustAppServer } from './serve-milkrust-app.mjs';
 
 const listen = async (app, options = {}) => {
-  const { appPath, server } = createRustyMilkAppServer({ app, ...options });
+  const { appPath, server } = createMilkRustAppServer({ app, ...options });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address();
   return {
@@ -29,13 +29,13 @@ try {
   player.on('pageerror', (error) => browserMessages.push(`player pageerror: ${error.message}`));
   await player.goto(servers[0].url);
   await player.evaluate(() => {
-    window.__rustyMilkCollectStats = true;
+    window.__milkrustCollectStats = true;
   });
   await player.getByRole('button', { name: 'Start Demo' }).click();
-  await player.waitForFunction(() => window.__rustyMilkPlayerReady === true, null, {
+  await player.waitForFunction(() => window.__milkrustPlayerReady === true, null, {
     timeout: 10_000,
   });
-  await player.waitForFunction(() => window.__rustyMilkPlayerStats?.channelTotal > 0, null, {
+  await player.waitForFunction(() => window.__milkrustPlayerStats?.channelTotal > 0, null, {
     timeout: 10_000,
   });
   await player.waitForFunction(() => (
@@ -49,7 +49,7 @@ try {
     timeout: 10_000,
   });
   await player.selectOption('#preset-list', { index: 1 });
-  await player.waitForFunction(() => window.__rustyMilkPlayerStats?.channelTotal > 0, null, {
+  await player.waitForFunction(() => window.__milkrustPlayerStats?.channelTotal > 0, null, {
     timeout: 10_000,
   });
   await player.fill('#playlist-name', 'Smoke Test Playlist');
@@ -67,7 +67,7 @@ try {
   await player.getByRole('button', { name: 'Export Playlists' }).click();
   const download = await playlistDownload;
   const playlistExportPath = await download.path();
-  const playlistExport = playlistExportPath ? await readFile(playlistExportPath) : Buffer.from('{"playlists":[],"kind":"rustymilk-playlist-export","schemaVersion":1}', 'utf8');
+  const playlistExport = playlistExportPath ? await readFile(playlistExportPath) : Buffer.from('{"playlists":[],"kind":"milkrust-playlist-export","schemaVersion":1}', 'utf8');
   await player.setInputFiles('#playlist-import', {
     name: 'smoke-playlists.json',
     mimeType: 'application/json',
@@ -148,10 +148,10 @@ try {
     { timeout: 2_000 },
   );
 
-  const playerStats = await player.evaluate(() => window.__rustyMilkPlayerStats);
+  const playerStats = await player.evaluate(() => window.__milkrustPlayerStats);
   if (playerStats.channelTotal <= 0 || playerStats.litPixels < playerStats.pixelCount * 0.01) {
     if (browserMessages.length > 0) console.log(browserMessages.join('\n'));
-    throw new Error(`RustyMilk player smoke rendered a blank canvas: ${JSON.stringify(playerStats)}`);
+    throw new Error(`MilkRust player smoke rendered a blank canvas: ${JSON.stringify(playerStats)}`);
   }
 
   const studio = await browser.newPage();
@@ -159,16 +159,16 @@ try {
   studio.on('pageerror', (error) => browserMessages.push(`studio pageerror: ${error.message}`));
   await studio.goto(servers[1].url);
   await studio.evaluate(() => {
-    window.__rustyMilkCollectStats = true;
+    window.__milkrustCollectStats = true;
   });
   await studio.waitForSelector('#preview');
-  await studio.waitForFunction(() => window.__rustyMilkStudioStats?.channelTotal > 0, null, {
+  await studio.waitForFunction(() => window.__milkrustStudioStats?.channelTotal > 0, null, {
     timeout: 10_000,
   });
   await studio.getByRole('button', { name: 'Inspect' }).click();
   const reportText = await studio.locator('#report').textContent();
   if (!reportText?.includes('inspected')) {
-    throw new Error(`RustyMilk studio smoke did not inspect preset: ${reportText}`);
+    throw new Error(`MilkRust studio smoke did not inspect preset: ${reportText}`);
   }
   const packDownload = studio.waitForEvent('download');
   await studio.getByRole('button', { name: 'Export Pack' }).click();
@@ -184,7 +184,7 @@ try {
   });
   const importedSource = await studio.$eval('#source', (element) => element.value);
   if (!importedSource || !importedSource.includes('name=')) {
-    throw new Error(`RustyMilk studio smoke did not import pack: ${importedSource}`);
+    throw new Error(`MilkRust studio smoke did not import pack: ${importedSource}`);
   }
   await studio.selectOption('#parameter', 'zoom');
   await studio.fill('#parameter-value', '1.2');
@@ -197,7 +197,7 @@ try {
   );
   const sourceAfterParameterApply = await studio.$eval('#source', (element) => element.value);
   if (sourceBeforeParameterApply === sourceAfterParameterApply) {
-    throw new Error('RustyMilk studio smoke failed parameter apply: source was unchanged');
+    throw new Error('MilkRust studio smoke failed parameter apply: source was unchanged');
   }
   const sourceBeforeRandomize = sourceAfterParameterApply;
   await studio.getByRole('button', { name: 'Randomize' }).click();
@@ -208,12 +208,12 @@ try {
   );
   const sourceAfterRandomize = await studio.$eval('#source', (element) => element.value);
   if (!sourceAfterRandomize || sourceAfterRandomize === sourceBeforeRandomize) {
-    throw new Error('RustyMilk studio smoke failed randomize: source was unchanged');
+    throw new Error('MilkRust studio smoke failed randomize: source was unchanged');
   }
-  const studioStats = await studio.evaluate(() => window.__rustyMilkStudioStats);
+  const studioStats = await studio.evaluate(() => window.__milkrustStudioStats);
   if (studioStats.channelTotal <= 0 || studioStats.litPixels < studioStats.pixelCount * 0.01) {
     if (browserMessages.length > 0) console.log(browserMessages.join('\n'));
-    throw new Error(`RustyMilk studio smoke rendered a blank canvas: ${JSON.stringify(studioStats)}`);
+    throw new Error(`MilkRust studio smoke rendered a blank canvas: ${JSON.stringify(studioStats)}`);
   }
 
   const component = await browser.newPage();
@@ -258,10 +258,10 @@ try {
   });
   if (componentStats.litPixels < componentStats.pixelCount * 0.01 || componentStats.channelTotal <= 0) {
     if (browserMessages.length > 0) console.log(browserMessages.join('\n'));
-    throw new Error(`RustyMilk web component smoke rendered a blank canvas: ${JSON.stringify(componentStats)}`);
+    throw new Error(`MilkRust web component smoke rendered a blank canvas: ${JSON.stringify(componentStats)}`);
   }
 
-  console.log(`RustyMilk app smoke passed: ${
+  console.log(`MilkRust app smoke passed: ${
     JSON.stringify({ player: playerStats, studio: studioStats, webComponent: componentStats })
   }`);
 } catch (error) {

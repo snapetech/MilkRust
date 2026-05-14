@@ -7,8 +7,8 @@ const jsonOutput = process.argv.includes('--json');
 const result = spawnSync('cargo', [
   'test',
   '-p',
-  'rustymilk-core',
-  'rustymilk_core_validates_unsupported_functions_before_rendering',
+  'milkrust-core',
+  'milkrust_core_validates_unsupported_functions_before_rendering',
   '--',
   '--nocapture',
 ], {
@@ -18,7 +18,7 @@ const result = spawnSync('cargo', [
 
 if (jsonOutput) {
   console.log(JSON.stringify({
-    source: 'rustymilk-core',
+    source: 'milkrust-core',
     status: result.status === 0 ? 'supported' : 'failed',
   }, null, 2));
 } else {

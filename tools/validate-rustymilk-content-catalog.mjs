@@ -88,4 +88,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`RustyMilk content catalog valid: ${catalog.entries.length} entries`);
+console.log(`MilkRust content catalog valid: ${catalog.entries.length} entries`);

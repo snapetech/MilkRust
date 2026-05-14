@@ -9,7 +9,7 @@ The candidate scanners find call sites that exist. The negative-space gate catch
 | Remediation baseline | `scripts/check-remediation-baseline.sh` |
 | Candidate inventory | `scripts/scan-bug-council-candidates.sh` |
 | Active backlog | `docs/dev/bug-council-active-backlog.md` |
-| Calibrated lenses | `scripts/check-rustymilk-taint-lenses.sh` |
+| Calibrated lenses | `scripts/check-milkrust-taint-lenses.sh` |
 | Rust unsafe posture | `unsafe_code = "forbid"` in `Cargo.toml` |
 | Content catalog validation | `content:validate` in `package.json` |
 

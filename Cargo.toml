@@ -1,20 +1,20 @@
 [workspace]
 members = [
-    "crates/rustymilk-cli",
-    "crates/rustymilk-core",
-    "crates/rustymilk-pack",
-    "crates/rustymilk-renderer-core",
-    "crates/rustymilk-renderer-headless",
-    "crates/rustymilk-desktop",
-    "crates/rustymilk-wasm",
+    "crates/milkrust-cli",
+    "crates/milkrust-core",
+    "crates/milkrust-pack",
+    "crates/milkrust-renderer-core",
+    "crates/milkrust-renderer-headless",
+    "crates/milkrust-desktop",
+    "crates/milkrust-wasm",
 ]
 resolver = "2"
 
 [workspace.package]
 edition = "2021"
 license = "AGPL-3.0-only"
-homepage = "https://github.com/snapetech/RustyMilk"
-repository = "https://github.com/snapetech/RustyMilk"
+homepage = "https://github.com/snapetech/MilkRust"
+repository = "https://github.com/snapetech/MilkRust"
 rust-version = "1.76"
 
 [workspace.lints.rust]

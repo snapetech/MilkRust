@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 
-import { createRustyMilkAppServer } from './serve-rustymilk-app.mjs';
+import { createMilkRustAppServer } from './serve-milkrust-app.mjs';
 
 const repoRoot = path.resolve(new URL('..', import.meta.url).pathname);
 const errors = [];
@@ -60,11 +60,11 @@ const listFiles = async (root, files = []) => {
 
 const auditPackageMetadata = async () => {
   const rootPackage = await readJson('package.json');
-  const webPackage = await readJson('packages/rustymilk-web/package.json');
+  const webPackage = await readJson('packages/milkrust-web/package.json');
   const lock = await readJson('package-lock.json');
 
   assert(rootPackage.license === 'AGPL-3.0-only', 'root package.json must declare AGPL-3.0-only');
-  assert(webPackage.license === 'AGPL-3.0-only', 'packages/rustymilk-web/package.json must declare AGPL-3.0-only');
+  assert(webPackage.license === 'AGPL-3.0-only', 'packages/milkrust-web/package.json must declare AGPL-3.0-only');
   assert(lock.packages?.['']?.license === 'AGPL-3.0-only', 'package-lock root license must be AGPL-3.0-only');
   assert(rootPackage.files?.includes('LICENSE'), 'npm files must include LICENSE');
   assert(rootPackage.files?.includes('LICENSE-SCOPE.md'), 'npm files must include LICENSE-SCOPE.md');
@@ -76,7 +76,7 @@ const auditCargoMetadata = async () => {
   const { stdout } = await run('cargo', ['metadata', '--no-deps', '--format-version', '1']);
   const metadata = JSON.parse(stdout);
   for (const pkg of metadata.packages || []) {
-    if (String(pkg.manifest_path || '').includes('/crates/rustymilk-')) {
+    if (String(pkg.manifest_path || '').includes('/crates/milkrust-')) {
       assert(pkg.license === 'AGPL-3.0-only', `${pkg.name} Cargo license must be AGPL-3.0-only`);
     }
   }
@@ -99,7 +99,7 @@ const auditNpmPack = async () => {
 };
 
 const auditContentPolicy = async () => {
-  await run('node', ['./tools/validate-rustymilk-content-catalog.mjs']);
+  await run('node', ['./tools/validate-milkrust-content-catalog.mjs']);
 
   const catalog = await readJson('content/catalog.json');
   const communityEntries = catalog.entries.filter((entry) => entry.copyPolicy === 'community-unlicensed');
@@ -108,11 +108,11 @@ const auditContentPolicy = async () => {
     assert(entry.defaultBuild === false, `${entry.id}: community-unlicensed catalog entry must set defaultBuild false`);
     assert(entry.source?.path?.startsWith('content/community-unlicensed/'), `${entry.id}: community path must stay under content/community-unlicensed`);
     assert(await exists(path.join(entry.source.path, 'manifest.json')), `${entry.id}: community manifest is missing`);
-    assert(await exists(path.join(entry.source.path, 'RUSTYMILK-COMMUNITY-NOTICE.md')), `${entry.id}: community notice is missing`);
+    assert(await exists(path.join(entry.source.path, 'MILKRUST-COMMUNITY-NOTICE.md')), `${entry.id}: community notice is missing`);
     const manifest = await readJson(path.join(entry.source.path, 'manifest.json'));
     assert(manifest.license === 'NOASSERTION', `${entry.id}: community manifest license must be NOASSERTION`);
     assert(
-      String(manifest.description || '').includes('RUSTYMILK-COMMUNITY-NOTICE.md'),
+      String(manifest.description || '').includes('MILKRUST-COMMUNITY-NOTICE.md'),
       `${entry.id}: community manifest should point to the community notice`,
     );
   }
@@ -128,12 +128,12 @@ const auditContentPolicy = async () => {
     entry.copyPolicy === 'include' && entry.source?.path?.startsWith('content/third-party/'));
   for (const entry of thirdPartyEntries) {
     assert(entry.license !== 'NOASSERTION', `${entry.id}: included third-party content must have an explicit license`);
-    assert(await exists(path.join(entry.source.path, 'RUSTYMILK-PROVENANCE.md')), `${entry.id}: third-party provenance is missing`);
+    assert(await exists(path.join(entry.source.path, 'MILKRUST-PROVENANCE.md')), `${entry.id}: third-party provenance is missing`);
   }
 };
 
 const auditDefaultServer = async () => {
-  const { server } = createRustyMilkAppServer({ app: 'player' });
+  const { server } = createMilkRustAppServer({ app: 'player' });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address();
   try {
@@ -155,4 +155,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log('RustyMilk compliance audit passed');
+console.log('MilkRust compliance audit passed');

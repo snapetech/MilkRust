@@ -1,10 +1,10 @@
 # Renderer And Player Import Plan
 
-This plan captures the remaining `../slskdn` JavaScript MilkDrop import surface that should not be copied directly into RustyMilk yet. The durable behavior should land in renderer crates, smoke tools, SDK tests, Desktop Player requirements, or Studio requirements as those surfaces appear.
+This plan captures the remaining `../slskdn` JavaScript MilkDrop import surface that should not be copied directly into MilkRust yet. The durable behavior should land in renderer crates, smoke tools, SDK tests, Desktop Player requirements, or Studio requirements as those surfaces appear.
 
 ## Already Imported Into Core
 
-RustyMilk core now covers the renderer-neutral pieces from the old WebGL/WebGPU tests:
+MilkRust core now covers the renderer-neutral pieces from the old WebGL/WebGPU tests:
 
 - Waveform vertex placement for classic modes.
 - Motion vector geometry.
@@ -26,10 +26,10 @@ Source references:
 ../slskdn/src/web/src/components/Player/visualizers/milkdrop/webgpuRenderer.test.js
 ```
 
-RustyMilk test location:
+MilkRust test location:
 
 ```text
-crates/rustymilk-core/src/lib.rs
+crates/milkrust-core/src/lib.rs
 ```
 
 ## Future Renderer Backend Tests
@@ -38,7 +38,7 @@ When renderer crates are split, import these as backend tests instead of core te
 
 ### WebGL2
 
-Target crate: `rustymilk-renderer-webgl`
+Target crate: `milkrust-renderer-webgl`
 
 Import coverage:
 
@@ -61,7 +61,7 @@ Import coverage:
 
 ### WebGPU/wgpu
 
-Target crate: `rustymilk-renderer-wgpu`
+Target crate: `milkrust-renderer-wgpu`
 
 Import coverage:
 
@@ -86,12 +86,12 @@ Source references:
 ../slskdn/src/web/scripts/report-native-milkdrop-compatibility.mjs
 ```
 
-RustyMilk targets:
+MilkRust targets:
 
-- `tools/smoke-rustymilk.mjs`
-- `tools/measure-rustymilk-performance.mjs`
-- `tools/report-rustymilk-compatibility.mjs`
-- Future `rustymilk` CLI commands.
+- `tools/smoke-milkrust.mjs`
+- `tools/measure-milkrust-performance.mjs`
+- `tools/report-milkrust-compatibility.mjs`
+- Future `milkrust` CLI commands.
 
 Import coverage:
 
@@ -137,7 +137,7 @@ Import coverage:
 
 ## Studio Requirements
 
-RustyMilk Studio should reuse the same imported workflows:
+MilkRust Studio should reuse the same imported workflows:
 
 - Preset inspector.
 - Compatibility report UI.
@@ -156,5 +156,5 @@ RustyMilk Studio should reuse the same imported workflows:
 - Butterchurn-specific host code.
 - Soulseek/slskdN application shell concerns.
 - Vite app path assumptions.
-- Browser-only renderer code into `rustymilk-core`.
+- Browser-only renderer code into `milkrust-core`.
 

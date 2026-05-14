@@ -6,7 +6,7 @@ out_dir="${1:-$repo_root/pkg}"
 
 cargo build \
   --manifest-path "$repo_root/Cargo.toml" \
-  -p rustymilk-wasm \
+  -p milkrust-wasm \
   --target wasm32-unknown-unknown \
   --release
 
@@ -27,6 +27,6 @@ fi
 
 mkdir -p "$out_dir"
 "$wasm_bindgen_bin" \
-  "$repo_root/target/wasm32-unknown-unknown/release/rustymilk_wasm.wasm" \
+  "$repo_root/target/wasm32-unknown-unknown/release/milkrust_wasm.wasm" \
   --target web \
   --out-dir "$out_dir"

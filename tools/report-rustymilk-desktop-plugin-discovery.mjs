@@ -134,7 +134,7 @@ const runPack = (packPath) => {
       [
         'run',
         '-p',
-        'rustymilk-desktop',
+        'milkrust-desktop',
         '--bin',
         'player',
         '--',
@@ -154,9 +154,9 @@ const runPack = (packPath) => {
       [
         'run',
         '-p',
-        'rustymilk-desktop',
+        'milkrust-desktop',
         '--bin',
-        'rustymilk-desktop',
+        'milkrust-desktop',
         '--',
         '--pack',
         packPath,
@@ -176,7 +176,7 @@ const runPack = (packPath) => {
       [
         'run',
         '-p',
-        'rustymilk-desktop',
+        'milkrust-desktop',
         '--bin',
         'studio',
         '--',

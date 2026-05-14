@@ -6,8 +6,8 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const result = spawnSync('cargo', [
   'test',
   '-p',
-  'rustymilk-core',
-  'rustymilk_core_exports_webgpu_batch_summary_json',
+  'milkrust-core',
+  'milkrust_core_exports_webgpu_batch_summary_json',
   '--',
   '--nocapture',
 ], {

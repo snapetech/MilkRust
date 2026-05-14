@@ -1,0 +1,42 @@
+[package]
+name = "milkrust-desktop"
+version = "0.1.0"
+description = "Native Rust host and playback primitives for MilkRust desktop clients"
+keywords = ["visualizer", "desktop", "audio", "headless", "runtime"]
+categories = ["multimedia", "rendering"]
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "milkrust-desktop"
+path = "src/main.rs"
+[[bin]]
+name = "player"
+path = "src/bin/player.rs"
+[[bin]]
+name = "studio"
+path = "src/bin/studio.rs"
+[[bin]]
+name = "player-ui"
+path = "src/bin/player-ui.rs"
+required-features = ["ui"]
+
+[features]
+default = []
+ui = ["dep:minifb"]
+audio = ["dep:cpal"]
+
+[dependencies]
+milkrust-core = { path = "../milkrust-core" }
+milkrust-pack = { path = "../milkrust-pack" }
+milkrust-renderer-core = { path = "../milkrust-renderer-core" }
+milkrust-renderer-headless = { path = "../milkrust-renderer-headless" }
+serde_json = "1"
+minifb = { version = "0.25", optional = true }
+cpal = { version = "0.15", optional = true }
+
+[lints]
+workspace = true

@@ -27,17 +27,17 @@ scan_js() {
     "$@" || true
 }
 
-scan_rust docs/dev/council-calibration/rustymilk-taint-bad.rs >"$tmp_bad"
-scan_js docs/dev/council-calibration/rustymilk-taint-bad.js >>"$tmp_bad"
+scan_rust docs/dev/council-calibration/milkrust-taint-bad.rs >"$tmp_bad"
+scan_js docs/dev/council-calibration/milkrust-taint-bad.js >>"$tmp_bad"
 if [[ ! -s "$tmp_bad" ]]; then
-  printf 'RustyMilk taint lens failed: known-bad fixtures did not fire\n' >&2
+  printf 'MilkRust taint lens failed: known-bad fixtures did not fire\n' >&2
   exit 1
 fi
 
-scan_rust docs/dev/council-calibration/rustymilk-taint-good.rs >"$tmp_good"
-scan_js docs/dev/council-calibration/rustymilk-taint-good.js >>"$tmp_good"
+scan_rust docs/dev/council-calibration/milkrust-taint-good.rs >"$tmp_good"
+scan_js docs/dev/council-calibration/milkrust-taint-good.js >>"$tmp_good"
 if [[ -s "$tmp_good" ]]; then
-  printf 'RustyMilk taint lens failed: known-good fixtures produced findings\n' >&2
+  printf 'MilkRust taint lens failed: known-good fixtures produced findings\n' >&2
   sed 's/^/  /' "$tmp_good" >&2
   exit 1
 fi
@@ -45,9 +45,9 @@ fi
 scan_rust crates tools >"$tmp_prod"
 scan_js packages apps tools >>"$tmp_prod"
 if [[ -s "$tmp_prod" ]]; then
-  printf 'RustyMilk taint lens found unadjudicated production candidates:\n' >&2
+  printf 'MilkRust taint lens found unadjudicated production candidates:\n' >&2
   sed 's/^/  /' "$tmp_prod" >&2
   exit 1
 fi
 
-printf 'RustyMilk calibrated taint lenses passed\n'
+printf 'MilkRust calibrated taint lenses passed\n'

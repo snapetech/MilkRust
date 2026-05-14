@@ -1,0 +1,19 @@
+{
+  "name": "@milkrust/web",
+  "version": "0.1.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "types": "./src/milkrustEngine.d.ts",
+  "main": "./src/milkrustEngine.js",
+  "exports": {
+    ".": {
+      "import": "./src/milkrustEngine.js",
+      "types": "./src/milkrustEngine.d.ts"
+    },
+    "./visualizer-element": {
+      "import": "./src/milkrustVisualElement.js",
+      "types": "./src/milkrustVisualElement.d.ts"
+    },
+    "./milkrustVisualElement.js": "./src/milkrustVisualElement.js"
+  }
+}

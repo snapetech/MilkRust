@@ -1,6 +1,6 @@
 # Generated Content Reports
 
-This directory contains generated RustyMilk content reports.
+This directory contains generated MilkRust content reports.
 
 - `community-pack-summary.json`: machine-readable summary of community-unlicensed packs.
 - `COMMUNITY_PACK_SUMMARY.md`: human-readable summary of the same data.

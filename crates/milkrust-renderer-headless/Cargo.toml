@@ -1,0 +1,18 @@
+[package]
+name = "milkrust-renderer-headless"
+version = "0.1.0"
+description = "Headless MilkRust renderer backend for tests, reports, and batch tooling"
+keywords = ["visualizer", "renderer", "headless", "webgpu", "audio"]
+categories = ["multimedia", "rendering"]
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+milkrust-core = { path = "../milkrust-core" }
+milkrust-renderer-core = { path = "../milkrust-renderer-core" }
+
+[lints]
+workspace = true

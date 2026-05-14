@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>RustyMilk Browser Smoke</title>
+    <title>MilkRust Browser Smoke</title>
     <style>
       html,
       body {
@@ -30,16 +30,16 @@
   </head>
   <body>
     <main>
-      <canvas id="rustymilk" width="960" height="540"></canvas>
-      <output id="status">Build rustymilk-wasm with wasm-bindgen and serve the generated files next to this page.</output>
+      <canvas id="milkrust" width="960" height="540"></canvas>
+      <output id="status">Build milkrust-wasm with wasm-bindgen and serve the generated files next to this page.</output>
     </main>
     <script type="module">
       const status = document.getElementById('status');
       try {
-        const wasm = await import('/rustymilk_wasm.js');
-        await wasm.default({ module_or_path: '/rustymilk_wasm_bg.wasm' });
-        const canvas = document.getElementById('rustymilk');
-        const engine = new wasm.RustyMilkEngine(canvas);
+        const wasm = await import('/milkrust_wasm.js');
+        await wasm.default({ module_or_path: '/milkrust_wasm_bg.wasm' });
+        const canvas = document.getElementById('milkrust');
+        const engine = new wasm.MilkRustEngine(canvas);
         engine.resize(canvas.width, canvas.height);
         status.value = engine.rendererLabel();
       } catch (error) {

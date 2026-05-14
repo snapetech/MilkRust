@@ -1,10 +1,10 @@
-# Third-Party RustyMilk Content Policy
+# Third-Party MilkRust Content Policy
 
-RustyMilk should support old MilkDrop ecosystem content broadly, but the repo should only redistribute content with clear redistribution permission.
+MilkRust should support old MilkDrop ecosystem content broadly, but the repo should only redistribute content with clear redistribution permission.
 
 ## Content Types
 
-RustyMilk content imports should cover:
+MilkRust content imports should cover:
 
 - `.milk` and `.milk2` presets.
 - `.shape` and `.wave` fragments.
@@ -22,13 +22,13 @@ RustyMilk content imports should cover:
 - **link**: repo/builds may link to the upstream source, but must not copy the content.
 - **review**: license/provenance is not yet clear enough to decide.
 - **community-unlicensed**: public historical/community content imported into `content/community-unlicensed` for compatibility work, separated from vetted redistributable packs and excluded from default builds.
-- **reject**: do not copy, fetch, package, or link as a RustyMilk source.
+- **reject**: do not copy, fetch, package, or link as a MilkRust source.
 
 ## License Gate
 
 Allowed for vendoring:
 
-- RustyMilk-owned content.
+- MilkRust-owned content.
 - Public domain or CC0.
 - Permissive licenses such as MIT, BSD, Apache-2.0, ISC, and Zlib.
 - Creative Commons licenses that permit redistribution, with attribution captured in the pack manifest.
@@ -37,7 +37,7 @@ Allowed for vendoring:
 Not allowed for vendoring:
 
 - No explicit license.
-- Licenses that forbid redistribution, commercial use, modification, or sublicensing in ways that conflict with RustyMilk releases.
+- Licenses that forbid redistribution, commercial use, modification, or sublicensing in ways that conflict with MilkRust releases.
 - Packs that are only distributed through an installer or binary without source-content license terms.
 - Images, sprites, screenshots, fonts, or logos with unclear ownership.
 
@@ -53,7 +53,7 @@ No-license historical MilkDrop presets are common. Those should be link-only by 
 
 ## Build Model
 
-Default builds should include RustyMilk-owned content and vetted redistributable packs only.
+Default builds should include MilkRust-owned content and vetted redistributable packs only.
 
 Community-unlicensed content should be opt-in for packaging and release builds. It can be present in the repository for compatibility testing and user-accessible libraries, but it must stay clearly marked and removable.
 
@@ -64,4 +64,4 @@ Optional content can be supported through:
 - Pack manifests that point to upstream download pages.
 - Compatibility reports generated from user-provided local copies.
 
-This keeps RustyMilk compatible with old MilkDrop packs while separating vetted redistributable content from aggressive community imports that may need removal later.
+This keeps MilkRust compatible with old MilkDrop packs while separating vetted redistributable content from aggressive community imports that may need removal later.

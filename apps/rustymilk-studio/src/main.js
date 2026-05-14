@@ -1,4 +1,4 @@
-import init, { RustyMilkEngine } from '/pkg/rustymilk_wasm.js';
+import init, { MilkRustEngine } from '/pkg/milkrust_wasm.js';
 
 const canvas = document.querySelector('#preview');
 const source = document.querySelector('#source');
@@ -11,7 +11,7 @@ const packImportInput = document.querySelector('#pack-file');
 let engine;
 let animationFrame = 0;
 const PACK_EXPORT_VERSION = 1;
-const STUDIO_EXPORT_PREFIX = 'rustymilk-studio-preset';
+const STUDIO_EXPORT_PREFIX = 'milkrust-studio-preset';
 
 const sanitizePackToken = (value = '') => String(value || '')
   .trim()
@@ -28,9 +28,9 @@ const safePresetTitle = (value) => {
   if (trimmed) return trimmed;
   try {
     const inspected = JSON.parse(engine?.inspectPresetText(value || defaultSource, 'studio.milk'));
-    return String(inspected?.title || '').trim() || 'RustyMilk Studio Preset';
+    return String(inspected?.title || '').trim() || 'MilkRust Studio Preset';
   } catch {
-    return 'RustyMilk Studio Preset';
+    return 'MilkRust Studio Preset';
   }
 };
 
@@ -44,10 +44,10 @@ const buildPackFromCurrentSource = () => {
     id: `studio-${Math.random().toString(36).slice(2, 10)}`,
     name: title,
     version: '1.0.0',
-    author: 'RustyMilk',
-    description: 'Exported from RustyMilk Studio',
+    author: 'MilkRust',
+    description: 'Exported from MilkRust Studio',
     license: 'CC0',
-    requiredRustyMilkVersion: '0.1.0',
+    requiredMilkRustVersion: '0.1.0',
     sourceUrls: [],
     presets: [{
       id: presetId,
@@ -148,7 +148,7 @@ const loadStudioPack = (text = '') => {
   });
 };
 
-const defaultSource = `name=RustyMilk Studio Draft
+const defaultSource = `name=MilkRust Studio Draft
 decay=0.9
 wave_r=0.2
 wave_g=0.7
@@ -271,14 +271,14 @@ const render = (time = 0) => {
     0,
     0,
   );
-  if (window.__rustyMilkCollectStats) {
-    window.__rustyMilkStudioStats = readCanvasStats();
+  if (window.__milkrustCollectStats) {
+    window.__milkrustStudioStats = readCanvasStats();
   }
   animationFrame = requestAnimationFrame(render);
 };
 
-await init({ module_or_path: '/pkg/rustymilk_wasm_bg.wasm' });
-engine = new RustyMilkEngine(canvas);
+await init({ module_or_path: '/pkg/milkrust_wasm_bg.wasm' });
+engine = new MilkRustEngine(canvas);
 source.value = defaultSource;
 resize();
 loadPreview();

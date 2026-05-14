@@ -39,9 +39,9 @@ jobs:
         run: cargo test --workspace
 
       - name: Check WASM target
-        run: cargo check -p rustymilk-wasm --target wasm32-unknown-unknown
+        run: cargo check -p milkrust-wasm --target wasm32-unknown-unknown
 
-      - name: Run RustyMilk tool checks
+      - name: Run MilkRust tool checks
         run: |
           npm run test:compatibility
           npm run test:performance

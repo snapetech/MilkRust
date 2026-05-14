@@ -19,7 +19,7 @@ scripts/check-bug-council-all-phases.sh
 scripts/check-remediation-baseline.sh
 
 printf '\n==> Calibrated semantic lenses\n'
-scripts/check-rustymilk-taint-lenses.sh
+scripts/check-milkrust-taint-lenses.sh
 
 printf '\n==> Product verification\n'
 cargo test --workspace
@@ -28,5 +28,5 @@ npm run test:apps
 npm run pack:validate
 npm run content:validate
 
-printf '\nAll RustyMilk bug council phases passed. Candidate counts saved to %s.\n' "$scan_out"
+printf '\nAll MilkRust bug council phases passed. Candidate counts saved to %s.\n' "$scan_out"
 printf 'Council verdict boundary: this is not proof of no bugs. It means the current calibrated lenses, active backlog, process gates, Rust tests, web tests, app smoke tests, pack validation, and content validation passed.\n'

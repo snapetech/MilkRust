@@ -1,0 +1,25 @@
+[package]
+name = "milkrust-cli"
+version = "0.1.0"
+description = "Command-line validation, inspection, compatibility, and render-stat tooling for MilkRust"
+keywords = ["visualizer", "cli", "milkdrop", "wasm", "audio"]
+categories = ["command-line-utilities", "multimedia", "rendering"]
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "milkrust"
+path = "src/main.rs"
+
+[dependencies]
+milkrust-core = { path = "../milkrust-core" }
+milkrust-pack = { path = "../milkrust-pack" }
+milkrust-renderer-core = { path = "../milkrust-renderer-core" }
+milkrust-renderer-headless = { path = "../milkrust-renderer-headless" }
+serde_json = "1"
+
+[lints]
+workspace = true
