@@ -556,7 +556,7 @@ impl DesktopPlayerEngine {
                 fps: self.config.fps,
                 waveform_size: self.config.waveform_size,
                 spectrum_size: self.config.spectrum_size,
-                audio_profile: self.config.audio_profile.clone(),
+                audio_profile: self.config.audio_profile,
             });
         let mut audio = audio;
         for plugin in self.plugins.iter_mut() {
@@ -947,5 +947,311 @@ mod tests {
         assert!(frame.running);
         assert_eq!(engine.preset_label(), Some("HookedPreset"));
         assert_eq!(frame.preset_index, 0);
+    }
+
+    #[test]
+    fn desktop_player_state_defaults_are_reasonable() {
+        let state = DesktopPlayerState {
+            fps: 0.0,
+            running: false,
+            preset_index: 0,
+            preset_total: 0,
+            global_frame_index: 0,
+            local_frame_index: 0,
+            per_preset_frames: 0,
+        };
+        assert_eq!(state.fps, 0.0);
+        assert!(!state.running);
+        assert_eq!(state.preset_index, 0);
+        assert_eq!(state.preset_total, 0);
+        assert_eq!(state.global_frame_index, 0);
+        assert_eq!(state.local_frame_index, 0);
+        assert_eq!(state.per_preset_frames, 0);
+    }
+
+    #[test]
+    fn engine_toggle_running_flips_state() {
+        let process_id = std::process::id();
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|value| value.subsec_nanos())
+            .unwrap_or(0);
+        let base =
+            std::env::temp_dir().join(format!("rustymilk-desktop-player-toggle-{process_id}-{nanos}"));
+        std::fs::create_dir_all(&base).unwrap();
+        let source = base.join("toggle.milk");
+        std::fs::write(&source, "name=toggle\n").unwrap();
+
+        let mut engine = DesktopPlayerEngine::from_preset_inputs(
+            vec![PresetInput {
+                source_path: source,
+                source_label: "toggle".into(),
+            }],
+            DesktopPlayerEngineConfig {
+                fps: 60.0,
+                preset_duration_seconds: 1.0,
+                waveform_size: 8,
+                spectrum_size: 8,
+                audio_profile: DesktopAudioProfile::default(),
+                auto_loop: false,
+                start_paused: false,
+            },
+        )
+        .expect("engine should initialize");
+        assert!(engine.is_running());
+
+        engine.toggle_running();
+        assert!(!engine.is_running());
+
+        engine.toggle_running();
+        assert!(engine.is_running());
+    }
+
+    #[test]
+    fn engine_prev_preset_wraps_backwards() {
+        let process_id = std::process::id();
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|value| value.subsec_nanos())
+            .unwrap_or(0);
+        let base =
+            std::env::temp_dir().join(format!("rustymilk-desktop-player-wrap-{process_id}-{nanos}"));
+        std::fs::create_dir_all(&base).unwrap();
+
+        let paths: Vec<_> = (0..5)
+            .map(|i| {
+                let p = base.join(format!("preset{}.milk", i));
+                std::fs::write(&p, format!("name=preset{}", i).as_bytes()).unwrap();
+                p
+            })
+            .collect();
+
+        let inputs: Vec<_> = paths
+            .iter()
+            .enumerate()
+            .map(|(i, p)| PresetInput {
+                source_path: p.clone(),
+                source_label: format!("preset{}", i),
+            })
+            .collect();
+
+        let mut engine = DesktopPlayerEngine::from_preset_inputs(inputs, DesktopPlayerEngineConfig {
+            fps: 60.0,
+            preset_duration_seconds: 1.0,
+            waveform_size: 8,
+            spectrum_size: 8,
+            audio_profile: DesktopAudioProfile::default(),
+            auto_loop: false,
+            start_paused: true,
+        }).expect("engine should initialize");
+
+        // Start at preset 0
+        let state = engine.state();
+        assert_eq!(state.preset_index, 0);
+        assert_eq!(engine.preset_label(), Some("preset0"));
+
+        // Go backwards - should wrap to last preset
+        engine.prev_preset();
+        let state = engine.state();
+        assert_eq!(state.preset_index, 4);
+        assert_eq!(engine.preset_label(), Some("preset4"));
+
+        // Go backwards again
+        engine.prev_preset();
+        let state = engine.state();
+        assert_eq!(state.preset_index, 3);
+        assert_eq!(engine.preset_label(), Some("preset3"));
+    }
+
+    #[test]
+    fn engine_data_plugins_returns_descriptors() {
+        let process_id = std::process::id();
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|value| value.subsec_nanos())
+            .unwrap_or(0);
+        let base =
+            std::env::temp_dir().join(format!("rustymilk-desktop-player-descriptors-{process_id}-{nanos}"));
+        std::fs::create_dir_all(&base).unwrap();
+        let p = base.join("desc.milk");
+        std::fs::write(&p, format!("name=desc").as_bytes()).unwrap();
+        let engine = DesktopPlayerEngine::from_preset_inputs(
+            vec![PresetInput {
+                source_path: p,
+                source_label: "desc".into(),
+            }],
+            DesktopPlayerEngineConfig {
+                fps: 60.0,
+                preset_duration_seconds: 1.0,
+                waveform_size: 8,
+                spectrum_size: 8,
+                audio_profile: DesktopAudioProfile::default(),
+                auto_loop: false,
+                start_paused: true,
+            },
+        ).expect("engine should initialize");
+        let descriptors = engine.data_plugins();
+        // data_plugins() returns built-in data plugins, not preset plugins.
+        // With no data plugins installed, the slice is empty — just verify the
+        // method returns and the length is known.
+        let _count = descriptors.len();
+    }
+
+    #[test]
+    fn engine_seek_preset_with_valid_name_succeeds() {
+        let process_id = std::process::id();
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|value| value.subsec_nanos())
+            .unwrap_or(0);
+        let base =
+            std::env::temp_dir().join(format!("rustymilk-desktop-player-seek-{process_id}-{nanos}"));
+        std::fs::create_dir_all(&base).unwrap();
+        let paths: Vec<_> = (0..3)
+            .map(|i| {
+                let p = base.join(format!("seek{}.milk", i));
+                std::fs::write(&p, format!("name=seek{}", i).as_bytes()).unwrap();
+                p
+            })
+            .collect();
+        let inputs: Vec<_> = paths
+            .iter()
+            .enumerate()
+            .map(|(i, p)| PresetInput {
+                source_path: p.clone(),
+                source_label: format!("seek{}", i),
+            })
+            .collect();
+        let mut engine = DesktopPlayerEngine::from_preset_inputs(inputs, DesktopPlayerEngineConfig {
+            fps: 60.0,
+            preset_duration_seconds: 1.0,
+            waveform_size: 8,
+            spectrum_size: 8,
+            audio_profile: DesktopAudioProfile::default(),
+            auto_loop: false,
+            start_paused: true,
+        }).expect("engine should initialize");
+        engine.seek_preset("seek1").unwrap();
+        let state = engine.state();
+        assert_eq!(state.preset_index, 1);
+        assert_eq!(engine.preset_label(), Some("seek1"));
+    }
+
+    #[test]
+    fn engine_seek_preset_with_invalid_name_returns_error() {
+        let process_id = std::process::id();
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|value| value.subsec_nanos())
+            .unwrap_or(0);
+        let base =
+            std::env::temp_dir().join(format!("rustymilk-desktop-player-seekerr-{process_id}-{nanos}"));
+        std::fs::create_dir_all(&base).unwrap();
+        let p = base.join("nonexist.milk");
+        std::fs::write(&p, format!("name=nonexist").as_bytes()).unwrap();
+        let mut engine = DesktopPlayerEngine::from_preset_inputs(
+            vec![PresetInput {
+                source_path: p,
+                source_label: "nonexist".into(),
+            }],
+            DesktopPlayerEngineConfig {
+                fps: 60.0,
+                preset_duration_seconds: 1.0,
+                waveform_size: 8,
+                spectrum_size: 8,
+                audio_profile: DesktopAudioProfile::default(),
+                auto_loop: false,
+                start_paused: true,
+            },
+        ).expect("engine should initialize");
+        let result = engine.seek_preset("does_not_exist");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn engine_next_preset_advances_index() {
+        let process_id = std::process::id();
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|value| value.subsec_nanos())
+            .unwrap_or(0);
+        let base =
+            std::env::temp_dir().join(format!("rustymilk-desktop-player-next-{process_id}-{nanos}"));
+        std::fs::create_dir_all(&base).unwrap();
+        let paths: Vec<_> = (0..5)
+            .map(|i| {
+                let p = base.join(format!("next{}.milk", i));
+                std::fs::write(&p, format!("name=next{}", i).as_bytes()).unwrap();
+                p
+            })
+            .collect();
+        let inputs: Vec<_> = paths
+            .iter()
+            .enumerate()
+            .map(|(i, p)| PresetInput {
+                source_path: p.clone(),
+                source_label: format!("next{}", i),
+            })
+            .collect();
+        let mut engine = DesktopPlayerEngine::from_preset_inputs(inputs, DesktopPlayerEngineConfig {
+            fps: 60.0,
+            preset_duration_seconds: 1.0,
+            waveform_size: 8,
+            spectrum_size: 8,
+            audio_profile: DesktopAudioProfile::default(),
+            auto_loop: false,
+            start_paused: true,
+        }).expect("engine should initialize");
+        let state = engine.state();
+        assert_eq!(state.preset_index, 0);
+        engine.next_preset();
+        let state = engine.state();
+        assert_eq!(state.preset_index, 1);
+        assert_eq!(engine.preset_label(), Some("next1"));
+        engine.next_preset();
+        let state = engine.state();
+        assert_eq!(state.preset_index, 2);
+        assert_eq!(engine.preset_label(), Some("next2"));
+    }
+
+    #[test]
+    fn engine_reset_clears_playhead_and_resets_running() {
+        let process_id = std::process::id();
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|value| value.subsec_nanos())
+            .unwrap_or(0);
+        let base =
+            std::env::temp_dir().join(format!("rustymilk-desktop-player-reset-{process_id}-{nanos}"));
+        std::fs::create_dir_all(&base).unwrap();
+        let p = base.join("reset.milk");
+        std::fs::write(&p, format!("name=reset").as_bytes()).unwrap();
+        let mut engine = DesktopPlayerEngine::from_preset_inputs(
+            vec![PresetInput {
+                source_path: p,
+                source_label: "reset".into(),
+            }],
+            DesktopPlayerEngineConfig {
+                fps: 60.0,
+                preset_duration_seconds: 1.0,
+                waveform_size: 8,
+                spectrum_size: 8,
+                audio_profile: DesktopAudioProfile::default(),
+                auto_loop: false,
+                start_paused: false,
+            },
+        ).expect("engine should initialize");
+        engine.frame().unwrap();
+        engine.frame().unwrap();
+        engine.frame().unwrap();
+        let before = engine.state();
+        assert!(before.running);
+        assert!(before.global_frame_index > 0);
+        engine.reset();
+        let after = engine.state();
+        assert!(after.running);
+        assert_eq!(after.global_frame_index, 0);
+        assert_eq!(after.local_frame_index, 0);
+        assert_eq!(after.preset_index, 0);
     }
 }

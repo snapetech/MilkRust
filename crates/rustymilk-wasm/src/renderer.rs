@@ -1361,7 +1361,7 @@ fn render_rustymilk_canvas_frame(
 
     context.set_stroke_style_str("rgba(216, 232, 225, 0.36)");
     context.set_line_width(1.5);
-    for wave in 0..frame.waveform_count.max(1).min(3) {
+    for wave in 0..frame.waveform_count.clamp(1, 3) {
         context.begin_path();
         for index in 0..128 {
             let x = width * index as f64 / 127.0;
@@ -1396,7 +1396,7 @@ fn render_rustymilk_canvas_overlay_frame(
     context.set_stroke_style_str(&format!("rgba({r}, {g}, {b}, 0.68)"));
     context.set_line_width(1.5);
     let base = width.min(height) * frame.wave_radius * frame.zoom;
-    for ring in 0..frame.shape_count.max(1).min(5) {
+    for ring in 0..frame.shape_count.clamp(1, 5) {
         context.begin_path();
         let radius = base * (0.22 + ring as f64 * 0.11);
         let _ = context.arc(0.0, 0.0, radius, 0.0, std::f64::consts::TAU);

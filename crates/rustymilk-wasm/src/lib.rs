@@ -311,6 +311,7 @@ impl WasmRustyMilkEngine {
         .to_string()
     }
 
+    #[allow(clippy::too_many_arguments)]
     #[wasm_bindgen(js_name = render)]
     pub fn render(
         &mut self,
@@ -487,4 +488,136 @@ fn rustymilk_fragment_entry_label(
         }
     }
     format!("{prefix} {}", index + 1)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sanitize_file_name_keeps_alphanumeric_and_dots_dashes_underscores() {
+        assert_eq!(sanitize_rustymilk_file_name("my_preset-1.0"), "my_preset-1.0");
+    }
+
+    #[test]
+    fn sanitize_file_name_replaces_special_chars() {
+        assert_eq!(sanitize_rustymilk_file_name("hello@world!"), "hello_world");
+    }
+
+    #[test]
+    fn sanitize_file_name_fallback_for_empty_or_pure_special_chars() {
+        assert_eq!(sanitize_rustymilk_file_name(""), "RustyMilk_preset");
+        assert_eq!(sanitize_rustymilk_file_name("!!!"), "RustyMilk_preset");
+        assert_eq!(sanitize_rustymilk_file_name("___"), "RustyMilk_preset");
+    }
+
+    #[test]
+    fn sanitize_file_name_trims_leading_trailing_underscores() {
+        assert_eq!(sanitize_rustymilk_file_name("__hello__"), "hello");
+    }
+
+    #[test]
+    fn parse_sample_csv_basic() {
+        let result = parse_rustymilk_sample_csv("0,0.5,1.0");
+        assert_eq!(result, vec![0.0, 0.5, 1.0]);
+    }
+
+    #[test]
+    fn parse_sample_csv_empty() {
+        let result = parse_rustymilk_sample_csv("");
+        assert_eq!(result, Vec::<f64>::new());
+    }
+
+    #[test]
+    fn parse_sample_csv_single_value() {
+        let result = parse_rustymilk_sample_csv("42.0");
+        assert_eq!(result, vec![1.0]);
+    }
+
+    #[test]
+    fn parse_sample_csv_negative_values() {
+        let result = parse_rustymilk_sample_csv("-1.0,0.0,1.0");
+        assert_eq!(result, vec![-1.0, 0.0, 1.0]);
+    }
+
+    #[test]
+    fn parse_sample_csv_whitespace_stripping() {
+        let result = parse_rustymilk_sample_csv(" 1.0 , 2.0 , 3.0 ");
+        assert_eq!(result, vec![1.0, 1.0, 1.0]);
+    }
+
+    #[test]
+    fn fragment_entry_label_uses_name_field() {
+        let entry = RustyMilkIndexedEntry {
+            base_values: std::collections::BTreeMap::from_iter([
+                ("name".to_string(), RustyMilkValue::Text("MyShape".to_string())),
+            ]),
+            equations: rustymilk_core::RustyMilkEquations::default(),
+            initialized: false,
+        };
+        let label = rustymilk_fragment_entry_label(&entry, 0, "shape");
+        assert_eq!(label, "Shape 1: MyShape");
+    }
+
+    #[test]
+    fn fragment_entry_label_uses_fallback_for_shape() {
+        let entry = RustyMilkIndexedEntry {
+            base_values: std::collections::BTreeMap::new(),
+            equations: rustymilk_core::RustyMilkEquations::default(),
+            initialized: false,
+        };
+        let label = rustymilk_fragment_entry_label(&entry, 3, "shape");
+        assert_eq!(label, "Shape 4");
+    }
+
+    #[test]
+    fn fragment_entry_label_uses_fallback_for_wave() {
+        let entry = RustyMilkIndexedEntry {
+            base_values: std::collections::BTreeMap::new(),
+            equations: rustymilk_core::RustyMilkEquations::default(),
+            initialized: false,
+        };
+        let label = rustymilk_fragment_entry_label(&entry, 1, "wave");
+        assert_eq!(label, "Wave 2");
+    }
+
+    #[test]
+    fn fragment_entry_label_prefers_name_over_label() {
+        let entry = RustyMilkIndexedEntry {
+            base_values: std::collections::BTreeMap::from_iter([
+                ("label".to_string(), RustyMilkValue::Text("LabelText".to_string())),
+                ("name".to_string(), RustyMilkValue::Text("NameText".to_string())),
+            ]),
+            equations: rustymilk_core::RustyMilkEquations::default(),
+            initialized: false,
+        };
+        let label = rustymilk_fragment_entry_label(&entry, 0, "shape");
+        assert_eq!(label, "Shape 1: NameText");
+    }
+
+    #[test]
+    fn fragment_entry_label_uses_samples_for_wave() {
+        let entry = RustyMilkIndexedEntry {
+            base_values: std::collections::BTreeMap::from_iter([
+                ("samples".to_string(), RustyMilkValue::Text("64".to_string())),
+            ]),
+            equations: rustymilk_core::RustyMilkEquations::default(),
+            initialized: false,
+        };
+        let label = rustymilk_fragment_entry_label(&entry, 2, "wave");
+        assert_eq!(label, "Wave 3: 64 samples");
+    }
+
+    #[test]
+    fn fragment_entry_label_uses_sides_for_shape() {
+        let entry = RustyMilkIndexedEntry {
+            base_values: std::collections::BTreeMap::from_iter([
+                ("sides".to_string(), RustyMilkValue::Text("8".to_string())),
+            ]),
+            equations: rustymilk_core::RustyMilkEquations::default(),
+            initialized: false,
+        };
+        let label = rustymilk_fragment_entry_label(&entry, 0, "shape");
+        assert_eq!(label, "Shape 1: 8 sides");
+    }
 }

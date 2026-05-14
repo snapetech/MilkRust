@@ -168,11 +168,10 @@ fn compat_command(path: Option<&String>) -> RustyMilkCliResult {
         .filter_map(|file| {
             let source = fs::read_to_string(file).ok()?;
             Some(build_rustymilk_compatibility_entry(
-                &file
+                file
                     .file_stem()
                     .and_then(|stem| stem.to_str())
-                    .unwrap_or("preset")
-                    .to_string(),
+                    .unwrap_or("preset"),
                 &file.display().to_string(),
                 &source,
                 file.extension()
@@ -467,5 +466,96 @@ mod tests {
         let result = run_rustymilk_cli(&[]);
         assert_eq!(result.code, 2);
         assert!(result.stderr.contains("usage: rustymilk"));
+    }
+
+    // --- Helper function tests ---
+
+    #[test]
+    fn cli_result_ok_has_zero_code_and_stdout() {
+        let result = RustyMilkCliResult::ok("hello");
+        assert_eq!(result.code, 0);
+        assert_eq!(result.stdout, "hello");
+        assert!(result.stderr.is_empty());
+    }
+
+    #[test]
+    fn cli_result_err_has_error_code_and_stderr() {
+        let result = RustyMilkCliResult::err(1, "boom");
+        assert_eq!(result.code, 1);
+        assert_eq!(result.stderr, "boom");
+        assert!(result.stdout.is_empty());
+    }
+
+    #[test]
+    fn usage_returns_usage_string() {
+        let output = usage();
+        assert!(output.contains("validate"));
+        assert!(output.contains("inspect"));
+    }
+
+    #[test]
+    fn is_preset_file_accepts_milk_extension() {
+        assert!(is_preset_file(Path::new("test.milk")));
+    }
+
+    #[test]
+    fn is_preset_file_accepts_milk2_extension() {
+        assert!(is_preset_file(Path::new("test.milk2")));
+    }
+
+    #[test]
+    fn is_preset_file_rejects_other_extensions() {
+        assert!(!is_preset_file(Path::new("test.json")));
+        assert!(!is_preset_file(Path::new("test.txt")));
+    }
+
+    #[test]
+    fn is_preset_file_no_extension_returns_false() {
+        assert!(!is_preset_file(Path::new("test")));
+    }
+
+    #[test]
+    fn read_one_path_returns_error_for_missing_file() {
+        let result = read_one_path(Some(&temp_path("nonexistent.txt").display().to_string()));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn collect_preset_files_collects_only_preset_files() {
+        let dir = temp_path("collect-dir");
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("test.milk"), "name=test\n").unwrap();
+        fs::write(dir.join("test.milk2"), "name=test\n").unwrap();
+        fs::write(dir.join("other.json"), "{}").unwrap();
+
+        let files = collect_preset_files(&dir).unwrap();
+        let _ = fs::remove_dir_all(&dir);
+
+        assert_eq!(files.len(), 2);
+    }
+
+    #[test]
+    fn collect_preset_files_empty_directory_returns_empty() {
+        let dir = temp_path("empty-dir");
+        fs::create_dir_all(&dir).unwrap();
+
+        let files = collect_preset_files(&dir).unwrap();
+        let _ = fs::remove_dir_all(&dir);
+
+        assert!(files.is_empty());
+    }
+
+    #[test]
+    fn run_rustymilk_cli_help_command_shows_usage() {
+        let result = run_rustymilk_cli(&["help".to_string()]);
+        assert_eq!(result.code, 0);
+        assert!(result.stdout.contains("usage"));
+    }
+
+    #[test]
+    fn run_rustymilk_cli_invalid_command_shows_usage() {
+        let result = run_rustymilk_cli(&["badcommand".to_string()]);
+        assert_eq!(result.code, 2);
+        assert!(result.stderr.contains("usage"));
     }
 }

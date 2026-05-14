@@ -193,4 +193,119 @@ rot=0.01";
         assert_eq!(frames[0].preset_count, 1);
         assert!(!frames[0].source_title.is_empty());
     }
+
+    #[test]
+    fn summarize_headless_frames_returns_defaults_for_empty_input() {
+        let frames: Vec<DesktopSessionFrame> = Vec::new();
+        let summary = summarize_headless_frames("name=Empty", "Empty", frames);
+
+        assert_eq!(summary.frames, 0);
+        assert_eq!(summary.frame_total, 0);
+        assert_eq!(summary.timing.frame_index, 0);
+        assert_eq!(summary.timing.time_seconds, 0.0);
+        assert_eq!(summary.average_line_vertices, 0.0);
+        assert_eq!(summary.average_point_vertices, 0.0);
+        assert_eq!(summary.average_textured_vertices, 0.0);
+        assert_eq!(summary.average_triangle_vertices, 0.0);
+        assert_eq!(summary.source_line, "Unknown preset");
+    }
+
+    #[test]
+    fn summarize_headless_frames_calculates_correct_averages() {
+        let source = "name=AveragesTest
+decay=0.9
+wave_r=0.5
+wave_g=0.5
+wave_b=0.5
+wave_a=0.5
+zoom=1.0
+rot=0.01";
+
+        let frames = collect_headless_frames(
+            source,
+            DesktopSessionConfig {
+                frames: 10,
+                fps: 60.0,
+                waveform_size: DEFAULT_WAVEFORM_SIZE,
+                spectrum_size: DEFAULT_SPECTRUM_SIZE,
+                audio_profile: DesktopAudioProfile::default(),
+            },
+        )
+        .expect("session should collect frames");
+
+        let summary = summarize_headless_frames(source, "AveragesTest", frames.clone());
+
+        assert_eq!(summary.frames, frames.len());
+        assert_eq!(summary.frame_total, frames.len());
+        assert_eq!(summary.timing.frame_index, frames.last().unwrap().timing.frame_index);
+        assert!(summary.average_line_vertices > 0.0);
+
+        let len = frames.len() as f64;
+        let expected_avg = frames.iter().map(|f| f.report.line_vertices as f64).sum::<f64>() / len;
+        assert!((summary.average_line_vertices - expected_avg).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn collect_headless_frames_rejects_zero_frames() {
+        let source = "name=ZeroFrames
+decay=0.9
+wave_r=0.5
+wave_g=0.5
+wave_b=0.5
+wave_a=0.5
+zoom=1.0
+rot=0.01";
+
+        let result = collect_headless_frames(
+            source,
+            DesktopSessionConfig {
+                frames: 0,
+                ..Default::default()
+            },
+        );
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().message, "frames must be greater than zero");
+    }
+
+    #[test]
+    fn collect_headless_frames_applies_default_fps_and_sizes() {
+        let source = "name=DefaultsTest
+decay=0.9
+wave_r=0.5
+wave_g=0.5
+wave_b=0.5
+wave_a=0.5
+zoom=1.0
+rot=0.01";
+
+        let frames = collect_headless_frames(
+            source,
+            DesktopSessionConfig {
+                frames: 5,
+                fps: 0.0,
+                waveform_size: 0,
+                spectrum_size: 0,
+                audio_profile: DesktopAudioProfile::default(),
+            },
+        )
+        .expect("session should collect frames with defaults");
+
+        assert_eq!(frames.len(), 5);
+        assert!(frames.iter().all(|f| f.report.line_vertices > 0 || f.report.point_vertices > 0));
+    }
+
+    #[test]
+    fn desktop_session_error_display_shows_message() {
+        let err = DesktopSessionError {
+            message: "test error",
+        };
+        assert_eq!(format!("{err}"), "test error");
+    }
+
+    #[test]
+    fn desktop_session_config_defaults_are_reasonable() {
+        let config = DesktopSessionConfig::default();
+        assert_eq!(config.frames, 0);
+        assert_eq!(config.fps, 0.0);
+    }
 }

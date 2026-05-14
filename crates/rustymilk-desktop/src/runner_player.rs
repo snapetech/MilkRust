@@ -445,6 +445,7 @@ fn print_player_text(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn print_player_json(
     presets_summary: &[(&PresetInput, Vec<crate::DesktopSessionFrame>)],
     playlist: &[PlayerReport],

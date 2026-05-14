@@ -710,6 +710,219 @@ mod tests {
         assert!(report
             .errors
             .iter()
-            .any(|error| error.contains("must stay inside the pack")));
+           .any(|error| error.contains("must stay inside the pack")));
+    }
+
+    #[test]
+    fn optional_string_returns_some_for_valid_string() {
+        let v = serde_json::json!("hello");
+        let result = optional_string(Some(&v));
+        assert_eq!(result, Some("hello".to_string()));
+    }
+
+    #[test]
+    fn optional_string_returns_none_for_non_string() {
+        let v = serde_json::json!(42);
+        let result = optional_string(Some(&v));
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn optional_u64_returns_some_for_valid_number() {
+        let v = serde_json::json!(3);
+        let result = optional_u64(Some(&v));
+        assert_eq!(result, Some(3u64));
+    }
+    #[test]
+    fn required_string_returns_value_for_valid_input() {
+        let v = serde_json::json!("hello");
+        let mut err = Vec::new();
+        let result = required_string(Some(&v), "field", &mut err);
+        assert_eq!(result, "hello".to_string());
+        assert!(err.is_empty());
+    }
+
+    #[test]
+    fn required_string_adds_error_for_empty_string() {
+        let v = serde_json::json!("");
+        let mut err = Vec::new();
+        let result = required_string(Some(&v), "field", &mut err);
+        assert_eq!(result, String::new());
+        assert_eq!(err.len(), 1);
+        assert!(err[0].contains("field"));
+    }
+
+    #[test]
+    fn required_string_adds_error_for_null() {
+        let v = serde_json::Value::Null;
+        let mut err = Vec::new();
+        let result = required_string(Some(&v), "field", &mut err);
+        assert_eq!(result, String::new());
+        assert_eq!(err.len(), 1);
+        assert!(err[0].contains("field"));
+    }
+    #[test]
+    fn string_array_parses_valid_array() {
+        let v = serde_json::json!(["a", "b", "c"]);
+        let result = string_array(Some(&v));
+        assert_eq!(result, Some(vec!["a".to_string(), "b".to_string(), "c".to_string()]));
+    }
+
+    #[test]
+    fn string_array_filters_non_string_values() {
+        let v = serde_json::json!(["a", 42, "b"]);
+        let result = string_array(Some(&v));
+        assert_eq!(result, Some(vec!["a".to_string(), "b".to_string()]));
+    }
+
+    #[test]
+    fn string_array_returns_none_for_non_array() {
+        let v = serde_json::json!("not-array");
+        let result = string_array(Some(&v));
+        assert_eq!(result, None);
+    }
+    #[test]
+    fn validate_id_accepts_valid_ids() {
+        let mut err = Vec::new();
+        validate_id("id", "valid-id_123.ok", &mut err);
+        assert!(err.is_empty());
+    }
+
+    #[test]
+    fn validate_id_rejects_empty_id() {
+        let mut err = Vec::new();
+        validate_id("id", "", &mut err);
+        assert_eq!(err.len(), 1);
+        assert!(err[0].contains("id"));
+    }
+
+    #[test]
+    fn validate_id_rejects_invalid_characters() {
+        let mut err = Vec::new();
+        validate_id("id", "bad id!", &mut err);
+        assert_eq!(err.len(), 1);
+        assert!(err[0].contains("id"));
+    }
+    #[test]
+    fn validate_relative_pack_path_rejects_absolute_paths() {
+        let mut err = Vec::new();
+        validate_relative_pack_path("/etc/passwd", "file", &mut err);
+        assert_eq!(err.len(), 1);
+    }
+
+    #[test]
+    fn validate_relative_pack_path_rejects_parent_dir_traversal() {
+        let mut err = Vec::new();
+        validate_relative_pack_path("../outside.milk", "file", &mut err);
+        assert_eq!(err.len(), 1);
+    }
+
+    #[test]
+    fn validate_relative_pack_path_accepts_relative_path() {
+        let mut err = Vec::new();
+        validate_relative_pack_path("presets/test.milk", "file", &mut err);
+        assert!(err.is_empty());
+    }
+    #[test]
+    fn normalize_source_format_normalizes_input() {
+        assert_eq!(normalize_source_format("MILK2", ""), "milk2");
+        assert_eq!(normalize_source_format("milk_2", ""), "milk-2");
+        assert_eq!(normalize_source_format("BUTTERCHURN_JSON", ""), "butterchurn-json");
+    }
+
+    #[test]
+    fn normalize_source_format_infer_from_file_extension() {
+        assert_eq!(normalize_source_format("", ".milk"), "milk");
+        assert_eq!(normalize_source_format("", ".MILK"), "milk");
+        assert_eq!(normalize_source_format("", ".json"), "butterchurn-json");
+        assert_eq!(normalize_source_format("", ".JSON"), "butterchurn-json");
+        assert_eq!(normalize_source_format("", ".unknown"), "milk");
+    }
+    #[test]
+    fn rustymilk_pack_manifest_path_returns_correct_path() {
+        // use a real temp dir so is_dir() is true
+        let tmp = std::env::temp_dir().join("rustymilk_test_pack_dir");
+        let _ = std::fs::create_dir_all(&tmp);
+        let p = rustymilk_pack_manifest_path(&tmp);
+        assert_eq!(p, tmp.join("manifest.json"));
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn rustymilk_pack_manifest_path_handles_file_path() {
+        let p = rustymilk_pack_manifest_path(std::path::Path::new("/path/to/manifest.json"));
+        assert_eq!(p, std::path::Path::new("/path/to/manifest.json"));
+    }
+
+    #[test]
+    fn parse_pack_preset_defaults_missing_fields() {
+        let v = serde_json::json!({ "id": "test", "file": "test.milk" });
+        let mut err = Vec::new();
+        let preset = parse_pack_preset(&v, 0, "presets", &mut err);
+        assert_eq!(preset.id, "test");
+        assert_eq!(preset.title, String::new());
+        assert_eq!(preset.source_format, String::new());
+        assert!(preset.tags.is_empty());
+        assert_eq!(preset.thumbnail, String::new());
+    }
+    #[test]
+    fn parse_pack_preset_accepts_camelcase_source_format() {
+        let v = serde_json::json!({ "id": "test", "file": "t.milk", "sourceFormat": "milk2" });
+        let mut err = Vec::new();
+        let preset = parse_pack_preset(&v, 0, "presets", &mut err);
+        assert_eq!(preset.source_format, "milk2");
+    }
+
+    #[test]
+    fn parse_pack_texture_defaults_missing_aliases() {
+        let v = serde_json::json!({ "id": "tex", "file": "t.png" });
+        let mut err = Vec::new();
+        let tex = parse_pack_texture(&v, 0, "textures", &mut err);
+        assert_eq!(tex.id, "tex");
+        assert_eq!(tex.aliases, Vec::<String>::new());
+    }
+
+    #[test]
+    fn parse_pack_fragment_defaults_kind() {
+        let v = serde_json::json!({ "id": "frag", "file": "f.json" });
+        let mut err = Vec::new();
+        let frag = parse_pack_fragment(&v, 0, "fragments", &mut err);
+        assert_eq!(frag.kind, "preset");
+    }
+
+    #[test]
+    fn parse_pack_plugin_defaults_kind() {
+        let v = serde_json::json!({ "id": "plug", "entry": "e.json" });
+        let mut err = Vec::new();
+        let plug = parse_pack_plugin(&v, 0, "plugins", &mut err);
+        assert_eq!(plug.kind, "data");
+    }
+    #[test]
+    fn validation_report_to_json_includes_all_fields() {
+        let report = RustyMilkPackValidationReport {
+            manifest_path: "/path/to/manifest.json".to_string(),
+            pack_id: "my-pack".to_string(),
+            pack_name: "My Pack".to_string(),
+            version: "1.0.0".to_string(),
+            valid: true,
+            preset_count: 2,
+            texture_count: 1,
+            fragment_count: 0,
+            plugin_count: 0,
+            errors: Vec::new(),
+            warnings: Vec::new(),
+            presets: Vec::new(),
+        };
+        let json = report.to_json();
+        let j = json.as_object().expect("to_json should return an object");
+        assert_eq!(j.get("manifestPath").unwrap().as_str().unwrap(), "/path/to/manifest.json");
+        assert_eq!(j.get("packId").unwrap().as_str().unwrap(), "my-pack");
+        assert_eq!(j.get("packName").unwrap().as_str().unwrap(), "My Pack");
+        assert_eq!(j.get("version").unwrap().as_str().unwrap(), "1.0.0");
+        assert_eq!(j.get("valid").unwrap().as_bool().unwrap(), true);
+        assert_eq!(j.get("presetCount").unwrap().as_u64().unwrap(), 2);
+        assert_eq!(j.get("textureCount").unwrap().as_u64().unwrap(), 1);
+        assert_eq!(j.get("fragmentCount").unwrap().as_u64().unwrap(), 0);
+        assert_eq!(j.get("pluginCount").unwrap().as_u64().unwrap(), 0);
     }
 }

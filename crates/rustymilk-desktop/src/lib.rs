@@ -113,6 +113,7 @@ impl RustyMilkFrameSetRuntimeHost {
         Self::default()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn render_frame_set(
         &mut self,
         source: &str,
@@ -133,5 +134,108 @@ impl RustyMilkFrameSetRuntimeHost {
             waveform,
             spectrum,
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn collect_frame_set_report_returns_valid_report() {
+        let source = "name=RustyMilk Report Test
+decay=0.9
+wave_r=0.4
+wave_g=0.7
+wave_b=0.9
+wave_a=0.8
+zoom=1.1
+rot=0.01";
+        let (frame_set, report) =
+            collect_frame_set_report(source, 0.0, 0.5, 0.5, 0.5, &[], &[]);
+        assert!(!frame_set.entries.is_empty());
+        assert!(!report.source_title.is_empty());
+        assert!(report.frame_count > 0);
+        assert!(report.line_vertices > 0 || report.point_vertices > 0);
+        assert_eq!(report.transition_mode, frame_set.transition_mode);
+        assert_eq!(report.transition_seconds, frame_set.transition_seconds);
+    }
+
+    #[test]
+    fn report_frame_set_produces_headless_stats() {
+        let source = "name=ReportStats
+decay=0.85
+wave_r=0.3
+wave_g=0.6
+wave_b=0.8
+wave_a=0.7
+zoom=1.0
+rot=0.02";
+        let frame_set = rustymilk_frame_set_from_source_with_audio(
+            source, 0.0, 0.5, 0.5, 0.5, &[], &[]
+        );
+        let report = report_frame_set(&frame_set);
+        assert!(report.line_vertices > 0 || report.point_vertices > 0);
+        assert!(report.frame_count > 0);
+        assert_eq!(report.source_title, frame_set.title);
+    }
+
+    #[test]
+    fn frame_set_report_contains_all_vertex_types() {
+        let source = "name=VertexTypes
+decay=0.9
+wave_r=1.0
+wave_g=1.0
+wave_b=1.0
+wave_a=1.0
+zoom=2.0
+rot=0.05";
+        let frame_set = rustymilk_frame_set_from_source_with_audio(
+            source, 0.0, 0.5, 0.5, 0.5, &[], &[]
+        );
+        let report = report_frame_set(&frame_set);
+        assert!(report.frame_count > 0);
+        assert_eq!(report.source_preset_count, frame_set.preset_count);
+    }
+
+    #[test]
+    fn rustymilk_frame_set_runtime_host_is_default() {
+        let host = RustyMilkFrameSetRuntimeHost::default();
+        assert_eq!(host.source, "");
+    }
+
+    #[test]
+    fn rustymilk_frame_set_runtime_host_renders_consistent_frames() {
+        let source = "name=ConsistentRender
+decay=0.9
+wave_r=0.5
+wave_g=0.5
+wave_b=0.5
+wave_a=0.5
+zoom=1.0
+rot=0.01";
+        let mut host = RustyMilkFrameSetRuntimeHost::new();
+        let frame0 = host.render_frame_set(source, 0.0, 0.5, 0.5, 0.5, &[], &[]);
+        let frame1 = host.render_frame_set(source, 1.0, 0.5, 0.5, 0.5, &[], &[]);
+        // Same source should produce same title
+        assert_eq!(frame0.title, frame1.title);
+        assert!(!frame0.entries.is_empty());
+        // Different time should produce different entries
+        assert_ne!(frame0.entries, frame1.entries);
+    }
+
+    #[test]
+    fn collect_frame_set_report_handles_empty_waveform_and_spectrum() {
+        let source = "name=EmptyAudio
+decay=0.9
+wave_r=0.5
+wave_g=0.5
+wave_b=0.5
+wave_a=0.5
+zoom=1.0
+rot=0.01";
+        let (_, report) =
+            collect_frame_set_report(source, 0.0, 0.5, 0.5, 0.5, &[], &[]);
+        assert!(report.frame_count > 0);
     }
 }

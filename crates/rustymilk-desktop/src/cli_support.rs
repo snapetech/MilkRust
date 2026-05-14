@@ -159,10 +159,9 @@ pub fn gather_preset_path_candidates(path: &Path) -> Result<Vec<PathBuf>, String
 
 pub fn gather_pack_presets(path: &Path) -> Result<Vec<PresetInput>, String> {
     let (manifest_path, manifest) =
-        load_rustymilk_pack_manifest(path).map_err(|error| format!("{error}"))?;
+        load_rustymilk_pack_manifest(path).map_err(|error| error.to_string())?;
     let base = manifest_path
-        .parent()
-        .map_or_else(|| Path::new("."), |value| value);
+        .parent().unwrap_or_else(|| Path::new("."));
     let mut presets = Vec::with_capacity(manifest.presets.len());
     for preset in manifest.presets {
         let source_path = base.join(preset.file);
@@ -199,10 +198,9 @@ pub fn gather_pack_presets(path: &Path) -> Result<Vec<PresetInput>, String> {
 
 pub fn gather_pack_plugins(path: &Path) -> Result<Vec<PackPluginInput>, String> {
     let (manifest_path, manifest) =
-        load_rustymilk_pack_manifest(path).map_err(|error| format!("{error}"))?;
+        load_rustymilk_pack_manifest(path).map_err(|error| error.to_string())?;
     let base = manifest_path
-        .parent()
-        .map_or_else(|| Path::new("."), |value| value);
+        .parent().unwrap_or_else(|| Path::new("."));
     let mut plugins = Vec::with_capacity(manifest.plugins.len());
     for plugin in manifest.plugins {
         let source_path = base.join(&plugin.entry);

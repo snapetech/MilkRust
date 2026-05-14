@@ -377,6 +377,7 @@ fn create_rustymilk_scope(
     scope
 }
 
+#[allow(clippy::too_many_arguments)]
 fn update_rustymilk_scope_audio(
     scope: &mut BTreeMap<String, RustyMilkValue>,
     time_seconds: f64,
@@ -593,6 +594,7 @@ pub fn rustymilk_frame_from_source(
     rustymilk_frame_from_source_with_audio(source, time_seconds, bass, mid, treble, &[], &[])
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_rustymilk_frame_from_scope(
     source: &str,
     preset_document: &RustyMilkPresetDocument,
@@ -686,6 +688,7 @@ fn build_rustymilk_frame_from_scope(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_rustymilk_frame_from_runtime_scope(
     source: &str,
     preset_document: &mut RustyMilkPresetDocument,
@@ -796,6 +799,7 @@ pub fn rustymilk_frame_from_source_with_audio(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn rustymilk_frame_from_source_with_audio_and_input(
     source: &str,
     time_seconds: f64,
@@ -870,6 +874,7 @@ pub fn rustymilk_frame_set_from_source_with_audio(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn rustymilk_frame_set_from_source_with_audio_and_input(
     source: &str,
     time_seconds: f64,
@@ -980,6 +985,7 @@ impl RustyMilkRuntime {
         self.render_source_with_audio(source, time_seconds, bass, mid, treble, &[], &[])
     }
 
+   #[allow(clippy::too_many_arguments)]
     pub fn render_source_with_audio(
         &mut self,
         source: &str,
@@ -1002,6 +1008,7 @@ impl RustyMilkRuntime {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn render_source_with_audio_and_input(
         &mut self,
         source: &str,
@@ -1100,6 +1107,7 @@ impl RustyMilkFrameSetRuntime {
         self.render_source_with_audio(source, time_seconds, bass, mid, treble, &[], &[])
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn render_source_with_audio(
         &mut self,
         source: &str,
@@ -1122,6 +1130,7 @@ impl RustyMilkFrameSetRuntime {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn render_source_with_audio_and_input(
         &mut self,
         source: &str,
@@ -3028,6 +3037,7 @@ pub fn create_rustymilk_waveform_vertices(
     vertices
 }
 
+#[allow(clippy::too_many_arguments)]
 fn create_rustymilk_frame_primitives(
     preset: &RustyMilkPresetDocument,
     frame_scope: &BTreeMap<String, RustyMilkValue>,
@@ -3300,6 +3310,7 @@ fn create_rustymilk_frame_textured_primitives(
     primitives
 }
 
+#[allow(clippy::too_many_arguments)]
 fn create_rustymilk_frame_primitives_and_textures_stateful(
     preset: &mut RustyMilkPresetDocument,
     frame_scope: &mut BTreeMap<String, RustyMilkValue>,
@@ -3818,7 +3829,7 @@ fn collect_q_registers_from_text(text: &str, registers: &mut Vec<String>) {
     let chars = text.chars().collect::<Vec<_>>();
     let mut index = 0usize;
     while index < chars.len() {
-        if chars[index].to_ascii_lowercase() != 'q' {
+        if !chars[index].eq_ignore_ascii_case(&'q') {
             index += 1;
             continue;
         }
@@ -4130,8 +4141,7 @@ fn unwrap_rustymilk_shader_body(source: &str) -> String {
 fn normalize_simple_rustymilk_conditional_return(source: &str) -> String {
     let unwrapped = unwrap_rustymilk_shader_body(source);
     let compact = unwrapped
-        .replace('{', " ")
-        .replace('}', " ")
+        .replace(['{', '}'], " ")
         .split_whitespace()
         .collect::<Vec<_>>()
         .join(" ");
@@ -4311,9 +4321,7 @@ fn split_rustymilk_shader_declaration(statement: &str) -> Option<(&str, &str, &s
             continue;
         };
         let rest = rest.trim_start();
-        let Some((name, expression)) = rest.split_once('=') else {
-            return None;
-        };
+        let (name, expression) = rest.split_once('=')?;
         let name = name.trim();
         if !name
             .chars()
@@ -6917,4 +6925,7 @@ comp_shader_2=ret = vec3(shifted, energy * bass_att);
             vec!["comp_shader".to_string()]
         );
     }
+
+    // TEST_BLOCK_START
+    // TEST_BLOCK_END
 }
