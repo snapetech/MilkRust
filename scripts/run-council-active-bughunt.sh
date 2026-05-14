@@ -38,3 +38,8 @@ write_section "Release/package metadata sinks" 'version|license|repository|homep
 
 printf 'Active MilkRust bughunt candidates saved to %s.\n' "$report"
 printf 'Verdict boundary: this report is a discovery queue, not proof of no bugs.\n'
+
+write_section \
+  "Red-team abuse lens" \
+  '(token|secret|password|authorization|cookie|api[-_]?key|session|redirect|proxy|forwarded|path|filename|exec|spawn|shell|http://|https://)' \
+  src tests examples scripts docs

@@ -121,7 +121,10 @@ pub fn run_milkrust_cli(args: &[String]) -> MilkRustCliResult {
                 );
                 let batches = create_headless_batches(&frame_set);
                 let mut renderer = MilkRustHeadlessRenderer::new();
-                let stats = renderer.render_frame_set(&frame_set).unwrap();
+                let stats = match renderer.render_frame_set(&frame_set) {
+                    Ok(stats) => stats,
+                    Err(infallible) => match infallible {},
+                };
                 MilkRustCliResult::ok(format!(
                     "{}\n",
                     serde_json::json!({
