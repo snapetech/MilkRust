@@ -1427,6 +1427,9 @@ pub struct MilkRustEquations {
     pub point: String,
 }
 
+
+
+
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct MilkRustIndexedEntry {
     pub base_values: BTreeMap<String, MilkRustValue>,
@@ -5688,6 +5691,188 @@ fn split_milkrust_equation_statements(equations: &str) -> Vec<String> {
         statements.push(statement.to_string());
     }
     statements
+}
+
+/// A pre-compiled MilkRust expression that can be evaluated repeatedly
+/// without re-tokenizing or re-parsing the source string.
+#[derive(Clone, Debug, PartialEq)]
+pub struct CompiledMilkRustExpression {
+    tokens: Vec<MilkRustToken>,
+    expression: String,
+}
+
+impl CompiledMilkRustExpression {
+    pub fn compile(expression: &str) -> Result<Self, String> {
+        let tokens = tokenize_milkrust_expression(expression)?;
+        let mut parser = MilkRustExpressionParser::new(&tokens, BTreeMap::new(), 0);
+        parser.parse().map_err(|e| format!("Parse error: {e}"))?;
+        Ok(Self { tokens, expression: expression.to_string() })
+    }
+
+
+
+    pub fn evaluate_with_scope(
+        &self,
+        scope: &mut BTreeMap<String, MilkRustValue>,
+        variables: &BTreeMap<String, MilkRustValue>,
+        rand_counter: usize,
+    ) -> Result<(f64, usize), String> {
+        scope.clear();
+        for (key, value) in variables {
+            scope.insert(key.to_ascii_lowercase(), value.clone());
+        }
+        let mut parser =
+            MilkRustExpressionParser::new(&self.tokens, std::mem::take(scope), rand_counter);
+        let value = parser.parse()?;
+        *scope = parser.scope;
+        Ok((value, parser.rand_counter))
+    }
+
+    pub fn evaluate_with_rand_counter(
+        &self,
+        variables: &BTreeMap<String, MilkRustValue>,
+        rand_counter: usize,
+    ) -> Result<(f64, usize), String> {
+        let scope = variables
+            .iter()
+            .map(|(key, value)| (key.to_ascii_lowercase(), value.clone()))
+            .collect::<BTreeMap<_, _>>();
+        let mut parser = MilkRustExpressionParser::new(&self.tokens, scope, rand_counter);
+        let value = parser.parse()?;
+        Ok((value, parser.rand_counter))
+    }
+
+    pub fn evaluate(
+        &self,
+        variables: &BTreeMap<String, MilkRustValue>,
+    ) -> Result<f64, String> {
+        self.evaluate_with_rand_counter(variables, 0)
+            .map(|(value, _)| value)
+    }
+
+    pub fn expression(&self) -> &str {
+        &self.expression
+    }
+}
+
+/// Pre-compiled block of MilkRust equation statements.
+///
+/// Analogous to [`CompiledMilkRustExpression`] but for multi-statement
+/// equation blocks. Each sub-expression is tokenized and parsed once at
+/// construction, so that hot-path evaluation skips tokenization and parsing
+/// entirely on subsequent calls.
+#[derive(Clone, Debug, PartialEq)]
+pub struct CompiledMilkRustEquations {
+    statements: Vec<CompiledEquationStatement>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+enum CompiledEquationStatement {
+    BufferAssignment {
+        buffer_name: String,
+        index_expr: CompiledMilkRustExpression,
+        operator: &'static str,
+        value_expr: CompiledMilkRustExpression,
+    },
+    Assignment {
+        name: String,
+        operator: &'static str,
+        expr: CompiledMilkRustExpression,
+    },
+    Expression(CompiledMilkRustExpression),
+}
+
+impl CompiledMilkRustEquations {
+    pub fn compile(equations: &str) -> Result<Self, String> {
+        let statements_str = split_milkrust_equation_statements(equations);
+        let mut statements = Vec::with_capacity(statements_str.len());
+        for stmt in &statements_str {
+            if let Some((buffer_name, index_expr_str, operator, value_expr_str)) =
+                split_milkrust_buffer_assignment(stmt)
+            {
+                let index_expr = CompiledMilkRustExpression::compile(index_expr_str)?;
+                let value_expr = CompiledMilkRustExpression::compile(value_expr_str)?;
+                statements.push(CompiledEquationStatement::BufferAssignment {
+                    buffer_name: buffer_name.to_ascii_lowercase(),
+                    index_expr,
+                    operator,
+                    value_expr,
+                });
+                continue;
+            }
+            let Some((name, operator, expr_str)) = split_milkrust_assignment(stmt) else {
+                let expr = CompiledMilkRustExpression::compile(stmt)?;
+                statements.push(CompiledEquationStatement::Expression(expr));
+                continue;
+            };
+            let expr = CompiledMilkRustExpression::compile(expr_str)?;
+            statements.push(CompiledEquationStatement::Assignment {
+                name: name.to_ascii_lowercase(),
+                operator,
+                expr,
+            });
+        }
+        Ok(Self { statements })
+    }
+
+    /// Evaluate the compiled equations, reusing `scope` across all calls.
+    /// Returns the final scope and random counter.
+    ///
+    /// The scope `BTreeMap` is cleared and reused — no allocation between frames.
+    pub fn evaluate_with_scope(
+        &self,
+        scope: &mut BTreeMap<String, MilkRustValue>,
+        variables: &BTreeMap<String, MilkRustValue>,
+        rand_counter: usize,
+    ) -> Result<(BTreeMap<String, MilkRustValue>, usize), String> {
+        scope.clear();
+        for (k, v) in variables {
+            scope.insert(k.to_ascii_lowercase(), v.clone());
+        }
+        let mut rc = rand_counter;
+
+        for stmt in &self.statements {
+            match stmt {
+                CompiledEquationStatement::BufferAssignment { buffer_name, index_expr, operator, value_expr } => {
+                    let (buf_idx, next_rc) = index_expr.evaluate_with_rand_counter(scope, rc)?;
+                    rc = next_rc;
+                    let key = milkrust_buffer_key(buffer_name, buf_idx);
+                    let current = milkrust_number(scope, &key);
+                    let (next, next_rc) = value_expr.evaluate_with_rand_counter(scope, rc)?;
+                    rc = next_rc;
+                    let value = apply_milkrust_assignment_operator(current, operator, next);
+                    scope.insert(key, MilkRustValue::Number(value));
+                }
+                CompiledEquationStatement::Assignment { name, operator, expr } => {
+                    let current = milkrust_number(scope, name);
+                    let (next, next_rc) = expr.evaluate_with_rand_counter(scope, rc)?;
+                    rc = next_rc;
+                    let value = apply_milkrust_assignment_operator(current, operator, next);
+                    scope.insert(name.clone(), MilkRustValue::Number(value));
+                }
+                CompiledEquationStatement::Expression(expr) => {
+                    let _ = expr.evaluate_with_rand_counter(scope, rc)?;
+                }
+            }
+        }
+
+        let final_rc = milkrust_number(scope, "__rand_counter").max(0.0) as usize;
+        scope.insert(
+            "__rand_counter".to_string(),
+            MilkRustValue::Number(final_rc as f64),
+        );
+        Ok((scope.clone(), final_rc))
+    }
+
+    /// Evaluate with a fresh scope. Convenience wrapper.
+    pub fn evaluate(
+        &self,
+        variables: &BTreeMap<String, MilkRustValue>,
+    ) -> Result<BTreeMap<String, MilkRustValue>, String> {
+        let mut scope = BTreeMap::default();
+        self.evaluate_with_scope(&mut scope, variables, 0)
+            .map(|(s, _)| s)
+    }
 }
 
 pub fn evaluate_milkrust_equations(
