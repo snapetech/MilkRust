@@ -1074,7 +1074,7 @@ mod tests {
             std::env::temp_dir().join(format!("milkrust-desktop-player-descriptors-{process_id}-{nanos}"));
         std::fs::create_dir_all(&base).unwrap();
         let p = base.join("desc.milk");
-        std::fs::write(&p, format!("name=desc").as_bytes()).unwrap();
+        std::fs::write(&p, b"name=desc").unwrap();
         let engine = DesktopPlayerEngine::from_preset_inputs(
             vec![PresetInput {
                 source_path: p,
@@ -1148,7 +1148,7 @@ mod tests {
             std::env::temp_dir().join(format!("milkrust-desktop-player-seekerr-{process_id}-{nanos}"));
         std::fs::create_dir_all(&base).unwrap();
         let p = base.join("nonexist.milk");
-        std::fs::write(&p, format!("name=nonexist").as_bytes()).unwrap();
+        std::fs::write(&p, b"name=nonexist").unwrap();
         let mut engine = DesktopPlayerEngine::from_preset_inputs(
             vec![PresetInput {
                 source_path: p,
@@ -1225,7 +1225,7 @@ mod tests {
             std::env::temp_dir().join(format!("milkrust-desktop-player-reset-{process_id}-{nanos}"));
         std::fs::create_dir_all(&base).unwrap();
         let p = base.join("reset.milk");
-        std::fs::write(&p, format!("name=reset").as_bytes()).unwrap();
+        std::fs::write(&p, b"name=reset").unwrap();
         let mut engine = DesktopPlayerEngine::from_preset_inputs(
             vec![PresetInput {
                 source_path: p,

@@ -50,6 +50,33 @@ pub struct MilkRustFrame {
     pub zoom: f64,
 }
 
+impl Default for MilkRustFrame {
+    fn default() -> Self {
+        Self {
+            background_alpha: 1.0,
+            bass: 0.0,
+            dx: 0.0,
+            dy: 0.0,
+            fft_bins: [0.0; 64],
+            mid: 0.0,
+            primitives: Vec::new(),
+            q_registers: [0.0; 64],
+            shape_count: 0,
+            shader_source: String::new(),
+            shader_texture_samplers: Vec::new(),
+            textured_primitives: Vec::new(),
+            rotation: 0.0,
+            treble: 0.0,
+            wave_color: (0, 0, 0),
+            waveform_bins: [0.0; 64],
+            wave_radius: 0.0,
+            waveform_count: 0,
+            warp_mesh: None,
+            zoom: 1.0,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct MilkRustCompositeFrame {
     pub blend_alpha: f64,
@@ -160,6 +187,26 @@ pub fn parse_milkrust_preset(source: &str) -> MilkRustPreset {
     preset
 }
 
+fn milkrust_preset_from_document(preset_document: &MilkRustPresetDocument) -> MilkRustPreset {
+    let get = |key: &str, default: f64| {
+        preset_document
+            .base_values
+            .get(key)
+            .and_then(|v| v.as_number())
+            .unwrap_or(default)
+    };
+    MilkRustPreset {
+        decay: get("decay", 0.89),
+        rot: get("rot", 0.012),
+        wave_a: get("wave_a", 0.86),
+        wave_b: get("wave_b", 0.92),
+        wave_g: get("wave_g", 0.58),
+        wave_r: get("wave_r", 0.16),
+        wave_scale: get("wave_scale", 1.25),
+        zoom: get("zoom", 1.02),
+    }
+}
+
 pub fn milkrust_frame(
     preset: &MilkRustPreset,
     time_seconds: f64,
@@ -253,37 +300,44 @@ fn milkrust_composite_alpha(preset: &MilkRustPresetDocument, index: usize) -> f6
     ))
 }
 
-fn normalize_milkrust_composite_mode(value: &str) -> String {
-    let normalized = value
-        .trim()
-        .to_ascii_lowercase()
-        .chars()
-        .filter(|ch| ch.is_ascii_alphanumeric())
-        .collect::<String>();
-    match normalized.as_str() {
-        "add" | "additive" | "plus" => "additive".to_string(),
-        "screen" => "screen".to_string(),
-        "multiply" | "mult" => "multiply".to_string(),
-        _ => "alpha".to_string(),
-    }
-}
+fn normalize_milkrust_composite_mode(value: &str) -> &'static str {
+     let trimmed = value.trim();
+     // Fast path: exact match on common values (case-insensitive)
+     let lower = trimmed.to_ascii_lowercase();
+     match lower.as_str() {
+         "add" | "additive" | "plus" => "additive",
+         "screen" => "screen",
+         "multiply" | "mult" => "multiply",
+         "alpha" | "alphablend" => "alpha",
+         _ => {
+             // Slow path: strip non-alphanumeric and match
+             let normalized: String = lower.chars().filter(|ch| ch.is_ascii_alphanumeric()).collect();
+             match normalized.as_str() {
+                 "add" | "additive" | "plus" => "additive",
+                 "screen" => "screen",
+                 "multiply" | "mult" => "multiply",
+                 _ => "alpha",
+             }
+         }
+     }
+ }
 
-fn milkrust_composite_mode(preset: &MilkRustPresetDocument, index: usize) -> String {
-    if index == 0 {
-        return "alpha".to_string();
-    }
-    let mode = [
-        "blend_mode",
-        "blendmode",
-        "composite_mode",
-        "compositemode",
-        "mode",
-    ]
-    .iter()
-    .find_map(|key| preset.base_values.get(*key).map(MilkRustValue::as_text))
-    .unwrap_or_default();
-    normalize_milkrust_composite_mode(&mode)
-}
+fn milkrust_composite_mode(preset: &MilkRustPresetDocument, index: usize) -> &'static str {
+     if index == 0 {
+         return "alpha";
+     }
+     let mode = [
+         "blend_mode",
+         "blendmode",
+         "composite_mode",
+         "compositemode",
+         "mode",
+     ]
+     .iter()
+     .find_map(|key| preset.base_values.get(*key).map(MilkRustValue::as_text))
+     .unwrap_or_default();
+     normalize_milkrust_composite_mode(&mode)
+ }
 
 fn milkrust_transition_seconds(parsed: &MilkRustPresetSet) -> f64 {
     parsed
@@ -343,106 +397,106 @@ fn create_milkrust_scope(
     mid: f64,
     treble: f64,
 ) -> BTreeMap<String, MilkRustValue> {
-    let mut scope = preset.base_values.clone();
-    for index in 1..=64 {
-        scope
-            .entry(format!("q{index}"))
-            .or_insert(MilkRustValue::Number(0.0));
-    }
-    scope.insert("bass".to_string(), MilkRustValue::Number(bass));
-    scope.insert("bass_att".to_string(), MilkRustValue::Number(bass));
-    scope.insert("mid".to_string(), MilkRustValue::Number(mid));
-    scope.insert("mid_att".to_string(), MilkRustValue::Number(mid));
-    scope.insert("treb".to_string(), MilkRustValue::Number(treble));
-    scope.insert("treb_att".to_string(), MilkRustValue::Number(treble));
-    scope.insert("time".to_string(), MilkRustValue::Number(time_seconds));
-    scope.insert(
-        "frame".to_string(),
-        MilkRustValue::Number((time_seconds * 60.0).floor()),
-    );
-    scope.insert("fps".to_string(), MilkRustValue::Number(60.0));
-    scope.insert(
-        "wave_r".to_string(),
-        MilkRustValue::Number(milkrust_base_number(&preset.base_values, "wave_r", 0.7)),
-    );
-    scope.insert(
-        "wave_g".to_string(),
-        MilkRustValue::Number(milkrust_base_number(&preset.base_values, "wave_g", 0.7)),
-    );
-    scope.insert(
-        "wave_b".to_string(),
-        MilkRustValue::Number(milkrust_base_number(&preset.base_values, "wave_b", 0.7)),
-    );
-    update_milkrust_scope_input(&mut scope, MilkRustInputState::default());
-    scope
-}
+     let mut scope = preset.base_values.clone();
+     for key in &Q_REGISTER_KEYS {
+         scope.entry(key.to_string()).or_insert(MilkRustValue::Number(0.0));
+     }
+     let insert_num = |scope: &mut BTreeMap<String, MilkRustValue>, key: &str, value: f64| {
+         scope.insert(key.to_string(), MilkRustValue::Number(value));
+     };
+     insert_num(&mut scope, "bass", bass);
+     insert_num(&mut scope, "bass_att", bass);
+     insert_num(&mut scope, "mid", mid);
+     insert_num(&mut scope, "mid_att", mid);
+     insert_num(&mut scope, "treb", treble);
+     insert_num(&mut scope, "treb_att", treble);
+     insert_num(&mut scope, "time", time_seconds);
+     insert_num(&mut scope, "frame", (time_seconds * 60.0).floor());
+     insert_num(&mut scope, "fps", 60.0);
+     insert_num(&mut scope, "wave_r", milkrust_base_number(&preset.base_values, "wave_r", 0.7));
+     insert_num(&mut scope, "wave_g", milkrust_base_number(&preset.base_values, "wave_g", 0.7));
+     insert_num(&mut scope, "wave_b", milkrust_base_number(&preset.base_values, "wave_b", 0.7));
+     update_milkrust_scope_input(&mut scope, MilkRustInputState::default());
+     scope
+ }
 
 #[allow(clippy::too_many_arguments)]
 fn update_milkrust_scope_audio(
-    scope: &mut BTreeMap<String, MilkRustValue>,
-    time_seconds: f64,
-    frame_index: f64,
-    bass: f64,
-    mid: f64,
-    treble: f64,
-    waveform: &[f64],
-    spectrum: &[f64],
-) {
-    scope.insert("bass".to_string(), MilkRustValue::Number(bass));
-    scope.insert("bass_att".to_string(), MilkRustValue::Number(bass));
-    scope.insert("mid".to_string(), MilkRustValue::Number(mid));
-    scope.insert("mid_att".to_string(), MilkRustValue::Number(mid));
-    scope.insert("treb".to_string(), MilkRustValue::Number(treble));
-    scope.insert("treb_att".to_string(), MilkRustValue::Number(treble));
-    scope.insert("time".to_string(), MilkRustValue::Number(time_seconds));
-    scope.insert("frame".to_string(), MilkRustValue::Number(frame_index));
-    scope.insert("fps".to_string(), MilkRustValue::Number(60.0));
-    scope.insert("sample_rate".to_string(), MilkRustValue::Number(44_100.0));
-    scope.insert("samplerate".to_string(), MilkRustValue::Number(44_100.0));
-    scope.insert("canvas_width".to_string(), MilkRustValue::Number(1.0));
-    scope.insert("canvas_height".to_string(), MilkRustValue::Number(1.0));
-    scope.insert("aspect".to_string(), MilkRustValue::Number(1.0));
-    if !waveform.is_empty() {
-        scope.insert(
-            "waveform_data".to_string(),
-            MilkRustValue::Text(milkrust_sample_text(waveform)),
-        );
-    }
-    if !spectrum.is_empty() {
-        scope.insert(
-            "frequency_data".to_string(),
-            MilkRustValue::Text(milkrust_sample_text(spectrum)),
-        );
-    }
-}
+     scope: &mut BTreeMap<String, MilkRustValue>,
+     time_seconds: f64,
+     frame_index: f64,
+     bass: f64,
+     mid: f64,
+     treble: f64,
+     waveform: &[f64],
+     spectrum: &[f64],
+ ) {
+     let insert_num =
+         |scope: &mut BTreeMap<String, MilkRustValue>, key: &str, value: f64| {
+             scope.insert(key.to_string(), MilkRustValue::Number(value));
+         };
+     insert_num(scope, "bass", bass);
+     insert_num(scope, "bass_att", bass);
+     insert_num(scope, "mid", mid);
+     insert_num(scope, "mid_att", mid);
+     insert_num(scope, "treb", treble);
+     insert_num(scope, "treb_att", treble);
+     insert_num(scope, "time", time_seconds);
+     insert_num(scope, "frame", frame_index);
+     insert_num(scope, "fps", 60.0);
+     insert_num(scope, "sample_rate", 44_100.0);
+     insert_num(scope, "samplerate", 44_100.0);
+     insert_num(scope, "canvas_width", 1.0);
+     insert_num(scope, "canvas_height", 1.0);
+     insert_num(scope, "aspect", 1.0);
+     if !waveform.is_empty() {
+         scope.insert(
+             "waveform_data".to_string(),
+             MilkRustValue::Text(milkrust_sample_text(waveform)),
+         );
+     }
+     if !spectrum.is_empty() {
+         scope.insert(
+             "frequency_data".to_string(),
+             MilkRustValue::Text(milkrust_sample_text(spectrum)),
+         );
+     }
+ }
 
 fn update_milkrust_scope_input(
-    scope: &mut BTreeMap<String, MilkRustValue>,
-    input: MilkRustInputState,
-) {
-    scope.insert(
-        "mouse_down".to_string(),
-        MilkRustValue::Number(input.mouse_down),
-    );
-    scope.insert(
-        "mouse_dx".to_string(),
-        MilkRustValue::Number(input.mouse_dx),
-    );
-    scope.insert(
-        "mouse_dy".to_string(),
-        MilkRustValue::Number(input.mouse_dy),
-    );
-    scope.insert("mouse_x".to_string(), MilkRustValue::Number(input.mouse_x));
-    scope.insert("mouse_y".to_string(), MilkRustValue::Number(input.mouse_y));
-}
+     scope: &mut BTreeMap<String, MilkRustValue>,
+     input: MilkRustInputState,
+ ) {
+     let insert_num =
+         |scope: &mut BTreeMap<String, MilkRustValue>, key: &str, value: f64| {
+             scope.insert(key.to_string(), MilkRustValue::Number(value));
+         };
+     insert_num(scope, "mouse_down", input.mouse_down);
+     insert_num(scope, "mouse_dx", input.mouse_dx);
+     insert_num(scope, "mouse_dy", input.mouse_dy);
+     insert_num(scope, "mouse_x", input.mouse_x);
+     insert_num(scope, "mouse_y", input.mouse_y);
+ }
 
 fn milkrust_sample_text(values: &[f64]) -> String {
-    values
-        .iter()
-        .map(|value| format!("{:.6}", value.clamp(-1.0, 1.0)))
-        .collect::<Vec<_>>()
-        .join(",")
-}
+     if values.is_empty() {
+         return String::new();
+     }
+     let mut result = String::with_capacity(values.len() * 8);
+     for (i, value) in values.iter().enumerate() {
+         if i > 0 {
+             result.push(',');
+         }
+         let clamped = value.clamp(-1.0, 1.0);
+         let formatted = if clamped.fract().abs() < 1e-6 {
+             format!("{}", clamped as i64)
+         } else {
+             format!("{:.6}", clamped)
+         };
+         result.push_str(&formatted);
+     }
+     result
+ }
 
 pub fn parse_milkrust_sample_csv(source: &str) -> Vec<f64> {
     source
@@ -480,10 +534,20 @@ fn milkrust_sample_bins(values: &[f64]) -> [f64; 64] {
     bins
 }
 
+const Q_REGISTER_KEYS: [&str; 64] = [
+    "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10",
+    "q11", "q12", "q13", "q14", "q15", "q16", "q17", "q18", "q19", "q20",
+    "q21", "q22", "q23", "q24", "q25", "q26", "q27", "q28", "q29", "q30",
+    "q31", "q32", "q33", "q34", "q35", "q36", "q37", "q38", "q39", "q40",
+    "q41", "q42", "q43", "q44", "q45", "q46", "q47", "q48", "q49", "q50",
+    "q51", "q52", "q53", "q54", "q55", "q56", "q57", "q58", "q59", "q60",
+    "q61", "q62", "q63", "q64",
+];
+
 fn milkrust_q_registers(scope: &BTreeMap<String, MilkRustValue>) -> [f64; 64] {
     let mut registers = [0.0; 64];
-    for index in 1..=64 {
-        registers[index - 1] = milkrust_scope_number(scope, &format!("q{index}"), 0.0);
+    for (index, key) in Q_REGISTER_KEYS.iter().enumerate() {
+        registers[index] = milkrust_scope_number(scope, key, 0.0);
     }
     registers
 }
@@ -596,7 +660,6 @@ pub fn milkrust_frame_from_source(
 
 #[allow(clippy::too_many_arguments)]
 fn build_milkrust_frame_from_scope(
-    source: &str,
     preset_document: &MilkRustPresetDocument,
     scope: &BTreeMap<String, MilkRustValue>,
     time_seconds: f64,
@@ -606,12 +669,18 @@ fn build_milkrust_frame_from_scope(
     waveform: &[f64],
     spectrum: &[f64],
 ) -> MilkRustFrame {
-    let fallback = parse_milkrust_preset(source);
-    let wave_r = clamp_unit(milkrust_scope_number(scope, "wave_r", fallback.wave_r));
-    let wave_g = clamp_unit(milkrust_scope_number(scope, "wave_g", fallback.wave_g));
-    let wave_b = clamp_unit(milkrust_scope_number(scope, "wave_b", fallback.wave_b));
+    let fallback = |key: &str, default: f64| {
+        preset_document
+            .base_values
+            .get(key)
+            .and_then(|v| v.as_number())
+            .unwrap_or(default)
+    };
+    let wave_r = clamp_unit(milkrust_scope_number(scope, "wave_r", fallback("wave_r", 0.16)));
+    let wave_g = clamp_unit(milkrust_scope_number(scope, "wave_g", fallback("wave_g", 0.92)));
+    let wave_b = clamp_unit(milkrust_scope_number(scope, "wave_b", fallback("wave_b", 0.58)));
     let wave_scale = clamp_range(
-        milkrust_scope_number(scope, "wave_scale", fallback.wave_scale),
+        milkrust_scope_number(scope, "wave_scale", fallback("wave_scale", 1.25)),
         0.2,
         3.0,
     );
@@ -642,7 +711,7 @@ fn build_milkrust_frame_from_scope(
     let warp_mesh = create_milkrust_warp_mesh(preset_document, scope);
     MilkRustFrame {
         background_alpha: clamp_range(
-            1.0 - milkrust_scope_number(scope, "decay", fallback.decay),
+            1.0 - milkrust_scope_number(scope, "decay", fallback("decay", 0.89)),
             0.01,
             0.5,
         ),
@@ -659,7 +728,7 @@ fn build_milkrust_frame_from_scope(
             .filter(|shape| milkrust_base_number(&shape.base_values, "enabled", 0.0) > 0.0)
             .count(),
         rotation: clamp_range(
-            milkrust_scope_number(scope, "rot", fallback.rot),
+            milkrust_scope_number(scope, "rot", fallback("rot", 0.012)),
             -0.5,
             0.5,
         ) + (treble - 0.5) * 0.02,
@@ -681,7 +750,7 @@ fn build_milkrust_frame_from_scope(
             .count(),
         warp_mesh,
         zoom: clamp_range(
-            milkrust_scope_number(scope, "zoom", fallback.zoom),
+            milkrust_scope_number(scope, "zoom", fallback("zoom", 1.02)),
             0.001,
             1.8,
         ),
@@ -690,93 +759,94 @@ fn build_milkrust_frame_from_scope(
 
 #[allow(clippy::too_many_arguments)]
 fn build_milkrust_frame_from_runtime_scope(
-    source: &str,
-    preset_document: &mut MilkRustPresetDocument,
-    scope: &mut BTreeMap<String, MilkRustValue>,
-    time_seconds: f64,
-    bass: f64,
-    mid: f64,
-    treble: f64,
-    waveform: &[f64],
-    spectrum: &[f64],
-) -> MilkRustFrame {
-    let fallback = parse_milkrust_preset(source);
-    let wave_r = clamp_unit(milkrust_scope_number(scope, "wave_r", fallback.wave_r));
-    let wave_g = clamp_unit(milkrust_scope_number(scope, "wave_g", fallback.wave_g));
-    let wave_b = clamp_unit(milkrust_scope_number(scope, "wave_b", fallback.wave_b));
-    let wave_scale = clamp_range(
-        milkrust_scope_number(scope, "wave_scale", fallback.wave_scale),
-        0.2,
-        3.0,
-    );
-    let pulse = (time_seconds * 1.7).sin() * 0.5 + 0.5;
-    let wave_color = (
-        (wave_r * 255.0).min(255.0) as u8,
-        (wave_g * 255.0).min(255.0) as u8,
-        (wave_b * 255.0).min(255.0) as u8,
-    );
-    let (primitives, textured_primitives) = create_milkrust_frame_primitives_and_textures_stateful(
-        preset_document,
-        scope,
-        time_seconds,
-        bass,
-        mid,
-        treble,
-        waveform,
-        spectrum,
-        [wave_r, wave_g, wave_b],
-    );
-    let q_registers = milkrust_q_registers(scope);
-    let fft_bins = milkrust_sample_bins(spectrum);
-    let waveform_bins = milkrust_sample_bins(waveform);
-    let warp_mesh = create_milkrust_warp_mesh(preset_document, scope);
-    MilkRustFrame {
-        background_alpha: clamp_range(
-            1.0 - milkrust_scope_number(scope, "decay", fallback.decay),
-            0.01,
-            0.5,
-        ),
-        bass,
-        dx: clamp_range(milkrust_scope_number(scope, "dx", 0.0), -0.5, 0.5),
-        dy: clamp_range(milkrust_scope_number(scope, "dy", 0.0), -0.5, 0.5),
-        fft_bins,
-        mid,
-        primitives,
-        q_registers,
-        shape_count: preset_document
-            .shapes
-            .iter()
-            .filter(|shape| milkrust_base_number(&shape.base_values, "enabled", 0.0) > 0.0)
-            .count(),
-        rotation: clamp_range(
-            milkrust_scope_number(scope, "rot", fallback.rot),
-            -0.5,
-            0.5,
-        ) + (treble - 0.5) * 0.02,
-        shader_source: translated_milkrust_shader_source(preset_document),
-        shader_texture_samplers: milkrust_shader_texture_samplers(preset_document),
-        textured_primitives,
-        treble,
-        wave_color,
-        waveform_bins,
-        wave_radius: clamp_range(
-            0.18 + wave_scale * 0.09 + bass * 0.12 + pulse * 0.04,
-            0.12,
-            0.68,
-        ),
-        waveform_count: preset_document
-            .waves
-            .iter()
-            .filter(|wave| milkrust_base_number(&wave.base_values, "enabled", 0.0) > 0.0)
-            .count(),
-        warp_mesh,
-        zoom: clamp_range(
-            milkrust_scope_number(scope, "zoom", fallback.zoom),
-            0.001,
-            1.8,
-        ),
-    }
-}
+     preset_document: &mut MilkRustPresetDocument,
+     scope: &mut BTreeMap<String, MilkRustValue>,
+     translated_shader_source: Option<&str>,
+     shader_texture_samplers: &[String],
+     time_seconds: f64,
+     bass: f64,
+     mid: f64,
+     treble: f64,
+     waveform: &[f64],
+     spectrum: &[f64],
+ ) -> MilkRustFrame {
+     let preset = milkrust_preset_from_document(preset_document);
+     let wave_r = clamp_unit(milkrust_scope_number(scope, "wave_r", preset.wave_r));
+     let wave_g = clamp_unit(milkrust_scope_number(scope, "wave_g", preset.wave_g));
+     let wave_b = clamp_unit(milkrust_scope_number(scope, "wave_b", preset.wave_b));
+     let wave_scale = clamp_range(
+         milkrust_scope_number(scope, "wave_scale", preset.wave_scale),
+         0.2,
+         3.0,
+     );
+     let pulse = (time_seconds * 1.7).sin() * 0.5 + 0.5;
+     let wave_color = (
+         (wave_r * 255.0).min(255.0) as u8,
+         (wave_g * 255.0).min(255.0) as u8,
+         (wave_b * 255.0).min(255.0) as u8,
+     );
+     let (primitives, textured_primitives) = create_milkrust_frame_primitives_and_textures_stateful(
+         preset_document,
+         scope,
+         time_seconds,
+         bass,
+         mid,
+         treble,
+         waveform,
+         spectrum,
+         [wave_r, wave_g, wave_b],
+     );
+     let q_registers = milkrust_q_registers(scope);
+     let fft_bins = milkrust_sample_bins(spectrum);
+     let waveform_bins = milkrust_sample_bins(waveform);
+     let warp_mesh = create_milkrust_warp_mesh(preset_document, scope);
+     MilkRustFrame {
+         background_alpha: clamp_range(
+             1.0 - milkrust_scope_number(scope, "decay", preset.decay),
+             0.01,
+             0.5,
+         ),
+         bass,
+         dx: clamp_range(milkrust_scope_number(scope, "dx", 0.0), -0.5, 0.5),
+         dy: clamp_range(milkrust_scope_number(scope, "dy", 0.0), -0.5, 0.5),
+         fft_bins,
+         mid,
+         primitives,
+         q_registers,
+         shape_count: preset_document
+             .shapes
+             .iter()
+             .filter(|shape| milkrust_base_number(&shape.base_values, "enabled", 0.0) > 0.0)
+             .count(),
+         rotation: clamp_range(
+             milkrust_scope_number(scope, "rot", preset.rot),
+             -0.5,
+             0.5,
+         ) + (treble - 0.5) * 0.02,
+         shader_source: translated_shader_source.unwrap_or_default().to_string(),
+         shader_texture_samplers: shader_texture_samplers.to_vec(),
+         textured_primitives,
+         treble,
+         wave_color,
+         waveform_bins,
+         wave_radius: clamp_range(
+             0.18 + wave_scale * 0.09 + bass * 0.12 + pulse * 0.04,
+             0.12,
+             0.68,
+         ),
+         waveform_count: preset_document
+             .waves
+             .iter()
+             .filter(|wave| milkrust_base_number(&wave.base_values, "enabled", 0.0) > 0.0)
+             .count(),
+         warp_mesh,
+         zoom: clamp_range(
+             milkrust_scope_number(scope, "zoom", preset.zoom),
+             0.001,
+             1.8,
+         ),
+     }
+ }
 
 pub fn milkrust_frame_from_source_with_audio(
     source: &str,
@@ -841,7 +911,6 @@ pub fn milkrust_frame_from_source_with_audio_and_input(
         }
     }
     build_milkrust_frame_from_scope(
-        source,
         preset_document,
         &scope,
         time_seconds,
@@ -924,9 +993,8 @@ pub fn milkrust_frame_set_from_source_with_audio_and_input(
             }
             MilkRustCompositeFrame {
                 blend_alpha: milkrust_composite_alpha(preset_document, index),
-                composite_mode: milkrust_composite_mode(preset_document, index),
+                composite_mode: milkrust_composite_mode(preset_document, index).to_string(),
                 frame: build_milkrust_frame_from_scope(
-                    source,
                     preset_document,
                     &scope,
                     time_seconds,
@@ -967,11 +1035,13 @@ pub fn milkrust_frame_set_from_source(
 
 #[derive(Clone, Debug, Default)]
 pub struct MilkRustRuntime {
-    initialized: bool,
-    preset_document: Option<MilkRustPresetDocument>,
-    scope: BTreeMap<String, MilkRustValue>,
-    source: String,
-}
+     initialized: bool,
+     preset_document: Option<MilkRustPresetDocument>,
+     scope: BTreeMap<String, MilkRustValue>,
+     source: String,
+     translated_shader_source: Option<String>,
+     shader_texture_samplers: Vec<String>,
+ }
 
 impl MilkRustRuntime {
     pub fn render_source(
@@ -1008,7 +1078,7 @@ impl MilkRustRuntime {
         )
     }
 
-    #[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments)]
     pub fn render_source_with_audio_and_input(
         &mut self,
         source: &str,
@@ -1033,6 +1103,9 @@ impl MilkRustRuntime {
                 );
             };
             self.scope = create_milkrust_scope(&preset_document, time_seconds, bass, mid, treble);
+            self.translated_shader_source = translated_milkrust_shader_source(&preset_document)
+                .into();
+            self.shader_texture_samplers = milkrust_shader_texture_samplers(&preset_document);
             self.source = source.to_string();
             self.preset_document = Some(preset_document);
             self.initialized = false;
@@ -1072,9 +1145,10 @@ impl MilkRustRuntime {
         }
 
         let frame = build_milkrust_frame_from_runtime_scope(
-            &self.source,
             &mut preset_document,
             &mut self.scope,
+            self.translated_shader_source.as_deref(),
+            self.shader_texture_samplers.as_slice(),
             time_seconds,
             bass,
             mid,
@@ -1089,14 +1163,19 @@ impl MilkRustRuntime {
 
 #[derive(Clone, Debug, Default)]
 pub struct MilkRustFrameSetRuntime {
-    initialized: Vec<bool>,
-    preset_documents: Vec<MilkRustPresetDocument>,
-    scopes: Vec<BTreeMap<String, MilkRustValue>>,
-    source: String,
-}
+     initialized: Vec<bool>,
+     preset_documents: Vec<MilkRustPresetDocument>,
+     scopes: Vec<BTreeMap<String, MilkRustValue>>,
+     source: String,
+     cached_preset_set: Option<MilkRustPresetSet>,
+     translated_shader_source: Option<String>,
+     shader_texture_samplers: Vec<String>,
+ }
 
 impl MilkRustFrameSetRuntime {
-    pub fn render_source(
+
+
+     pub fn render_source(
         &mut self,
         source: &str,
         time_seconds: f64,
@@ -1142,83 +1221,88 @@ impl MilkRustFrameSetRuntime {
         spectrum: &[f64],
         input: MilkRustInputState,
     ) -> MilkRustFrameSet {
-        if self.source != source || self.preset_documents.is_empty() {
-            let parsed = parse_milkrust_preset_set(
-                source,
-                source.to_ascii_lowercase().contains("[preset01]"),
-            );
-            self.initialized = vec![false; parsed.presets.len()];
-            self.scopes = parsed
-                .presets
-                .iter()
-                .map(|preset| create_milkrust_scope(preset, time_seconds, bass, mid, treble))
-                .collect();
-            self.preset_documents = parsed.presets;
-            self.source = source.to_string();
-        }
+if self.source != source || self.preset_documents.is_empty() {
+             let parsed = parse_milkrust_preset_set(
+                 source,
+                 source.to_ascii_lowercase().contains("[preset01]"),
+             );
+             self.cached_preset_set = Some(parsed.clone());
+             self.initialized = vec![false; parsed.presets.len()];
+             self.scopes = parsed
+                 .presets
+                 .iter()
+                 .map(|preset| create_milkrust_scope(preset, time_seconds, bass, mid, treble))
+                 .collect();
+             let preset_document = parsed.presets.first().cloned().unwrap_or_else(|| MilkRustPresetDocument::new(source, 0));
+             self.translated_shader_source =
+                 translated_milkrust_shader_source(&preset_document).into();
+             self.shader_texture_samplers = milkrust_shader_texture_samplers(&preset_document);
+             self.preset_documents = parsed.presets;
+             self.source = source.to_string();
+         }
 
-        let parsed =
-            parse_milkrust_preset_set(source, source.to_ascii_lowercase().contains("[preset01]"));
-        let title = milkrust_preset_set_title(&parsed);
-        let transition_mode = milkrust_transition_mode(&parsed);
-        let transition_seconds = milkrust_transition_seconds(&parsed);
-        let mut entries = Vec::with_capacity(self.preset_documents.len());
+         let preset_set = self.cached_preset_set.as_ref().unwrap();
+         let title = milkrust_preset_set_title(preset_set);
+         let transition_mode = milkrust_transition_mode(preset_set);
+         let transition_seconds = milkrust_transition_seconds(preset_set);
+         let mut entries = Vec::with_capacity(self.preset_documents.len());
 
-        for index in 0..self.preset_documents.len() {
-            let preset_document = &mut self.preset_documents[index];
-            let scope = &mut self.scopes[index];
-            let next_frame = milkrust_scope_number(scope, "frame", 0.0) + 1.0;
-            update_milkrust_scope_audio(
-                scope,
-                time_seconds,
-                next_frame,
-                bass,
-                mid,
-                treble,
-                waveform,
-                spectrum,
-            );
-            update_milkrust_scope_input(scope, input);
-            if !self.initialized.get(index).copied().unwrap_or_default() {
-                if !preset_document.equations.init.trim().is_empty() {
-                    if let Ok(next_scope) =
-                        evaluate_milkrust_equations(&preset_document.equations.init, scope)
-                    {
-                        *scope = next_scope;
-                    }
-                }
-                if let Some(initialized) = self.initialized.get_mut(index) {
-                    *initialized = true;
-                }
-            }
-            if !preset_document.equations.per_frame.trim().is_empty() {
-                if let Ok(next_scope) =
-                    evaluate_milkrust_equations(&preset_document.equations.per_frame, scope)
-                {
-                    *scope = next_scope;
-                }
-            }
-            let blend_alpha = milkrust_composite_alpha(preset_document, index);
-            let composite_mode = milkrust_composite_mode(preset_document, index);
-            let title = if preset_document.title.trim().is_empty() {
-                format!("Preset {}", index + 1)
-            } else {
-                preset_document.title.clone()
-            };
-            let frame = build_milkrust_frame_from_runtime_scope(
-                source,
-                preset_document,
-                scope,
-                time_seconds,
-                bass,
-                mid,
-                treble,
-                waveform,
-                spectrum,
-            );
+         for index in 0..self.preset_documents.len() {
+             let preset_document = &mut self.preset_documents[index];
+             let scope = &mut self.scopes[index];
+             let next_frame = milkrust_scope_number(scope, "frame", 0.0) + 1.0;
+             update_milkrust_scope_audio(
+                 scope,
+                 time_seconds,
+                 next_frame,
+                 bass,
+                 mid,
+                 treble,
+                 waveform,
+                 spectrum,
+             );
+             update_milkrust_scope_input(scope, input);
+             if !self.initialized.get(index).copied().unwrap_or_default() {
+                 if !preset_document.equations.init.trim().is_empty() {
+                     if let Ok(next_scope) =
+                         evaluate_milkrust_equations(&preset_document.equations.init, scope)
+                     {
+                         *scope = next_scope;
+                     }
+                 }
+                 if let Some(initialized) = self.initialized.get_mut(index) {
+                     *initialized = true;
+                 }
+             }
+             if !preset_document.equations.per_frame.trim().is_empty() {
+                 if let Ok(next_scope) =
+                     evaluate_milkrust_equations(&preset_document.equations.per_frame, scope)
+                 {
+                     *scope = next_scope;
+                 }
+             }
+             let blend_alpha = milkrust_composite_alpha(preset_document, index);
+             let composite_mode = milkrust_composite_mode(preset_document, index);
+             let title = if preset_document.title.trim().is_empty() {
+                 format!("Preset {}", index + 1)
+             } else {
+                 preset_document.title.clone()
+             };
+ let frame = build_milkrust_frame_from_runtime_scope(
+                  preset_document,
+                 scope,
+                 self.translated_shader_source.as_deref(),
+                 &self.shader_texture_samplers,
+                 time_seconds,
+                 bass,
+                 mid,
+                 treble,
+                 waveform,
+                 spectrum,
+             );
             entries.push(MilkRustCompositeFrame {
                 blend_alpha,
-                composite_mode,
+composite_mode: composite_mode.to_string(),
                 frame,
                 index,
                 title,
@@ -4859,26 +4943,26 @@ fn milkrust_pseudo_random_unit(scope: &BTreeMap<String, MilkRustValue>, counter:
 
 const MILKRUST_MAX_LOOP_ITERATIONS: usize = 200_000;
 
-struct MilkRustExpressionParser {
-    rand_counter: usize,
-    scope: BTreeMap<String, MilkRustValue>,
-    tokens: Vec<MilkRustToken>,
-    index: usize,
-}
+struct MilkRustExpressionParser<'a> {
+     rand_counter: usize,
+     scope: BTreeMap<String, MilkRustValue>,
+     tokens: &'a [MilkRustToken],
+     index: usize,
+ }
 
-impl MilkRustExpressionParser {
-    fn new(
-        tokens: Vec<MilkRustToken>,
-        scope: BTreeMap<String, MilkRustValue>,
-        rand_counter: usize,
-    ) -> Self {
-        Self {
-            rand_counter,
-            scope,
-            tokens,
-            index: 0,
-        }
-    }
+ impl<'a> MilkRustExpressionParser<'a> {
+     fn new(
+         tokens: &'a [MilkRustToken],
+         scope: BTreeMap<String, MilkRustValue>,
+         rand_counter: usize,
+     ) -> Self {
+         Self {
+             rand_counter,
+             scope,
+             tokens,
+             index: 0,
+         }
+     }
 
     fn peek_op(&self) -> Option<&str> {
         match self.tokens.get(self.index) {
@@ -4887,54 +4971,55 @@ impl MilkRustExpressionParser {
         }
     }
 
-    fn remaining_call_args(&mut self, name: &str) -> Result<Vec<Vec<MilkRustToken>>, String> {
-        let mut args = Vec::new();
-        let mut current = Vec::new();
-        let mut depth = 0usize;
-        while let Some(token) = self.consume() {
-            match &token {
-                MilkRustToken::Op(value) if value == "(" => {
-                    depth += 1;
-                    current.push(token);
-                }
-                MilkRustToken::Op(value) if value == ")" => {
-                    if depth == 0 {
-                        if !current.is_empty() {
-                            args.push(current);
-                        }
-                        return Ok(args);
-                    }
-                    depth -= 1;
-                    current.push(token);
-                }
-                MilkRustToken::Op(value) if (value == "," || value == ";") && depth == 0 => {
-                    args.push(current);
-                    current = Vec::new();
-                }
-                _ => current.push(token),
-            }
-        }
-        Err(format!("Unclosed function call: {name}"))
-    }
+fn remaining_call_args(&mut self, name: &str) -> Result<Vec<&'a [MilkRustToken]>, String> {
+         let mut args: Vec<&[MilkRustToken]> = Vec::new();
+         let mut depth = 0usize;
+         let mut arg_start = self.index;
 
-    fn evaluate_arg_tokens(&mut self, tokens: &[MilkRustToken]) -> Result<f64, String> {
-        if let Some((target_tokens, operator, value_tokens)) = self.assignment_arg_parts(tokens) {
-            let Some(key) = self.lvalue_key(target_tokens)? else {
-                return Err(format!("{operator} requires a variable or buffer target."));
-            };
-            let current = milkrust_number(&self.scope, &key);
-            let next = self.evaluate_arg_tokens(value_tokens)?;
-            let value = apply_milkrust_assignment_operator(current, operator, next);
-            self.scope.insert(key, MilkRustValue::Number(value));
-            return Ok(value);
-        }
-        let mut parser =
-            MilkRustExpressionParser::new(tokens.to_vec(), self.scope.clone(), self.rand_counter);
-        let value = parser.parse()?;
-        self.scope = parser.scope;
-        self.rand_counter = parser.rand_counter;
-        Ok(value)
-    }
+         while self.index < self.tokens.len() {
+             let token = &self.tokens[self.index];
+             self.index += 1;
+
+             match token {
+                 MilkRustToken::Op(value) if value == "(" => {
+                     depth += 1;
+                 }
+                 MilkRustToken::Op(value) if value == ")" => {
+                     if depth == 0 {
+                         if arg_start + 1 < self.index {
+                             args.push(&self.tokens[arg_start..self.index - 1]);
+                         }
+                         return Ok(args);
+                     }
+                     depth -= 1;
+                 }
+                 MilkRustToken::Op(value) if (value == "," || value == ";") && depth == 0 => {
+                     args.push(&self.tokens[arg_start..self.index - 1]);
+                     arg_start = self.index;
+                 }
+                 _ => {}
+             }
+         }
+         Err(format!("Unclosed function call: {name}"))
+     }
+
+fn evaluate_arg_tokens(&mut self, tokens: &[MilkRustToken]) -> Result<f64, String> {
+         if let Some((target_tokens, operator, value_tokens)) = self.assignment_arg_parts(tokens) {
+             let Some(key) = self.lvalue_key(target_tokens)? else {
+                 return Err(format!("{operator} requires a variable or buffer target."));
+             };
+             let current = milkrust_number(&self.scope, &key);
+             let next = self.evaluate_arg_tokens(value_tokens)?;
+             let value = apply_milkrust_assignment_operator(current, operator, next);
+             self.scope.insert(key, MilkRustValue::Number(value));
+             return Ok(value);
+         }
+         let mut parser = MilkRustExpressionParser::new(tokens, self.scope.clone(), self.rand_counter);
+         let value = parser.parse()?;
+         self.scope = parser.scope;
+         self.rand_counter = parser.rand_counter;
+         Ok(value)
+     }
 
     fn assignment_arg_parts<'b>(
         &self,
@@ -4984,71 +5069,71 @@ impl MilkRustExpressionParser {
         }
     }
 
-    fn call_special_function(
-        &mut self,
-        name: &str,
-        args: &[Vec<MilkRustToken>],
-    ) -> Result<Option<f64>, String> {
+fn call_special_function(
+         &mut self,
+         name: &str,
+         args: &[&[MilkRustToken]],
+     ) -> Result<Option<f64>, String> {
         match name {
-            "assign" => {
-                if args.len() < 2 {
-                    return Ok(Some(0.0));
-                }
-                let value = self.evaluate_arg_tokens(&args[1])?;
-                self.assign_arg_tokens(&args[0], value).map(Some)
-            }
-            "exec2" | "exec3" => {
-                let mut first = 0.0;
-                for (index, arg) in args.iter().enumerate() {
-                    let value = self.evaluate_arg_tokens(arg)?;
-                    if index == 0 {
-                        first = value;
-                    }
-                }
-                Ok(Some(first))
-            }
-            "loop" => {
-                if args.is_empty() {
-                    return Ok(Some(0.0));
-                }
-                let count = self
-                    .evaluate_arg_tokens(&args[0])?
-                    .trunc()
-                    .clamp(0.0, MILKRUST_MAX_LOOP_ITERATIONS as f64)
-                    as usize;
-                let mut last = 0.0;
-                for _ in 0..count {
-                    for arg in &args[1..] {
-                        last = self.evaluate_arg_tokens(arg)?;
-                    }
-                }
-                Ok(Some(last))
-            }
-            "while" => {
-                if args.is_empty() {
-                    return Ok(Some(0.0));
-                }
-                let mut last = 0.0;
-                for _ in 0..MILKRUST_MAX_LOOP_ITERATIONS {
-                    let condition = self.evaluate_milkrust_while_condition(&args[0])?;
-                    if condition == 0.0 {
-                        break;
-                    }
-                    last = condition;
-                    for arg in &args[1..] {
-                        last = self.evaluate_arg_tokens(arg)?;
-                    }
-                }
-                Ok(Some(last))
-            }
-            "memcpy" => {
-                if args.len() < 3 {
-                    return Ok(Some(0.0));
-                }
-                let dest = self.evaluate_arg_tokens(&args[0])?.trunc().max(0.0) as usize;
-                let source = self.evaluate_arg_tokens(&args[1])?.trunc().max(0.0) as usize;
-                let count = self
-                    .evaluate_arg_tokens(&args[2])?
+"assign" => {
+                 if args.len() < 2 {
+                     return Ok(Some(0.0));
+                 }
+                 let value = self.evaluate_arg_tokens(args[1])?;
+                 self.assign_arg_tokens(args[0], value).map(Some)
+             }
+             "exec2" | "exec3" => {
+                 let mut first = 0.0;
+                 for (index, arg) in args.iter().enumerate() {
+                     let value = self.evaluate_arg_tokens(arg)?;
+                     if index == 0 {
+                         first = value;
+                     }
+                 }
+                 Ok(Some(first))
+             }
+             "loop" => {
+                 if args.is_empty() {
+                     return Ok(Some(0.0));
+                 }
+                 let count = self
+                     .evaluate_arg_tokens(args[0])?
+                     .trunc()
+                     .clamp(0.0, MILKRUST_MAX_LOOP_ITERATIONS as f64)
+                     as usize;
+                 let mut last = 0.0;
+                 for _ in 0..count {
+                     for arg in &args[1..] {
+                         last = self.evaluate_arg_tokens(arg)?;
+                     }
+                 }
+                 Ok(Some(last))
+             }
+             "while" => {
+                 if args.is_empty() {
+                     return Ok(Some(0.0));
+                 }
+                 let mut last = 0.0;
+                 for _ in 0..MILKRUST_MAX_LOOP_ITERATIONS {
+                     let condition = self.evaluate_milkrust_while_condition(args[0])?;
+                     if condition == 0.0 {
+                         break;
+                     }
+                     last = condition;
+                     for arg in &args[1..] {
+                         last = self.evaluate_arg_tokens(arg)?;
+                     }
+                 }
+                 Ok(Some(last))
+             }
+             "memcpy" => {
+                 if args.len() < 3 {
+                     return Ok(Some(0.0));
+                 }
+                 let dest = self.evaluate_arg_tokens(args[0])?.trunc().max(0.0) as usize;
+                 let source = self.evaluate_arg_tokens(args[1])?.trunc().max(0.0) as usize;
+                 let count = self
+                     .evaluate_arg_tokens(args[2])?
                     .trunc()
                     .clamp(0.0, MILKRUST_MAX_LOOP_ITERATIONS as f64)
                     as usize;
@@ -5087,7 +5172,7 @@ impl MilkRustExpressionParser {
                 if args.is_empty() {
                     return Ok(0.0);
                 }
-                let condition = self.evaluate_arg_tokens(&args[0])?;
+                let condition = self.evaluate_arg_tokens(args[0])?;
                 if condition != 0.0 {
                     for arg in &args[1..] {
                         self.evaluate_arg_tokens(arg)?;
@@ -5116,30 +5201,30 @@ impl MilkRustExpressionParser {
         token
     }
 
-    fn parse(&mut self) -> Result<f64, String> {
-        if self.index == 0 {
-            if let Some((assignment_index, operator)) =
-                find_milkrust_top_level_assignment_token(&self.tokens)
-            {
-                let target_tokens = self.tokens[..assignment_index].to_vec();
-                let expression_tokens = self.tokens[assignment_index + 1..].to_vec();
-                let current = self
-                    .lvalue_key(&target_tokens)?
-                    .map(|key| milkrust_number(&self.scope, &key))
-                    .unwrap_or(0.0);
-                let next = self.evaluate_arg_tokens(&expression_tokens)?;
-                let value = apply_milkrust_assignment_operator(current, operator, next);
-                self.assign_arg_tokens(&target_tokens, value)?;
-                self.index = self.tokens.len();
-                return Ok(value);
-            }
-        }
-        let value = self.parse_conditional()?;
-        if self.index < self.tokens.len() {
-            return Err("Unexpected trailing MilkRust token".to_string());
-        }
-        Ok(value)
-    }
+fn parse(&mut self) -> Result<f64, String> {
+         if self.index == 0 {
+             if let Some((assignment_index, operator)) =
+                 find_milkrust_top_level_assignment_token(self.tokens)
+{
+                  let target_tokens = &self.tokens[..assignment_index];
+                  let expression_tokens = &self.tokens[assignment_index + 1..];
+                  let current = self
+                      .lvalue_key(target_tokens)?
+                      .map(|key| milkrust_number(&self.scope, &key))
+                      .unwrap_or(0.0);
+                  let next = self.evaluate_arg_tokens(expression_tokens)?;
+                  let value = apply_milkrust_assignment_operator(current, operator, next);
+                  self.assign_arg_tokens(target_tokens, value)?;
+                 self.index = self.tokens.len();
+                 return Ok(value);
+             }
+         }
+         let value = self.parse_conditional()?;
+         if self.index < self.tokens.len() {
+             return Err("Unexpected trailing MilkRust token".to_string());
+         }
+         Ok(value)
+     }
 
     fn parse_primary(&mut self) -> Result<f64, String> {
         match self.consume() {
@@ -5515,32 +5600,31 @@ fn find_milkrust_top_level_assignment_token(
     None
 }
 
-fn split_milkrust_call_tokens(tokens: &[MilkRustToken]) -> Vec<Vec<MilkRustToken>> {
-    let mut args = Vec::new();
-    let mut current = Vec::new();
-    let mut depth = 0usize;
-    for token in tokens {
-        match token {
-            MilkRustToken::Op(value) if value == "(" => {
-                depth += 1;
-                current.push(token.clone());
-            }
-            MilkRustToken::Op(value) if value == ")" => {
-                depth = depth.saturating_sub(1);
-                current.push(token.clone());
-            }
-            MilkRustToken::Op(value) if (value == "," || value == ";") && depth == 0 => {
-                args.push(current);
-                current = Vec::new();
-            }
-            _ => current.push(token.clone()),
-        }
-    }
-    if !current.is_empty() {
-        args.push(current);
-    }
-    args
-}
+fn split_milkrust_call_tokens(tokens: &[MilkRustToken]) -> Vec<&[MilkRustToken]> {
+     let mut args: Vec<&[MilkRustToken]> = Vec::new();
+     let mut depth = 0usize;
+     let mut arg_start = 0usize;
+
+     for (index, token) in tokens.iter().enumerate() {
+         match token {
+             MilkRustToken::Op(value) if value == "(" => {
+                 depth += 1;
+             }
+             MilkRustToken::Op(value) if value == ")" => {
+                 depth = depth.saturating_sub(1);
+             }
+             MilkRustToken::Op(value) if (value == "," || value == ";") && depth == 0 => {
+                 args.push(&tokens[arg_start..index]);
+                 arg_start = index + 1;
+             }
+             _ => {}
+         }
+     }
+     if arg_start < tokens.len() {
+         args.push(&tokens[arg_start..]);
+     }
+     args
+ }
 
 pub fn evaluate_milkrust_expression(
     expression: &str,
@@ -5569,7 +5653,7 @@ fn evaluate_milkrust_expression_with_scope(
         .map(|(key, value)| (key.to_ascii_lowercase(), value.clone()))
         .collect::<BTreeMap<_, _>>();
     let tokens = tokenize_milkrust_expression(expression)?;
-    let mut parser = MilkRustExpressionParser::new(tokens, scope, rand_counter);
+    let mut parser = MilkRustExpressionParser::new(&tokens, scope, rand_counter);
     let value = parser.parse()?;
     Ok((value, parser.scope, parser.rand_counter))
 }

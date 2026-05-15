@@ -377,9 +377,9 @@ mod tests {
         assert_eq!(manual.len(), 1);
         assert_eq!(manual[0].source_path, manual_a);
 
-        assert!(collect_preset_inputs(&[ignored.clone()], &[]).is_err());
+        assert!(collect_preset_inputs(std::slice::from_ref(&ignored), &[]).is_err());
 
-        let walk = collect_preset_inputs(&[loose.clone()], &[]).unwrap();
+        let walk = collect_preset_inputs(std::slice::from_ref(&loose), &[]).unwrap();
         assert_eq!(walk.len(), 2);
         assert!(walk.iter().any(|entry| entry.source_path == manual_a));
         assert!(walk.iter().any(|entry| entry.source_path == nested_milk));
@@ -392,11 +392,11 @@ mod tests {
         );
         std::fs::write(&manifest_path, manifest).unwrap();
 
-        let from_pack = collect_preset_inputs(&[], &[pack_dir.clone()]).unwrap();
+        let from_pack = collect_preset_inputs(&[], std::slice::from_ref(&pack_dir)).unwrap();
         assert_eq!(from_pack.len(), 1);
         assert_eq!(from_pack[0].source_path.file_name().unwrap(), "studio.milk");
 
-        let mixed = collect_preset_inputs(&[manual_a.clone()], &[pack_dir]).unwrap();
+        let mixed = collect_preset_inputs(std::slice::from_ref(&manual_a), &[pack_dir]).unwrap();
         assert_eq!(mixed.len(), 2);
         let paths: Vec<PathBuf> = mixed.iter().map(|item| item.source_path.clone()).collect();
         assert!(paths.contains(&manual_a));
@@ -412,8 +412,8 @@ mod tests {
     fn parses_pack_plugins_and_collects_pack_artifacts() {
         let root = make_test_root("collects_pack_plugins");
         let pack_dir = root.join("plugin-pack");
-        std::fs::create_dir_all(&pack_dir.join("plugins")).unwrap();
-        std::fs::create_dir_all(&pack_dir.join("presets")).unwrap();
+std::fs::create_dir_all(pack_dir.join("plugins")).unwrap();
+         std::fs::create_dir_all(pack_dir.join("presets")).unwrap();
 
         let preset_path = "presets/studio.milk";
         let plugin_path = "plugins/playlist.json";
@@ -429,7 +429,7 @@ mod tests {
         );
         std::fs::write(&manifest_path, manifest).unwrap();
 
-        let pack_plugins = collect_pack_plugins(&[pack_dir.clone()]).unwrap();
+        let pack_plugins = collect_pack_plugins(std::slice::from_ref(&pack_dir)).unwrap();
         assert_eq!(pack_plugins.len(), 1);
         assert_eq!(pack_plugins[0].id, "default-playlist");
         assert_eq!(pack_plugins[0].kind, "data");
@@ -439,7 +439,7 @@ mod tests {
             serde_json::json!(["studio"])
         );
 
-        let presets = collect_preset_inputs(&[], &[pack_dir.clone()]).unwrap();
+        let presets = collect_preset_inputs(&[], std::slice::from_ref(&pack_dir)).unwrap();
         assert_eq!(presets.len(), 1);
         let presets_again = collect_preset_inputs(&[], &[pack_dir]).unwrap();
         assert_eq!(presets_again.len(), 1);
