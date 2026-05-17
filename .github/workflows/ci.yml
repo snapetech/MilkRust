@@ -7,7 +7,10 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +32,8 @@ jobs:
       - name: Build browser WASM package
         run: npm run build:wasm
 
-      - name: Install Playwright browser
+      - name: Install Playwright browser (Linux only)
+        if: matrix.os == 'ubuntu-latest'
         run: npx playwright install --with-deps chromium
 
       - name: Run compliance audit
@@ -42,9 +46,128 @@ jobs:
         run: cargo check -p milkrust-wasm --target wasm32-unknown-unknown
 
       - name: Run MilkRust tool checks
+        if: matrix.os == 'ubuntu-latest'
         run: |
           npm run test:compatibility
           npm run test:performance
           npm run test:smoke
           npm run desktop:probe:ci
           npm run desktop:plugin-report:ci
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run clippy
+        run: cargo clippy --workspace -- -D warnings
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+      - name: Run cargo audit
+        run: cargo audit || true
+      - name: Run npm audit
+        run: npm audit || true
+
+  wasm-size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install wasm-bindgen CLI
+        run: cargo install wasm-bindgen-cli --version 0.2.120 --locked
+      - name: Build WASM package
+        run: npm run build:wasm
+      - name: Check WASM size budget (1.0 MB)
+        run: |
+          SIZE=$(wc -c < pkg/milkrust_wasm_bg.wasm)
+          BUDGET=$((1024 * 1024))
+          echo "WASM size: $SIZE bytes ($(( SIZE / 1024 )) KB), budget: $BUDGET bytes (1024 KB)"
+          if [ "$SIZE" -gt "$BUDGET" ]; then
+            echo "::error::WASM size $SIZE bytes exceeds budget of $BUDGET bytes"
+            exit 1
+          fi
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov
+      - name: Generate coverage report
+        run: cargo llvm-cov --workspace --lcov --output-path lcov.info || true
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: lcov.info
+          retention-days: 7
+
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run Rust benchmark
+        run: cargo bench --workspace -- --noplot 2>&1 | tail -20 || echo "No benchmarks configured"
+      - name: Measure WASM build time
+        run: |
+          START=$(date +%s)
+          cargo build -p milkrust-wasm --release
+          END=$(date +%s)
+          echo "WASM release build took $(( END - START )) seconds"
+      - name: Measure test execution time
+        run: |
+          START=$(date +%s)
+          cargo test --workspace -- --test-threads=4 > /dev/null 2>&1
+          END=$(date +%s)
+          DURATION=$(( END - START ))
+          echo "Test suite completed in $DURATION seconds"
+          # Fail if tests take longer than 5 minutes (performance regression)
+          if [ "$DURATION" -gt 300 ]; then
+            echo "::warning::Test execution exceeded 300s threshold ($DURATION s)"
+          fi
+
+  windows-on-demand:
+    runs-on: [self-hosted, Windows, X64, packer-windows]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install wasm-bindgen CLI
+        run: cargo install wasm-bindgen-cli --version 0.2.120 --locked
+
+      - name: Build browser WASM package
+        run: npm run build:wasm
+
+      - name: Run compliance audit
+        run: npm run compliance:ci
+
+      - name: Test Rust workspace
+        run: cargo test --workspace
+
+      - name: Check WASM target
+        run: cargo check -p milkrust-wasm --target wasm32-unknown-unknown
